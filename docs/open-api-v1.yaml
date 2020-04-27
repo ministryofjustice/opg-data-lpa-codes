@@ -1,0 +1,142 @@
+openapi: '3.0.2'
+info:
+  title: Code Generator
+  version: '1.0'
+servers:
+  - url: https://api.server.test/v1
+paths:
+  /healthcheck:
+    get:
+      responses:
+        '200':
+          description: OK
+  /create:
+    post:
+      summary: "Create a new code"
+      description: "Create a new 12 digit alpha-numeric code unique to this LPA and Actor"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                lpa:
+                  type: string
+                  # not sure what 'LPA' refers to here, see ticket IN-71
+                actor:
+                  type: string
+                  # not sure what 'actor' refers to here, see ticket IN-71
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CodeCreated'
+        '400':
+          description: "bad request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error400'
+  /validate:
+    post:
+      summary: "Validate a code"
+      description: "Validate a code"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                lpa:
+                  type: string
+                  # not sure what 'LPA' refers to here, see ticket IN-71
+                actor:
+                  type: string
+                  # not sure what 'actor' refers to here, see ticket IN-71
+                code:
+                  type: string
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CodeCreated'
+        '400':
+          description: "bad request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error400'
+  /revoke:
+    post:
+      summary: "Revoke a code"
+      description: "Revoke a code"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                code:
+                  type: string
+      responses:
+        '201':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CodeRevoked'
+        '400':
+          description: "bad request"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error400'
+
+components:
+  schemas:
+    CodeCreated:
+      properties:
+        code:
+          type: string
+        id:
+          type: string
+      required:
+        - code
+    Error400:
+      type: object
+      required:
+        - errors
+      properties:
+        errors:
+          type: array
+          items:
+            type: object
+            required:
+              - code
+              - title
+            properties:
+              id:
+                type: string
+                example: "A123BCD"
+              code:
+                type: string
+                example: "OPGDATA-API-INVALIDREQUEST"
+              title:
+                type: string
+                example: "Invalid Request"
+              detail:
+                type: string
+                example: "Invalid request, the data is incorrect"
+              meta:
+                type: object
+                properties:
+                  x-ray:
+                    type: string
+                    example: "93c330d4-7d84-4c1b-8fdb-54cec5bfe747"
