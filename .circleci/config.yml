@@ -1,0 +1,237 @@
+---
+version: 2.1
+
+workflows:
+  pull_request:
+    jobs:
+      - build_lambda:
+          name: build and artifact
+          filters: {branches:{ignore:[master]}}
+      - terraform_pre_checks:
+          name: terraform branch preflight checks
+          requires: [build and artifact]
+          filters: {branches:{ignore:[master]}}
+      - terraform_action:
+          name: plan branch environment
+          requires: [terraform branch preflight checks]
+          tf_command: plan
+          filters: {branches:{ignore:[master]}}
+      - terraform_action:
+          name: apply branch environment
+          requires: [plan branch environment]
+          tf_command: apply
+          filters: {branches:{ignore:[master]}}
+      - cleanup:
+          name: approve destroy environment
+          type: approval
+          requires: [apply branch environment]
+          filters: {branches:{ignore:[master]}}
+      - terraform_action:
+          name: destroy branch environment
+          requires: [approve destroy environment]
+          tf_command: destroy
+          destroy_workspace: true
+          filters: {branches:{ignore:[master]}}
+  commit_to_master:
+    jobs:
+      - build_lambda:
+          name: build and artifact
+          filters: {branches:{only:[master]}}
+      - terraform_pre_checks:
+          name: terraform dev preflight checks
+          requires: [build and artifact]
+          tf_workspace: development
+          filters: {branches:{only:[master]}}
+      - terraform_action:
+          name: development apply
+          requires: [terraform dev preflight checks]
+          tf_command: apply --auto-approve
+          tf_workspace: development
+          applycheck: true
+          filters: {branches:{only:[master]}}
+      - terraform_pre_checks:
+         name: terraform preprod preflight checks
+         requires: [build and artifact]
+         tf_workspace: preproduction
+         filters: {branches:{only:[master]}}
+      - terraform_action:
+         name: preprod apply
+         requires: [terraform preprod preflight checks, development apply]
+         tf_command: apply --auto-approve
+         tf_workspace: preproduction
+         applycheck: true
+         filters: {branches:{only:[master]}}
+      - approve:
+         name: approve release to production
+         type: approval
+         requires: [preprod apply]
+         filters: {branches:{only:[master]}}
+orbs:
+  lpa-codes:
+    executors:
+      python_with_tfvars:
+        docker:
+          - image: circleci/python:3.8.1
+        environment:
+          TF_CLI_ARGS_plan: -input=false -lock=false
+          TF_CLI_ARGS_apply: -input=false -auto-approve
+          TF_CLI_ARGS_destroy: -input=false -auto-approve
+          TF_CLI_ARGS_init: -input=false -upgrade=true -reconfigure
+          TF_VAR_default_role: sirius-ci
+      python:
+        docker:
+          - image: circleci/python:3.8.1
+    commands:
+      terraform_install:
+        steps:
+          - run:
+              name: Get latest terraform version
+              command: |
+                export TERRAFORM_LATEST_VERSION=$(curl -X GET -s https://releases.hashicorp.com/terraform/ \
+                | grep "<a href=\"/terraform/" \
+                | awk -F'/' '{print $3}' | head -1)
+                export TERRAFORM_SHA256SUM=$(curl -X GET -s \
+                https://releases.hashicorp.com/terraform/"${TERRAFORM_LATEST_VERSION}"/terraform_"${TERRAFORM_LATEST_VERSION}"_SHA256SUMS \
+                | grep "_linux_amd64.zip" \
+                | head -1 \
+                | awk '{print $1}')
+                echo "export TF_VERSION=${TERRAFORM_LATEST_VERSION}" >> $BASH_ENV
+                echo "export TF_SHA256SUM=${TERRAFORM_SHA256SUM}" >> $BASH_ENV
+          - run:
+              name: Download Terraform
+              command: curl -sfSO https://releases.hashicorp.com/terraform/${TF_VERSION}/terraform_${TF_VERSION}_linux_amd64.zip
+          - run:
+              name: Add Terraform SHA256SUM
+              command: echo "${TF_SHA256SUM} terraform_${TF_VERSION}_linux_amd64.zip" > SHA256SUMS
+          - run:
+              name: Check Terraform SHA256SUM
+              command: sha256sum -c --status SHA256SUMS
+          - run:
+              name: Install Terraform
+              command: sudo unzip terraform_${TF_VERSION}_linux_amd64.zip -d /bin
+jobs:
+  build_lambda:
+    executor: lpa-codes/python
+    steps:
+      - checkout
+      - run:
+          name: install all requirements locally
+          command: |
+            for i in $(ls -d lambda_functions/*/ | awk -F'/' '{print $2}')
+            do
+              pip3 install -r ./lambda_functions/"${i}"/requirements/dev-requirements.txt
+            done
+      - run:
+          name: run flake8 - python PEP8 linter, complexity checker
+          command: |
+            flake8 lambda_functions
+      - run:
+          name: install requirements for all lambda layers
+          command: |
+            for i in $(ls -d lambda_functions/*/ | awk -F'/' '{print $2}' | grep '^v[1-9]\+')
+            do
+              export LAYER_PATH=lambda_functions/"${i}"/lambda_layers/python/lib/python3.7/site-packages
+              pip3 install -r lambda_functions/"${i}"/requirements/requirements.txt --target ./$LAYER_PATH/
+            done
+      - run:
+          name: create artifact for future stages
+          command: |
+            chmod -R 755 ./lambda_functions
+            zip -r9 /tmp/opg-data-lpa-codes.zip .
+      - persist_to_workspace:
+          root: /tmp
+          paths:
+            - opg-data-lpa-codes.zip
+  terraform_pre_checks:
+    executor: lpa-codes/python_with_tfvars
+    parameters:
+      tf_workspace:
+        description: terraform workspace
+        type: string
+        default: ""
+    working_directory: ~/project
+    steps:
+      - attach_workspace:
+          at: ~/project
+      - lpa-codes/terraform_install
+      - run:
+          name: unzip artifact
+          command: unzip ./opg-data-lpa-codes.zip -d .
+      - run:
+          name: initialize terraform - environment
+          working_directory: ~/project/terraform/environment
+          command: terraform init
+      - run:
+          name: terraform check formatting - environment
+          working_directory: ~/project/terraform/environment
+          command: terraform fmt -diff -check -recursive
+      - run:
+          name: validate terraform - environment
+          working_directory: ~/project/terraform/environment
+          command: terraform validate
+  terraform_action:
+    executor: lpa-codes/python_with_tfvars
+    parameters:
+      tf_workspace:
+        description: terraform workspace
+        type: string
+        default: ""
+      tf_command:
+        description: terraform command
+        default: plan
+        type: string
+      applycheck:
+        description: workaround for rest api provider
+        type: boolean
+        default: false
+      destroy_workspace:
+        description: whether to destroy the empty workspace
+        type: boolean
+        default: false
+    environment:
+      WORKSPACE: << parameters.tf_workspace >>
+    working_directory: ~/project
+    steps:
+      - attach_workspace:
+          at: ~/project
+      - lpa-codes/terraform_install
+      - run:
+          name: unzip artifact
+          command: unzip ./opg-data-lpa-codes.zip -d .
+      - run:
+          name: initialize terraform - environment
+          working_directory: ~/project/terraform/environment
+          command: terraform init
+      - run:
+          name: Set BASH_ENV
+          command: ~/project/.circleci/set_env.sh >> $BASH_ENV
+      - run:
+          name: Set Environment variables
+          command: |
+            eval $(cat $BASH_ENV)
+      - run:
+          name: terraform << parameters.tf_command >> - environment
+          working_directory: ~/project/terraform/environment
+          command: terraform << parameters.tf_command >>
+      # https://github.com/terraform-providers/terraform-provider-aws/issues/5364
+      - when:
+          condition: << parameters.applycheck >>
+          steps:
+            - run:
+                name: conditionally reapply if gateway policy is missing
+                working_directory: ~/project/terraform/environment
+                command: |
+                  if [ $(terraform output policy | wc -m) -gt 1 ]
+                  then echo "policy attached, doing nothing"
+                  else terraform << parameters.tf_command >>
+                  fi
+      - when:
+          condition: << parameters.destroy_workspace >>
+          steps:
+            - run:
+                name: destroy the workspace to clear up
+                command: |
+                  export WORKSPACE_TO_DELETE="${TF_WORKSPACE}"
+                  echo "Switching workspace to default so we can remove branch workspace"
+                  export TF_WORKSPACE=default
+                  terraform workspace delete "${WORKSPACE_TO_DELETE}" || echo "no workspace to remove"
