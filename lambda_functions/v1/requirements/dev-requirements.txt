@@ -11,3 +11,4 @@ MarkupSafe
 python-dotenv
 Werkzeug
 openapi-spec-validator
+requests
