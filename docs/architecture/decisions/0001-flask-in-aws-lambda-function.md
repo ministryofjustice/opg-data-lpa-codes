@@ -41,5 +41,12 @@ anti-pattern?
 * If we are wrong and want to move to separate lambda functions the code needs some rework but the infra will be pretty 
 much the same
  
+## Futher Reading
 
+[Flask + Serverless — API in AWS Lambda the easy way](https://medium.com/@Twistacz/flask-serverless-api-in-aws-lambda-the-easy-way-a445a8805028)
 
+[Serverless Deployments of Python APIs](https://blog.miguelgrinberg.com/post/serverless-deployments-of-python-apis)
+
+[Deploy your Flask API to any Serverless Cloud Platform using this Simple Pattern](https://andrewgriffithsonline.com/blog/180412-deploy-flask-api-any-serverless-cloud-platform/)
+
+[AWS Chalice](https://chalice.readthedocs.io/en/latest/)
