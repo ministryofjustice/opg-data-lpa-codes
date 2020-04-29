@@ -6,9 +6,18 @@ def error_message(code, message):
     """
     error_message wraps an error into payload format expected by the API client
     """
+
+
+
     return (
         jsonify(
-            {"error": {"code": HTTP_STATUS_CODES.get(code, code), "message": message}}
+            {
+                "isBase64Encoded": False,
+                "statusCode": 200,
+                "headers": {"Content-Type": "application/json"},
+                "body": {"error": {"code": HTTP_STATUS_CODES.get(code, code), "message": message}},
+            }
+
         ),
         code,
     )

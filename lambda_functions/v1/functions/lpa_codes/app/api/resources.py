@@ -23,8 +23,14 @@ def handle500(error=None):
 
 @api.route("/healthcheck", methods=("HEAD", "GET"))
 def handle_healthcheck():
-    print(f"HEALTHCHECK OK")
-    return "ok"
+    response = {
+        "isBase64Encoded": False,
+        "statusCode": 200,
+        "headers": {"Content-Type": "application/json"},
+        "body": "well hello there",
+    }
+
+    return jsonify(response)
 
 
 @api.route("/create", methods=("GET", "POST"))
@@ -35,7 +41,12 @@ def handle_create():
     json
     """
 
-    response = {"message": "code created"}
+    response = {
+        "isBase64Encoded": False,
+        "statusCode": 200,
+        "headers": {"Content-Type": "application/json"},
+        "body": "created",
+    }
 
     return jsonify(response)
 
@@ -48,7 +59,12 @@ def handle_revoke():
     json
     """
 
-    response = {"message": "code revoked"}
+    response = {
+        "isBase64Encoded": False,
+        "statusCode": 200,
+        "headers": {"Content-Type": "application/json"},
+        "body": "revoked",
+    }
 
     return jsonify(response)
 
@@ -61,6 +77,11 @@ def handle_validate():
     json
     """
 
-    response = {"message": "code validated"}
+    response = {
+        "isBase64Encoded": False,
+        "statusCode": 200,
+        "headers": {"Content-Type": "application/json"},
+        "body": "valid",
+    }
 
     return jsonify(response)
