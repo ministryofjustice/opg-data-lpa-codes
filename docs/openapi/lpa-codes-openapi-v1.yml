@@ -1,12 +1,31 @@
 openapi: '3.0.2'
 info:
-  title: Code Generator
+  title: lpa-codes-${environment}
   version: '1.0'
 servers:
-  - url: https://api.server.test/v1
+  - url: /v1
+    description: we use the path only so we can use in different contexts
+x-amazon-apigateway-request-validators:
+  all:
+    validateRequestParameters: true
+    validateRequestBody: true
 paths:
   /healthcheck:
     get:
+      summary: "Healthcheck endpoint"
+      description: "Checks health of our lambda"
+      security:
+        - sigv4: []
+      x-amazon-apigateway-request-validator: "all"
+      x-amazon-apigateway-integration:
+        uri: arn:aws:apigateway:${region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${region}:${account_id}:function:$${stageVariables.lpa_codes_function_name}/invocations
+        responses:
+          default:
+            statusCode: "200"
+        passthroughBehavior: "when_no_match"
+        httpMethod: "POST"
+        contentHandling: "CONVERT_TO_TEXT"
+        type: "aws_proxy"
       responses:
         200:
           description: OK
@@ -14,6 +33,18 @@ paths:
     post:
       summary: "Create a new code"
       description: "Create a new 12 digit alpha-numeric code unique to this LPA and Actor"
+      security:
+        - sigv4: []
+      x-amazon-apigateway-request-validator: "all"
+      x-amazon-apigateway-integration:
+        uri: arn:aws:apigateway:${region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${region}:${account_id}:function:$${stageVariables.lpa_codes_function_name}/invocations
+        responses:
+          default:
+            statusCode: "200"
+        passthroughBehavior: "when_no_match"
+        httpMethod: "POST"
+        contentHandling: "CONVERT_TO_TEXT"
+        type: "aws_proxy"
       requestBody:
         required: true
         content:
@@ -86,6 +117,18 @@ paths:
     post:
       summary: "Validate a code"
       description: "Validate a code"
+      security:
+        - sigv4: []
+      x-amazon-apigateway-request-validator: "all"
+      x-amazon-apigateway-integration:
+        uri: arn:aws:apigateway:${region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${region}:${account_id}:function:$${stageVariables.lpa_codes_function_name}/invocations
+        responses:
+          default:
+            statusCode: "200"
+        passthroughBehavior: "when_no_match"
+        httpMethod: "POST"
+        contentHandling: "CONVERT_TO_TEXT"
+        type: "aws_proxy"
       requestBody:
         required: true
         content:
@@ -160,6 +203,18 @@ paths:
     post:
       summary: "Revoke a code"
       description: "Revoke a code"
+      security:
+        - sigv4: []
+      x-amazon-apigateway-request-validator: "all"
+      x-amazon-apigateway-integration:
+        uri: arn:aws:apigateway:${region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${region}:${account_id}:function:$${stageVariables.lpa_codes_function_name}/invocations
+        responses:
+          default:
+            statusCode: "200"
+        passthroughBehavior: "when_no_match"
+        httpMethod: "POST"
+        contentHandling: "CONVERT_TO_TEXT"
+        type: "aws_proxy"
       requestBody:
         required: true
         content:
@@ -226,6 +281,12 @@ paths:
                 $ref: '#/components/schemas/Error503'
 
 components:
+  securitySchemes:
+    sigv4:
+      type: apiKey
+      name: Authorization
+      in: header
+      x-amazon-apigateway-authtype: awsSigv4
   schemas:
     CodeCreated:
       properties:

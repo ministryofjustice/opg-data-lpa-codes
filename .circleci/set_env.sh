@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+set -e
+WORKSPACE=${WORKSPACE:-$CIRCLE_BRANCH}
+WORKSPACE=${WORKSPACE//[^[:alnum:]]/}
+WORKSPACE=${WORKSPACE,,}
+WORKSPACE=${WORKSPACE:0:14}
+
+echo "export TF_WORKSPACE=${WORKSPACE}"
