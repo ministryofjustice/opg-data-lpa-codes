@@ -13,7 +13,8 @@ resource "aws_lambda_function" "lambda_function" {
   source_code_hash = data.archive_file.lambda_archive.output_base64sha256
   function_name    = local.lambda
   role             = aws_iam_role.lambda_role.arn
-  handler          = "app.${var.lambda_prefix}.lambda_handler"
+//  handler          = "app.${var.lambda_prefix}.lambda_handler"
+  handler          = "app.run_lambda.http_server"
   runtime          = "python3.7"
   timeout          = 5
   depends_on       = [aws_cloudwatch_log_group.lambda]
