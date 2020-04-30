@@ -2,7 +2,7 @@ module "lamdba_lpa_codes_v1" {
   source          = "./modules/lambda"
   environment     = local.environment
   aws_subnet_ids  = data.aws_subnet_ids.private.ids
-  lambda_prefix   = "lpa_codes"
+  lambda_prefix   = "lpa-codes"
   logger_level    = "INFO"
   tags            = local.default_tags
   openapi_version = "v1"
