@@ -1,1 +1,8 @@
-#Update this date to trigger update of layers: 250416
+#Update this date to trigger update of layers: 290416
+Flask
+flask-lambda
+flask-lambda-python36
+itsdangerous
+Jinja2
+MarkupSafe
+Werkzeug

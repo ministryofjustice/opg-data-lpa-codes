@@ -126,6 +126,10 @@ jobs:
           command: |
             flake8 lambda_functions
       - run:
+          name: run unit tests (with pytest)
+          command: |
+            python -m pytest
+      - run:
           name: install requirements for all lambda layers
           command: |
             for i in $(ls -d lambda_functions/*/ | awk -F'/' '{print $2}' | grep '^v[1-9]\+')

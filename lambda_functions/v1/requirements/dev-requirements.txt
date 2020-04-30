@@ -1,3 +1,14 @@
 pytest
 flake8
 flake8-quotes
+click
+Flask
+flask-lambda
+flask-lambda-python36
+itsdangerous
+Jinja2
+MarkupSafe
+python-dotenv
+Werkzeug
+openapi-spec-validator
+requests
