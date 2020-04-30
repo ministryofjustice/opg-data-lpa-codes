@@ -23,14 +23,9 @@ def handle500(error=None):
 
 @api.route("/healthcheck", methods=("HEAD", "GET"))
 def handle_healthcheck():
-    response = {
-        "isBase64Encoded": False,
-        "statusCode": 200,
-        "headers": {"Content-Type": "application/json"},
-        "body": "well hello there",
-    }
+    response_message = "OK"
 
-    return jsonify(response)
+    return jsonify(response_message), 200
 
 
 @api.route("/create", methods=("GET", "POST"))
@@ -41,14 +36,13 @@ def handle_create():
     json
     """
 
-    response = {
-        "isBase64Encoded": False,
-        "statusCode": 200,
-        "headers": {"Content-Type": "application/json"},
-        "body": "created",
+    response_message = {
+        "code": "example_code",
+        "status": "generated",
+        "id": "91d9860e-f759-4214-8ffa-bfd87a12a995",
     }
 
-    return jsonify(response)
+    return jsonify(response_message), 501
 
 
 @api.route("/revoke", methods=("GET", "POST"))
@@ -59,14 +53,13 @@ def handle_revoke():
     json
     """
 
-    response = {
-        "isBase64Encoded": False,
-        "statusCode": 200,
-        "headers": {"Content-Type": "application/json"},
-        "body": "revoked",
+    response_message = {
+        "code": "example_code",
+        "status": "revoked",
+        "id": "33857363-76cb-4d7e-9f1f-740e04a5456d",
     }
 
-    return jsonify(response)
+    return jsonify(response_message), 501
 
 
 @api.route("/validate", methods=("GET", "POST"))
@@ -77,11 +70,10 @@ def handle_validate():
     json
     """
 
-    response = {
-        "isBase64Encoded": False,
-        "statusCode": 200,
-        "headers": {"Content-Type": "application/json"},
-        "body": "valid",
+    response_message = {
+        "code": "example_code",
+        "status": "valid",
+        "id": "7c94fd39-7680-43a8-ba25-7430760c52b3",
     }
 
-    return jsonify(response)
+    return jsonify(response_message), 501
