@@ -8,7 +8,7 @@ module "lamdba_lpa_codes_v1" {
   openapi_version = "v1"
   rest_api        = aws_api_gateway_rest_api.lpa_codes
   account         = local.account
-  dynamodb_table  = aws_dynamodb_table.lpa-codes
+  dynamodb_table  = aws_dynamodb_table.lpa_codes
 }
 
 //To Add New Version Copy and Paste Above and Modify Accordingly
