@@ -52,15 +52,12 @@ paths:
             schema:
               type: object
               properties:
-                lpas:
-                  type: object
-                  properties:
-                    lpa:
-                      type: string
-                    actor:
-                      type: string
-                    dob:
-                      type: string
+                lpa:
+                  type: string
+                actor:
+                  type: string
+                dob:
+                  type: string
       responses:
         201:
           description: OK
