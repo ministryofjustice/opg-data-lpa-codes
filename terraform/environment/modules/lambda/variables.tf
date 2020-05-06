@@ -23,3 +23,5 @@ variable "openapi_version" {
 variable "rest_api" {}
 
 variable "account" {}
+
+variable "dynamodb_table" {}
