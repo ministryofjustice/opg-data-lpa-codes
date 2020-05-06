@@ -44,6 +44,32 @@ data "aws_iam_policy_document" "lambda" {
       "logs:DescribeLogStreams"
     ]
   }
+
+  statement {
+    sid = "DynamoDBAccess"
+
+    effect = "Allow"
+
+    actions = [
+      "dynamodb:BatchGetItem",
+      "dynamodb:BatchWriteItem",
+      "dynamodb:DeleteItem",
+      "dynamodb:DescribeStream",
+      "dynamodb:DescribeTable",
+      "dynamodb:GetItem",
+      "dynamodb:GetRecords",
+      "dynamodb:GetShardIterator",
+      "dynamodb:ListStreams",
+      "dynamodb:ListTables",
+      "dynamodb:PutItem",
+      "dynamodb:Query",
+      "dynamodb:Scan",
+      "dynamodb:UpdateItem",
+      "dynamodb:UpdateTable",
+    ]
+
+    resources = [var.dynamodb_table.arn]
+  }
 }
 
 resource "aws_iam_role_policy_attachment" "vpc_access_execution_role" {
