@@ -52,12 +52,15 @@ paths:
             schema:
               type: object
               properties:
-                lpa:
-                  type: string
-                actor:
-                  type: string
-                dob:
-                  type: string
+                lpas:
+                  type: object
+                  properties:
+                    lpa:
+                      type: string
+                    actor:
+                      type: string
+                    dob:
+                      type: string
       responses:
         201:
           description: OK
@@ -143,7 +146,7 @@ paths:
                 code:
                   type: string
       responses:
-        201:
+        200:
           description: OK
           content:
             application/json:
