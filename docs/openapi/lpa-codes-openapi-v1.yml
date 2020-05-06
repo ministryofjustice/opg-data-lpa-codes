@@ -52,12 +52,17 @@ paths:
             schema:
               type: object
               properties:
-                lpa:
-                  type: string
-                actor:
-                  type: string
-                dob:
-                  type: string
+                lpas:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      lpa:
+                        type: string
+                      actor:
+                        type: string
+                      dob:
+                        type: string
       responses:
         201:
           description: OK
@@ -284,10 +289,19 @@ components:
   schemas:
     CodeCreated:
       properties:
-        code:
-          type: string
+        codes:
+          type: array
+          items:
+            type: object
+            properties:
+              lpa:
+                type: string
+              actor:
+                type: string
+              code:
+                type: string
       required:
-        - code
+        - codes
     ValidateCode:
       properties:
         actor:
