@@ -40,7 +40,7 @@ paths:
         uri: arn:aws:apigateway:${region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${region}:${account_id}:function:$${stageVariables.lpa_codes_function_name}/invocations
         responses:
           default:
-            statusCode: "200"
+            statusCode: "201"
         passthroughBehavior: "when_no_match"
         httpMethod: "POST"
         contentHandling: "CONVERT_TO_TEXT"
@@ -54,10 +54,10 @@ paths:
               properties:
                 lpa:
                   type: string
-                  # not sure what 'LPA' refers to here, see ticket IN-71
                 actor:
                   type: string
-                  # not sure what 'actor' refers to here, see ticket IN-71
+                dob:
+                  type: string
       responses:
         201:
           description: OK
@@ -138,10 +138,8 @@ paths:
               properties:
                 lpa:
                   type: string
-                  # not sure what 'LPA' refers to here, see ticket IN-71
-                actor:
+                dob:
                   type: string
-                  # not sure what 'actor' refers to here, see ticket IN-71
                 code:
                   type: string
       responses:
@@ -225,12 +223,8 @@ paths:
                 code:
                   type: string
       responses:
-        201:
+        200:
           description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CodeRevoked'
         400:
           description: Generic bad request (generally invalid syntax)
           content:
@@ -292,32 +286,14 @@ components:
       properties:
         code:
           type: string
-        status:
-          type: string
-        id:
-          type: string
-      required:
-        - code
-    CodeRevoked:
-      properties:
-        code:
-          type: string
-        status:
-          type: string
-        id:
-          type: string
       required:
         - code
     ValidateCode:
       properties:
-        code:
-          type: string
-        status:
-          type: string
-        id:
+        actor:
           type: string
       required:
-        - code
+        - actor
     Error400:
       type: object
       required:
