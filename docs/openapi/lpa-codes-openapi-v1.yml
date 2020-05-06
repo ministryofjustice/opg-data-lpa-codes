@@ -1,3 +1,4 @@
+---
 openapi: '3.0.2'
 info:
   title: lpa-codes-${environment}
@@ -64,6 +65,14 @@ paths:
                       dob:
                         type: string
                         format: date
+              example:
+                 lpas:
+                   - lpa: "eed4f597-fd87-4536-99d0-895778824861"
+                     actor: "12ad81a9-f89d-4804-99f5-7c0c8669ac9b"
+                     dob: "1960-06-05"
+                   - lpa: "eed4f597-fd87-4536-99d0-895778824861"
+                     actor: "9a619d46-8712-4bfb-a49f-c14914ff319d"
+                     dob: "1983-08-20"
       responses:
         201:
           description: OK
@@ -149,6 +158,10 @@ paths:
                   format: date
                 code:
                   type: string
+              example:
+                lpa: "eed4f597-fd87-4536-99d0-895778824861"
+                dob: "1960-06-05"
+                code: "YsSu4iAztUXm"
       responses:
         200:
           description: OK
@@ -229,6 +242,8 @@ paths:
               properties:
                 code:
                   type: string
+              example:
+                code: "YsSu4iAztUXm"
       responses:
         200:
           description: OK
@@ -302,12 +317,22 @@ components:
                 type: string
               code:
                 type: string
+            example:
+                codes:
+                - lpa: "eed4f597-fd87-4536-99d0-895778824861"
+                  actor: "12ad81a9-f89d-4804-99f5-7c0c8669ac9b"
+                  code: "YsSu4iAztUXm"
+                - lpa: "eed4f597-fd87-4536-99d0-895778824861"
+                  actor: "9a619d46-8712-4bfb-a49f-c14914ff319d"
+                  code: "aEYVS6i9zSwy"
       required:
         - codes
     ValidateCode:
       properties:
         actor:
           type: string
+      example:
+        actor: "12ad81a9-f89d-4804-99f5-7c0c8669ac9b"
       required:
         - actor
     Error400:
