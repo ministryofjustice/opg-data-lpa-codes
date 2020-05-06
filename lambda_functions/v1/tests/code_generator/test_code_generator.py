@@ -11,21 +11,32 @@ from lambda_functions.v1.tests.code_generator import test_cases_update_existing_
 
 @cases_data(module=test_cases_update_existing_codes)
 def test_update_existing_codes(mock_database, case_data: CaseDataGetter):
-    keys, status, expected_result = case_data.get()
-
-    update_result = update_existing_codes(keys, status)
-
+    keys, active_codes, status, expected_result = case_data.get()
     table = boto3.resource("dynamodb").Table("lpa_codes")
 
+    active_code_count = 0
     for key in keys:
         result = table.get_item(
             Key={"lpa": key["lpa"], "actor": key["actor"], "code": key["code"]}
         )
+        if result["Item"]["active"] is True:
+            active_code_count += 1
+
+    assert active_code_count == active_codes
+    update_result = update_existing_codes(keys, status)
+
+    updated_active_code_count = 0
+    for key in keys:
+        result = table.get_item(
+            Key={"lpa": key["lpa"], "actor": key["actor"], "code": key["code"]}
+        )
+        if result["Item"]["active"] is True:
+            active_code_count += 1
+
         assert result["Item"]["active"] == str(status)
         assert result["Item"]["last_updated_date"] == datetime.datetime.now().strftime(
             "%d/%m/%Y"
         )
+        assert updated_active_code_count == 0
 
-        print(result["Item"])
-    assert 1 == 5
     assert update_result == expected_result

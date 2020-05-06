@@ -1,17 +1,45 @@
 from pytest_cases import CaseData, case_name
 
 
-@case_name("Set existing key to inactive, with no status change")
+@case_name("Set existing key to inactive")
 def case_update_single_code_to_inactive() -> CaseData:
     keys = [
         {
-            "lpa": "b53152a3-9973-44dc-83a2-9ef2e89a14e3",
-            "actor": "28d13ef6-b7f2-45fd-b97c-e2d7008eb0bd",
-            "code": "uEVRMn7gAwDC",
+            "lpa": "drive_leading-edge_communities",
+            "actor": "mediumblue",
+            "code": "YsSu4iAztUXm",
         }
     ]
     status = False
+    active_codes = 1
 
     expected_result = "updated"
 
-    return keys, status, expected_result
+    return keys, active_codes, status, expected_result
+
+
+@case_name("Set multiple existing key to inactive")
+def case_update_multiple_codes_to_inactive() -> CaseData:
+    keys = [
+        {
+            "lpa": "drive_leading-edge_communities",
+            "actor": "mediumblue",
+            "code": "ZY577rXcRVLY",
+        },
+        {
+            "lpa": "drive_leading-edge_communities",
+            "actor": "mediumblue",
+            "code": "aEYVS6i9zSwy",
+        },
+        {
+            "lpa": "drive_leading-edge_communities",
+            "actor": "mediumblue",
+            "code": "hFCarGyJF6G2",
+        },
+    ]
+    status = False
+    active_codes = 2
+
+    expected_result = "updated"
+
+    return keys, active_codes, status, expected_result
