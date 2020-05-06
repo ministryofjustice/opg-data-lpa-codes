@@ -63,6 +63,7 @@ paths:
                         type: string
                       dob:
                         type: string
+                        format: date
       responses:
         201:
           description: OK
@@ -145,6 +146,7 @@ paths:
                   type: string
                 dob:
                   type: string
+                  format: date
                 code:
                   type: string
       responses:
@@ -556,3 +558,4 @@ components:
                   x-ray:
                     type: string
                     example: "93c330d4-7d84-4c1b-8fdb-54cec5bfe747"
+
