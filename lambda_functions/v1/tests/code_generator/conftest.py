@@ -5,7 +5,8 @@ import pytest
 from moto import mock_dynamodb2
 
 from lambda_functions.v1.functions.lpa_codes.app.api import code_generator
-from lambda_functions.v1.tests.code_generator.test_data import test_data
+
+# from lambda_functions.v1.tests.code_generator.test_data import test_data
 
 
 @pytest.fixture()
@@ -27,12 +28,12 @@ def mock_database():
             KeySchema=[
                 {"AttributeName": "lpa", "KeyType": "HASH"},  # Partition key
                 {"AttributeName": "actor", "KeyType": "RANGE"},  # Sort key
-                {"AttributeName": "code", "KeyType": "RANGE"},  # Sort key
+                # {"AttributeName": "code", "KeyType": "RANGE"},  # Sort key
             ],
             AttributeDefinitions=[
                 {"AttributeName": "lpa", "AttributeType": "S"},
                 {"AttributeName": "actor", "AttributeType": "S"},
-                {"AttributeName": "code", "AttributeType": "S"},
+                # {"AttributeName": "code", "AttributeType": "S"},
             ],
             ProvisionedThroughput={"ReadCapacityUnits": 10, "WriteCapacityUnits": 10},
         )
@@ -68,9 +69,9 @@ def mock_database():
         table.update(GlobalSecondaryIndexUpdates=code_index)
         table.update(GlobalSecondaryIndexUpdates=active_index)
 
-        data = test_data()
-        for row in data:
-            table.put_item(Item=row)
+        # data = test_data()
+        # for row in data:
+        #     table.put_item(Item=row)
 
         yield mock_db
 
