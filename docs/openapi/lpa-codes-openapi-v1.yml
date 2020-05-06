@@ -317,14 +317,14 @@ components:
                 type: string
               code:
                 type: string
-            example:
-                codes:
-                - lpa: "eed4f597-fd87-4536-99d0-895778824861"
-                  actor: "12ad81a9-f89d-4804-99f5-7c0c8669ac9b"
-                  code: "YsSu4iAztUXm"
-                - lpa: "eed4f597-fd87-4536-99d0-895778824861"
-                  actor: "9a619d46-8712-4bfb-a49f-c14914ff319d"
-                  code: "aEYVS6i9zSwy"
+      example:
+          codes:
+          - lpa: "eed4f597-fd87-4536-99d0-895778824861"
+            actor: "12ad81a9-f89d-4804-99f5-7c0c8669ac9b"
+            code: "YsSu4iAztUXm"
+          - lpa: "eed4f597-fd87-4536-99d0-895778824861"
+            actor: "9a619d46-8712-4bfb-a49f-c14914ff319d"
+            code: "aEYVS6i9zSwy"
       required:
         - codes
     ValidateCode:
@@ -583,4 +583,3 @@ components:
                   x-ray:
                     type: string
                     example: "93c330d4-7d84-4c1b-8fdb-54cec5bfe747"
-
