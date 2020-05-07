@@ -12,3 +12,6 @@ python-dotenv
 Werkzeug
 openapi-spec-validator
 requests
+boto3
+moto
+pytest-cases
