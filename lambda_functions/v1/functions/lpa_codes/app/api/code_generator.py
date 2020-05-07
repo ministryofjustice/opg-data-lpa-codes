@@ -38,3 +38,24 @@ def get_codes(key=None, code=None):
             print("key does not exist")
 
     return codes
+
+def update_codes(key=None, code=None, status=False):
+
+    table = boto3.resource("dynamodb").Table("lpa_codes")
+
+    set_active_flag = f"active = {status}"
+    set_status_updates = (
+        f"last_updated_date = " f"{datetime.datetime.now().strftime('%d/%m/%Y')}"
+    )
+
+    entries = get_codes(key=key, code=code)
+
+    print(f"entries: {entries}")
+    for entry in entries:
+        print(f"entry: {entry}")
+        table.update_item(
+            Key={"code": entry["code"]},
+            UpdateExpression=f"SET {set_active_flag}, {set_status_updates}",
+        )
+
+    return "updated"
