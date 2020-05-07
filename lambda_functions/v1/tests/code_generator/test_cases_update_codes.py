@@ -134,34 +134,34 @@ def case_update_multiple_codes_to_inactive() -> CaseData:
     return test_data, key, code, status, expected_result
 
 
-@case_name("Set code to inactive by code")
-@case_tags("by code")
-def case_update_code_by_code() -> CaseData:
-    code = "hFCarGyJF6G2"
-    status = False
-
-    expected_result = "updated"
-
-    return code, status, expected_result
-
-
-@case_name("Set code to active by code")
-@case_tags("by code")
-def case_update_code_by_code_2() -> CaseData:
-    code = "hFCarGyJF6G2"
-    status = True
-
-    expected_result = "updated"
-
-    return code, status, expected_result
-
-
-@case_name("Set code to inactive by code, but code does not exist")
-@case_tags("by code")
-def case_update_code_by_code_3() -> CaseData:
-    code = "fake_code"
-    status = False
-
-    expected_result = "code does not exist"
-
-    return code, status, expected_result
+# @case_name("Set code to inactive by code")
+# @case_tags("by code")
+# def case_update_code_by_code() -> CaseData:
+#     code = "hFCarGyJF6G2"
+#     status = False
+#
+#     expected_result = "updated"
+#
+#     return code, status, expected_result
+#
+#
+# @case_name("Set code to active by code")
+# @case_tags("by code")
+# def case_update_code_by_code_2() -> CaseData:
+#     code = "hFCarGyJF6G2"
+#     status = True
+#
+#     expected_result = "updated"
+#
+#     return code, status, expected_result
+#
+#
+# @case_name("Set code to inactive by code, but code does not exist")
+# @case_tags("by code")
+# def case_update_code_by_code_3() -> CaseData:
+#     code = "fake_code"
+#     status = False
+#
+#     expected_result = "code does not exist"
+#
+#     return code, status, expected_result

@@ -8,7 +8,7 @@ import os
 def get_codes(key=None, code=None):
 
     table = boto3.resource("dynamodb").Table("lpa_codes")
-    return_fields = "lpa, actor, code"
+    return_fields = "lpa, actor, code, active, last_updated_date"
 
     codes = []
 
@@ -38,6 +38,7 @@ def get_codes(key=None, code=None):
             print("key does not exist")
 
     return codes
+
 
 def update_codes(key=None, code=None, status=False):
 
