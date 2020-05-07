@@ -81,10 +81,6 @@ def mock_database(aws_credentials):
         table.update(GlobalSecondaryIndexUpdates=key_index)
         table.update(GlobalSecondaryIndexUpdates=active_index)
 
-        # data = test_data()
-        # for row in data:
-        #     table.put_item(Item=row)
-
         yield mock_db
 
         print("db teardown")

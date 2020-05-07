@@ -15,6 +15,7 @@ from lambda_functions.v1.tests.code_generator import test_cases_update_codes
 def test_update_codes_by_key(mock_database, case_data: CaseDataGetter):
     test_data, key, code, status, expected_result = case_data.get()
 
+    # TODO this could be a fixture
     # Set up test data
     table = boto3.resource("dynamodb").Table("lpa_codes")
     number_of_rows = len(test_data)
@@ -45,6 +46,7 @@ def test_update_codes_by_key(mock_database, case_data: CaseDataGetter):
 
     assert test_result == expected_result
 
+    # TODO this could be a fixture
     # Tidy up test data
     for row in test_data:
         table.delete_item(Key=row)
