@@ -2,9 +2,11 @@ import datetime
 
 import boto3
 from boto3.dynamodb.conditions import Key, Attr
+import os
 
 
 def get_codes(key=None, code=None):
+
     table = boto3.resource("dynamodb").Table("lpa_codes")
     return_fields = "lpa, actor, code"
 
