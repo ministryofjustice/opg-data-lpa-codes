@@ -20,6 +20,7 @@ def get_codes(key=None, code=None):
         try:
             codes.append(query_result["Item"])
         except KeyError:
+            # TODO better error handling here
             print("code does not exist")
 
     elif key:
@@ -35,6 +36,7 @@ def get_codes(key=None, code=None):
         if len(query_result["Items"]) > 0:
             codes.extend(query_result["Items"])
         else:
+            # TODO better error handling here
             print("key does not exist")
 
     return codes

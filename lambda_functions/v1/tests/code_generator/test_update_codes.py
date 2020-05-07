@@ -14,9 +14,9 @@ from lambda_functions.v1.tests.code_generator import test_cases_update_codes
 @cases_data(module=test_cases_update_codes)
 def test_update_codes_by_key(mock_database, case_data: CaseDataGetter):
     test_data, key, code, status, expected_result = case_data.get()
-    table = boto3.resource("dynamodb").Table("lpa_codes")
 
     # Set up test data
+    table = boto3.resource("dynamodb").Table("lpa_codes")
     number_of_rows = len(test_data)
     for row in test_data:
         table.put_item(Item=row)
@@ -31,7 +31,7 @@ def test_update_codes_by_key(mock_database, case_data: CaseDataGetter):
     last_updated_date_should_be = datetime.datetime.now().strftime("%d/%m/%Y")
 
     # Run test function
-    test_result = update_codes(key, status)
+    test_result = update_codes(key=key, code=code, status=status)
 
     # Test db contents after function
 

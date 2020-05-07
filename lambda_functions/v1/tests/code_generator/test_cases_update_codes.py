@@ -97,7 +97,7 @@ def case_update_multiple_codes_to_active() -> CaseData:
 
     status = True
 
-    expected_result = "updated"
+    expected_result = 2
 
     return test_data, key, code, status, expected_result
 
@@ -122,13 +122,38 @@ def case_update_single_codes_to_inactive() -> CaseData:
 
     status = False
 
-    expected_result = "updated"
+    expected_result = 1
 
     return test_data, key, code, status, expected_result
 
 
 @case_name("Set single existing code to active")
 def case_update_single_codes_to_active() -> CaseData:
+
+    test_data = [
+        {
+            "active": False,
+            "actor": "palevioletred",
+            "code": "YYK8tX6wKk6K",
+            "expiry_date": "03/04/2021",
+            "generated_date": "03/04/2020",
+            "last_updated_date": "01/03/2021",
+            "lpa": "revolutionize_out_of_the_box_paradigms",
+        }
+    ]
+
+    key = None
+    code = "YYK8tX6wKk6K"
+
+    status = True
+
+    expected_result = 1
+
+    return test_data, key, code, status, expected_result
+
+
+@case_name("Set single existing code to active, but it's already active")
+def case_update_single_active_codes_to_active() -> CaseData:
 
     test_data = [
         {
@@ -147,6 +172,6 @@ def case_update_single_codes_to_active() -> CaseData:
 
     status = True
 
-    expected_result = "updated"
+    expected_result = 0
 
     return test_data, key, code, status, expected_result
