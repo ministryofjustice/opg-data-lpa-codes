@@ -44,19 +44,21 @@ def update_codes(key=None, code=None, status=False):
 
     table = boto3.resource("dynamodb").Table("lpa_codes")
 
-    set_active_flag = f"active = {status}"
-    set_status_updates = (
-        f"last_updated_date = " f"{datetime.datetime.now().strftime('%d/%m/%Y')}"
-    )
-
     entries = get_codes(key=key, code=code)
 
-    print(f"entries: {entries}")
+    updated_rows = 0
     for entry in entries:
-        print(f"entry: {entry}")
-        table.update_item(
-            Key={"code": entry["code"]},
-            UpdateExpression=f"SET {set_active_flag}, {set_status_updates}",
-        )
+        if entry["active"] != status:
 
-    return "updated"
+            table.update_item(
+                Key={"code": entry["code"]},
+                UpdateExpression="set active = :a, last_updated_date = :d",
+                ExpressionAttributeValues={
+                    ":a": status,
+                    ":d": datetime.datetime.now().strftime("%d/%m/%Y"),
+                },
+            )
+
+            updated_rows += 1
+
+    return updated_rows

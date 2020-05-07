@@ -11,4 +11,7 @@ def test_get_codes(mock_database, case_data: CaseDataGetter):
 
     result = get_codes(code=code, key=key)
 
+    for row in result:
+        assert isinstance(row["active"], bool)
+
     assert len(result) == expected_result_count
