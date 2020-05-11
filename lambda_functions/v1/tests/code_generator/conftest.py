@@ -84,3 +84,32 @@ def mock_database(aws_credentials):
 
         print("db teardown")
         table.delete()
+
+
+def insert_test_data(test_data):
+    # TODO this could be a fixture
+    # Set up test data
+    table = boto3.resource("dynamodb").Table("lpa_codes")
+    number_of_rows = len(test_data)
+    for row in test_data:
+        table.put_item(Item=row)
+
+    # Check test data has been inserted as expected
+    all_data = table.scan()
+    before_test_data = all_data["Items"]
+    assert len(before_test_data) == number_of_rows
+
+    return before_test_data
+
+
+def remove_test_data(test_data):
+    # Remove test data
+    table = boto3.resource("dynamodb").Table("lpa_codes")
+    for row in test_data:
+        table.delete_item(Key=row)
+
+    # Check the test data has been removed
+    all_data = table.scan()
+    after_tidyup_data = all_data["Items"]
+
+    assert len(after_tidyup_data) == 0
