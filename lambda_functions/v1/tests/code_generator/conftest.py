@@ -25,7 +25,7 @@ def aws_credentials():
     os.environ["AWS_DEFAULT_REGION"] = "eu-west-1"
 
 
-@pytest.fixture(scope="function", autouse=False)
+@pytest.fixture(scope="session", autouse=False)
 def mock_database(aws_credentials):
     with mock_dynamodb2():
         print("db setup")
@@ -103,6 +103,7 @@ def insert_test_data(test_data):
 
 
 def remove_test_data(test_data):
+    # TODO this could be a fixture
     # Remove test data
     table = boto3.resource("dynamodb").Table("lpa_codes")
     for row in test_data:
