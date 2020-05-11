@@ -34,20 +34,6 @@ def check_code_unique(code):
     return True
 
 
-def generate_code():
-    acceptable_characters = "23456789abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ"
-
-    unique = False
-    attempts = 0
-
-    while unique is not True:
-        new_code = "".join(secrets.choice(acceptable_characters) for i in range(0, 12))
-        unique = check_code_unique(new_code)
-        attempts += 1
-        if attempts == 10:
-            new_code = None
-            break
-    return new_code
 
 
 def check_code_unique(code):
