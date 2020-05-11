@@ -56,12 +56,6 @@ def check_code_unique(code):
     return False
 
 
-
-
-def check_code_unique(code):
-    return True
-
-
 def get_codes(key=None, code=None):
 
     table = boto3.resource("dynamodb").Table("lpa_codes")
