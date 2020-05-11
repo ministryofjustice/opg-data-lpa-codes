@@ -8,10 +8,10 @@ from lambda_functions.v1.functions.lpa_codes.app.api.code_generator import (
     update_codes,
     get_codes,
 )
-from lambda_functions.v1.tests.code_generator import test_cases_update_codes
+from lambda_functions.v1.tests.code_generator import cases_update_codes
 
 
-@cases_data(module=test_cases_update_codes)
+@cases_data(module=cases_update_codes)
 def test_update_codes_by_key(mock_database, case_data: CaseDataGetter):
     test_data, key, code, status, expected_result = case_data.get()
 
