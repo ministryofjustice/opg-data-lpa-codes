@@ -8,12 +8,11 @@ import os
 from lambda_functions.v1.functions.lpa_codes.app.api import code_generator
 
 
-@pytest.fixture()
-def mock_unique_code(monkeypatch):
-    def unique_true(*args, **kwargs):
-        return False
-
-    monkeypatch.setattr(code_generator, "check_code_unique", unique_true)
+@pytest.fixture(params=[True, False])
+def mock_unique_code(monkeypatch, request):
+    monkeypatch.setattr(
+        code_generator, "check_code_unique", lambda check_result: request.param
+    )
 
 
 @pytest.fixture(scope="session")
