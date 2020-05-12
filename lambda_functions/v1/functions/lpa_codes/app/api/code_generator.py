@@ -1,7 +1,56 @@
 import datetime
+import secrets
 
 import boto3
 from boto3.dynamodb.conditions import Key, Attr
+from .helpers import custom_logger
+
+logger = custom_logger("code generator")
+
+
+def generate_code():
+    """
+    Generates a 12-digit alphanumeric code containing no ambiguous characters.
+    Codes should be unique.
+    Codes should not be reused.
+
+    Returns:
+        string
+    """
+    acceptable_characters = "23456789abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ"
+
+    unique = False
+    attempts = 0
+    max_attempts = 10
+
+    while unique is not True:
+        new_code = "".join(secrets.choice(acceptable_characters) for i in range(0, 12))
+        # unique = check_code_unique(new_code)
+        unique = True
+        attempts += 1
+        if attempts == max_attempts:
+            logger.error("Unable to generate unique code - failed after 10 attempts")
+            new_code = None
+            break
+    return new_code
+
+
+def check_code_unique(code):
+    """
+    Check the new code we've generated has not been used before
+    Args:
+        code: string
+
+    Returns:
+        boolean
+    """
+    response = get_codes(code=code)
+
+    print(f"response: {response}")
+
+    if len(response) == 0:
+        return True
+    return False
 
 
 def get_codes(key=None, code=None):
@@ -20,7 +69,7 @@ def get_codes(key=None, code=None):
             codes.append(query_result["Item"])
         except KeyError:
             # TODO better error handling here
-            print("code does not exist")
+            logger.info("Code does not exist in database")
 
     elif key:
         lpa = key["lpa"]
@@ -36,7 +85,7 @@ def get_codes(key=None, code=None):
             codes.extend(query_result["Items"])
         else:
             # TODO better error handling here
-            print("key does not exist")
+            logger.info("LPA/actor does not exist in database")
 
     return codes
 
@@ -61,5 +110,26 @@ def update_codes(key=None, code=None, status=False):
             )
 
             updated_rows += 1
-
+    logger.info(f"{updated_rows} rows updated for LPA/Actor")
     return updated_rows
+
+
+def insert_new_code(key, code):
+
+    table = boto3.resource("dynamodb").Table("lpa_codes")
+    lpa = key["lpa"]
+    actor = key["actor"]
+
+    table.put_item(
+        Item={
+            "lpa": lpa,
+            "actor": actor,
+            "code": code,
+            "active": True,
+            "last_updated_date": datetime.datetime.now().strftime("%d/%m/%Y"),
+        }
+    )
+
+    inserted_item = get_codes(code=code)
+
+    return inserted_item

@@ -8,23 +8,18 @@ from lambda_functions.v1.functions.lpa_codes.app.api.code_generator import (
     update_codes,
     get_codes,
 )
-from lambda_functions.v1.tests.code_generator import test_cases_update_codes
+from lambda_functions.v1.tests.code_generator import cases_update_codes
+from lambda_functions.v1.tests.code_generator.conftest import (
+    insert_test_data,
+    remove_test_data,
+)
 
 
-@cases_data(module=test_cases_update_codes)
+@cases_data(module=cases_update_codes)
 def test_update_codes_by_key(mock_database, case_data: CaseDataGetter):
     test_data, key, code, status, expected_result = case_data.get()
 
-    # TODO this could be a fixture
-    # Set up test data
-    table = boto3.resource("dynamodb").Table("lpa_codes")
-    number_of_rows = len(test_data)
-    for row in test_data:
-        table.put_item(Item=row)
-
-    # Check test data has been inserted as expected
-    before_test_data = get_codes(key=key, code=code)
-    assert len(before_test_data) == number_of_rows
+    before_test_data = insert_test_data(test_data=test_data)
 
     # Set some expectations
     should_get_updated = [r["code"] for r in before_test_data if r["active"] != status]
@@ -46,11 +41,4 @@ def test_update_codes_by_key(mock_database, case_data: CaseDataGetter):
 
     assert test_result == expected_result
 
-    # TODO this could be a fixture
-    # Tidy up test data
-    for row in test_data:
-        table.delete_item(Key=row)
-
-    after_tidyup_data = get_codes(key=key, code=code)
-
-    assert len(after_tidyup_data) == 0
+    remove_test_data(test_data)
