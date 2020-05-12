@@ -2,4 +2,3 @@ connexion
 swagger-ui-bundle
 requests
 boto3
-moto

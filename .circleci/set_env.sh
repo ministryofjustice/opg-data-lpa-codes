@@ -6,6 +6,7 @@ PACT_PROVIDER="lpa-codes"
 PACT_CONSUMER="sirius"
 SIRIUS_GITHUB_URL="api.github.com/repos/ministryofjustice/opg-sirius"
 ACCOUNT="997462338508"
+ENVIRONMENT="ci"
 
 export SECRET_STRING=$(aws sts assume-role \
 --role-arn "arn:aws:iam::${ACCOUNT}:role/get-pact-secret-production" \

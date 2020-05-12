@@ -1,0 +1,25 @@
+---
+openapi: '3.0.2'
+info:
+  title: state-${environment}
+  version: '1.0'
+servers:
+  - url: /state
+    description: state path to update local db
+paths:
+  /dynamodb:
+    post:
+      summary: "Setup Dynamodb"
+      description: "Creates empty table in dynamodb"
+      operationId: lpa_codes_mock.setup_dynamodb_table
+      responses:
+        201:
+          description: "Table created"
+  /state:
+    post:
+      summary: "Update state in dynamodb"
+      description: "Endpoint to update the state in dynamodb dependent on what pact verification sends"
+      operationId: lpa_codes_mock.update_state
+      responses:
+        201:
+          description: "Row inserted"

@@ -1,0 +1,64 @@
+{
+  "consumer": {
+    "name": "sirius"
+  },
+  "provider": {
+    "name": "lpa-codes"
+  },
+  "interactions": [
+    {
+      "_id": "9e10b3b49a49136a8191ff461795c9dd7f0645ea",
+      "description": "A code creation",
+      "request": {
+        "method": "POST",
+        "path": "/v1/create",
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          	"lpas": [
+              {
+                "lpa": "eed4f597-fd87-4536-99d0-895778824861",
+                "actor": "12ad81a9-f89d-4804-99f5-7c0c8669ac9b",
+                "dob": "1960-06-05"
+              }
+            ]
+        },
+        "matchingRules": {
+          "$.body.lpas.lpa": {
+            "match": "regex",
+            "regex": "^([\\+-]?\\d{4}(?!\\d{2}\\b))((-?)((0[1-9]|1[0-2])(\\3([12]\\d|0[1-9]|3[01]))?|W([0-4]\\d|5[0-2])(-?[1-7])?|(00[1-9]|0[1-9]\\d|[12]\\d{2}|3([0-5]\\d|6[1-6])))?)$"
+          },
+          "$.body.lpas.actor": {
+            "match": "regex",
+            "regex": "^([\\+-]?\\d{4}(?!\\d{2}\\b))((-?)((0[1-9]|1[0-2])(\\3([12]\\d|0[1-9]|3[01]))?|W([0-4]\\d|5[0-2])(-?[1-7])?|(00[1-9]|0[1-9]\\d|[12]\\d{2}|3([0-5]\\d|6[1-6])))?)$"
+          },
+          "$.body.lpas.dob": {
+            "match": "type"
+          }
+        }
+      },
+      "response": {
+        "status": 201,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "id": "33ea0382-cfc9-4776-9036-667eeb68fa4b"
+        },
+        "matchingRules": {
+          "$.body.id": {
+            "match": "regex",
+            "regex": "^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$"
+          }
+        }
+      }
+    }
+  ],
+  "metadata": {
+    "pactSpecification": {
+      "version": "2.0.0"
+    }
+  },
+  "createdAt": "2020-05-12T13:10:34+00:00"
+}

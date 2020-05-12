@@ -271,7 +271,6 @@ jobs:
     docker:
       # Primary container image where all the steps run.
       - image: circleci/python:3.8.1
-
       # Service container image made available to the primary container at `host: localhost`
       - image: amazon/dynamodb-local:latest
         entrypoint: ["java", "-Xmx1G", "-jar", "DynamoDBLocal.jar"]
@@ -287,14 +286,14 @@ jobs:
           command: ~/project/.circleci/set_env.sh >> $BASH_ENV
       - run:
           name: install requirements mock rest api
-          working_directory: ~/project/mock_integration_rest_api
-          command: pip3 install -r requirements.txt
+          working_directory: ~/project/lambda_functions/"${API_VERSION}"/requirements
+          command: pip3 install -r pact-requirements.txt
       - run:
           name: spin up mock rest api
-          working_directory: ~/project/mock_integration_rest_api
+          working_directory: ~/project/lambda_functions/"${API_VERSION}"/functions/lpa_codes/app
           command: |
             export PYTHONPATH="${PYTHONPATH}:/home/circleci/project"
-            python3 app.py
+            python3 lpa_codes_mock.py
           background: true
       - run:
           name: check mock rest api started
@@ -307,28 +306,18 @@ jobs:
             echo "LPA Codes Rest API Service Not Started"
             fi
       - run:
-          name: spin up flask app
-          working_directory: ~/project/lambda_functions/${API_VERSION}/functions/lpa_codes/app
-          command: |
-            export PYTHONPATH="${PYTHONPATH}:/home/circleci/project"
-            source /home/circleci/project/.env_local
-            flask run
-          background: true
-      - run:
-          name: check flask app is running
-          command: |
-            sleep 3
-            if [ `netstat -tulpn | grep 5000 | wc -l` -gt 0 ]
-            then
-            echo "LPA Codes Flask App Service Started Correctly"
-            else
-            echo "LPA Codes Flask App Not Started"
-            fi
-      - run:
           name: Set up ready for pact tests
           command: |
             wget https://github.com/pact-foundation/pact-ruby-standalone/releases/download/v1.82.3/pact-1.82.3-linux-x86_64.tar.gz
             tar xzf pact-1.82.3-linux-x86_64.tar.gz
+      - run:
+          name: Run the create table endpoint
+          command: curl -X POST http://localhost:4343/state/dynamodb
+      - run:
+          name: Set up the data in tables
+          command: |
+            curl -X POST -d '{"consumer": "sirius", "state": "generated code exists and active"}' \
+            -H 'Content-Type: application/json' http://localhost:4343/state/state
       - run:
           name: verify pact and update github
           command: |

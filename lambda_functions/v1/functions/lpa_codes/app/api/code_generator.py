@@ -1,6 +1,6 @@
 import datetime
 import secrets
-
+import os
 import boto3
 from boto3.dynamodb.conditions import Key, Attr
 from .helpers import custom_logger
@@ -53,9 +53,19 @@ def check_code_unique(code):
     return False
 
 
+def get_dynamodb():
+    environment = os.environ["ENVIRONMENT"]
+    if environment == "local" or environment == "ci":
+        return boto3.resource(
+            "dynamodb", endpoint_url="http://localhost:8000", region_name="eu-west-1"
+        )
+    else:
+        return boto3.resource("dynamodb")
+
+
 def get_codes(key=None, code=None):
 
-    table = boto3.resource("dynamodb").Table("lpa_codes")
+    table = get_dynamodb().Table("lpa_codes")
     return_fields = "lpa, actor, code, active, last_updated_date"
 
     codes = []
@@ -92,7 +102,7 @@ def get_codes(key=None, code=None):
 
 def update_codes(key=None, code=None, status=False):
 
-    table = boto3.resource("dynamodb").Table("lpa_codes")
+    table = get_dynamodb().Table("lpa_codes")
 
     entries = get_codes(key=key, code=code)
 
