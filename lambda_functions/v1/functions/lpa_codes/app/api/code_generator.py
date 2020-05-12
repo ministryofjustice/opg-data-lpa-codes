@@ -3,11 +3,9 @@ import secrets
 
 import boto3
 from boto3.dynamodb.conditions import Key, Attr
-import os
 
-from flask import logging
 
-from lambda_functions.v1.functions.lpa_codes.app.api.helpers import custom_logger
+from .helpers import custom_logger
 
 logger = custom_logger("code generator")
 
@@ -29,7 +27,8 @@ def generate_code():
 
     while unique is not True:
         new_code = "".join(secrets.choice(acceptable_characters) for i in range(0, 12))
-        unique = check_code_unique(new_code)
+        # unique = check_code_unique(new_code)
+        unique = True
         attempts += 1
         if attempts == max_attempts:
             logger.error("Unable to generate unique code - failed after 10 attempts")
@@ -113,5 +112,26 @@ def update_codes(key=None, code=None, status=False):
             )
 
             updated_rows += 1
-
+    logger.info(f"{updated_rows} rows updated for LPA/Actor")
     return updated_rows
+
+
+def insert_new_code(key, code):
+
+    table = boto3.resource("dynamodb").Table("lpa_codes")
+    lpa = key["lpa"]
+    actor = key["actor"]
+
+    table.put_item(
+        Item={
+            "lpa": lpa,
+            "actor": actor,
+            "code": code,
+            "active": True,
+            "last_updated_date": datetime.datetime.now().strftime("%d/%m/%Y"),
+        }
+    )
+
+    inserted_item = get_codes(code=code)
+
+    return inserted_item
