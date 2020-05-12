@@ -1,5 +1,5 @@
 data "local_file" "openapispec" {
-  filename = "../../docs/openapi/${var.api_name}-openapi-${var.openapi_version}.yml"
+  filename = "../../lambda_functions/${var.openapi_version}/openapi/lpa-codes-openapi-${var.openapi_version}.yml"
 }
 
 data "local_file" "lambda_version_folder_sha" {

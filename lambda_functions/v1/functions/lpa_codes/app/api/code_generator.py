@@ -55,7 +55,7 @@ def check_code_unique(code):
 
 def get_dynamodb():
     environment = os.environ["ENVIRONMENT"]
-    if environment == "local" or environment == "ci":
+    if environment == "ci":
         return boto3.resource(
             "dynamodb", endpoint_url="http://localhost:8000", region_name="eu-west-1"
         )
@@ -64,7 +64,6 @@ def get_dynamodb():
 
 
 def get_codes(key=None, code=None):
-
     table = get_dynamodb().Table("lpa_codes")
     return_fields = "lpa, actor, code, active, last_updated_date"
 
@@ -101,7 +100,6 @@ def get_codes(key=None, code=None):
 
 
 def update_codes(key=None, code=None, status=False):
-
     table = get_dynamodb().Table("lpa_codes")
 
     entries = get_codes(key=key, code=code)
@@ -125,8 +123,7 @@ def update_codes(key=None, code=None, status=False):
 
 
 def insert_new_code(key, code):
-
-    table = boto3.resource("dynamodb").Table("lpa_codes")
+    table = get_dynamodb().Table("lpa_codes")
     lpa = key["lpa"]
     actor = key["actor"]
 

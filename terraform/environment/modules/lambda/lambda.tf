@@ -26,6 +26,7 @@ resource "aws_lambda_function" "lambda_function" {
     variables = {
       LOGGER_LEVEL = var.logger_level
       API_VERSION  = var.openapi_version
+      ENVIRONMENT  = var.environment
     }
   }
   tracing_config {

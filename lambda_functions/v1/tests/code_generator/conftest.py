@@ -23,6 +23,7 @@ def aws_credentials():
     os.environ["AWS_SECURITY_TOKEN"] = "testing"
     os.environ["AWS_SESSION_TOKEN"] = "testing"
     os.environ["AWS_DEFAULT_REGION"] = "eu-west-1"
+    os.environ["ENVIRONMENT"] = "local"
 
 
 @pytest.fixture(scope="session", autouse=False)

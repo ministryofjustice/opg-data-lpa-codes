@@ -28,7 +28,7 @@ locals {
 
   //Modify for new version of API
   latest_openapi_version = "v1"
-  openapispec            = file("../../docs/openapi/${local.api_name}-openapi-${local.latest_openapi_version}.yml")
+  openapi_spec           = file("../../lambda_functions/${local.latest_openapi_version}/openapi/${local.api_name}-openapi-${local.latest_openapi_version}.yml")
 }
 
 //https://github.com/terraform-providers/terraform-provider-aws/issues/5364

@@ -286,12 +286,13 @@ jobs:
           command: ~/project/.circleci/set_env.sh >> $BASH_ENV
       - run:
           name: install requirements mock rest api
-          working_directory: ~/project/lambda_functions/"${API_VERSION}"/requirements
-          command: pip3 install -r pact-requirements.txt
+          command: |
+            cd ~/project/lambda_functions/${API_VERSION}/requirements
+            pip3 install -r pact-requirements.txt
       - run:
           name: spin up mock rest api
-          working_directory: ~/project/lambda_functions/"${API_VERSION}"/functions/lpa_codes/app
           command: |
+            cd ~/project/lambda_functions/"${API_VERSION}"/functions/lpa_codes/app
             export PYTHONPATH="${PYTHONPATH}:/home/circleci/project"
             python3 lpa_codes_mock.py
           background: true
