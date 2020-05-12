@@ -71,7 +71,7 @@ def get_codes(key=None, code=None):
             codes.append(query_result["Item"])
         except KeyError:
             # TODO better error handling here
-            logger.info(f"Code does not exist in database")
+            logger.info("Code does not exist in database")
 
     elif key:
         lpa = key["lpa"]
@@ -87,7 +87,7 @@ def get_codes(key=None, code=None):
             codes.extend(query_result["Items"])
         else:
             # TODO better error handling here
-            logger.info(f"LPA/actor does not exist in database")
+            logger.info("LPA/actor does not exist in database")
 
     return codes
 
