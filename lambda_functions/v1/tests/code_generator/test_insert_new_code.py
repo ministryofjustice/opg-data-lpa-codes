@@ -5,6 +5,7 @@ from lambda_functions.v1.functions.lpa_codes.app.api.code_generator import (
     insert_new_code,
 )
 from lambda_functions.v1.tests.code_generator import cases_insert_new_code
+from lambda_functions.v1.tests.code_generator.conftest import remove_test_data
 
 
 @cases_data(module=cases_insert_new_code)
@@ -16,3 +17,6 @@ def test_insert_new_code(mock_database, case_data: CaseDataGetter):
     print(f"result: {result}")
 
     assert result == expected_result
+
+
+    remove_test_data(expected_result)
