@@ -4,10 +4,10 @@ version: 2.1
 parameters:
   run_pull_request:
     type: boolean
-    default: true
+    default: false
   run_commit_to_master:
     type: boolean
-    default: true
+    default: false
   run_verify_pact:
     type: boolean
     default: true
@@ -267,7 +267,14 @@ jobs:
                   export TF_WORKSPACE=default
                   terraform workspace delete "${WORKSPACE_TO_DELETE}" || echo "no workspace to remove"
   pact_verification:
-    executor: lpa-codes/python_with_tfvars
+#    executor: lpa-codes/python_with_tfvars
+    docker:
+      # Primary container image where all the steps run.
+      - image: circleci/python:3.8.1
+
+      # Service container image made available to the primary container at `host: localhost`
+      - image: amazon/dynamodb-local:latest
+        entrypoint: ["java", "-Xmx1G", "-jar", "DynamoDBLocal.jar"]
     working_directory: ~/project
     parameters:
     environment:
