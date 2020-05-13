@@ -7,7 +7,7 @@
     entry: openapi-spec-validator
     description: Hook to validate Open API specs.
     language: python
-    files: .*openapi.*\.(json|yaml|yml)
+    files: .*lpa-codes-openapi.*\.(json|yaml|yml)
 #- repo: https://github.com/adrienverge/yamllint.git
 #  rev: v1.17.0
 #  hooks:

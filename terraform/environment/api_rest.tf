@@ -1,5 +1,5 @@
 data "template_file" "_" {
-  template = local.openapispec
+  template = local.openapi_spec
   vars     = local.api_template_vars
 }
 

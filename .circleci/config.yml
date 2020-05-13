@@ -1,6 +1,20 @@
 ---
 version: 2.1
 
+parameters:
+  run_pull_request:
+    type: boolean
+    default: false
+  run_commit_to_master:
+    type: boolean
+    default: false
+  run_verify_pact:
+    type: boolean
+    default: true
+  consumerversion:
+    type: string
+    default: ""
+
 workflows:
   pull_request:
     jobs:
@@ -66,6 +80,12 @@ workflows:
          type: approval
          requires: [preprod apply]
          filters: {branches:{only:[master]}}
+  verify_pact:
+    when: << pipeline.parameters.run_verify_pact >>
+    jobs:
+      - pact_verification:
+          name: verify the latest pact
+
 orbs:
   lpa-codes:
     executors:
@@ -109,6 +129,13 @@ orbs:
           - run:
               name: Install Terraform
               command: sudo unzip terraform_${TF_VERSION}_linux_amd64.zip -d /bin
+      aws_cli_install:
+        steps:
+          - run:
+              name: install aws cli
+              command: |
+                pip3 install awscli --upgrade --user
+                aws --version
 jobs:
   build_lambda:
     executor: lpa-codes/python
@@ -239,3 +266,84 @@ jobs:
                   echo "Switching workspace to default so we can remove branch workspace"
                   export TF_WORKSPACE=default
                   terraform workspace delete "${WORKSPACE_TO_DELETE}" || echo "no workspace to remove"
+  pact_verification:
+#    executor: lpa-codes/python_with_tfvars
+    docker:
+      # Primary container image where all the steps run.
+      - image: circleci/python:3.8.1
+      # Service container image made available to the primary container at `host: localhost`
+      - image: amazon/dynamodb-local:latest
+        entrypoint: ["java", "-Xmx1G", "-jar", "DynamoDBLocal.jar"]
+    working_directory: ~/project
+    parameters:
+    environment:
+      GIT_COMMIT_CONSUMER: << pipeline.parameters.consumerversion >>
+    steps:
+      - checkout
+      - lpa-codes/aws_cli_install
+      - run:
+          name: Set BASH_ENV
+          command: ~/project/.circleci/set_env.sh >> $BASH_ENV
+      - run:
+          name: install requirements mock rest api
+          command: |
+            cd ~/project/lambda_functions/${API_VERSION}/requirements
+            pip3 install -r pact-requirements.txt
+      - run:
+          name: spin up mock rest api
+          command: |
+            cd ~/project/lambda_functions/"${API_VERSION}"/functions/lpa_codes/app
+            export PYTHONPATH="${PYTHONPATH}:/home/circleci/project"
+            python3 lpa_codes_mock.py
+          background: true
+      - run:
+          name: check mock rest api started
+          command: |
+            sleep 3
+            if [ `netstat -tulpn | grep 4343 | wc -l` -gt 0 ]
+            then
+            echo "LPA Codes Rest API Service Started Correctly"
+            else
+            echo "LPA Codes Rest API Service Not Started"
+            fi
+      - run:
+          name: Set up ready for pact tests
+          command: |
+            wget https://github.com/pact-foundation/pact-ruby-standalone/releases/download/v1.82.3/pact-1.82.3-linux-x86_64.tar.gz
+            tar xzf pact-1.82.3-linux-x86_64.tar.gz
+      - run:
+          name: Run the create table endpoint
+          command: curl -X POST http://localhost:4343/state/dynamodb
+      - run:
+          name: Set up the data in tables
+          command: |
+            curl -X POST -d '{"consumer": "sirius", "state": "generated code exists and active"}' \
+            -H 'Content-Type: application/json' http://localhost:4343/state/state
+      - run:
+          name: verify pact and update github
+          command: |
+            export SCRIPT_PATH="/home/circleci/project/.circleci"
+            if [ "${GIT_COMMIT_CONSUMER}" == "" ]
+            then
+              printf "\n\nProcess kicked off by commit to lpa-codes\n\n"
+              if [ "$TF_WORKSPACE" != "development" ] && [ "$TF_WORKSPACE" != "preproduction" ] && [ "$TF_WORKSPACE" != "production" ]
+              then
+                printf "\n\nSetting CONSUMER_TRIGGERED to false\n\n"
+                export CONSUMER_TRIGGERED=false
+                printf "\n\nOn working branch, performing pact verification\n\n"
+                "${SCRIPT_PATH}"/pact_verifier.sh
+                printf "\n\nChecking if we can deploy with can-i-deploy\n\n"
+                "${SCRIPT_PATH}"/check_pact_deployable.sh
+              else
+                printf "\n\nOn master branch for lpa-codes, no need to perform verification\n\n"
+              fi
+            elif [ "${GIT_COMMIT_CONSUMER}" != "" ]
+            then
+              printf "\n\nSetting CONSUMER_TRIGGERED to true\n\n"
+              export CONSUMER_TRIGGERED=true
+              printf "Process kicked off by commit %b to sirius\n\n" "${CONSUMER_VER}"
+              printf "\n\nChecking if we can deploy with can-i-deploy\n\n"
+              "${SCRIPT_PATH}"/check_pact_deployable.sh
+            else
+              printf "\n\nSomething has gone wrong! Check what CONSUMER_VER is set to\n\n"
+            fi

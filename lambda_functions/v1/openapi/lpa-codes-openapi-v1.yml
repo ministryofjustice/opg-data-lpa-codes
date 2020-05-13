@@ -15,6 +15,7 @@ paths:
     get:
       summary: "Healthcheck endpoint"
       description: "Checks health of our lambda"
+      operationId: api.resources.handle_healthcheck
       security:
         - sigv4: []
       x-amazon-apigateway-request-validator: "all"
@@ -34,6 +35,7 @@ paths:
     post:
       summary: "Create a new code"
       description: "Create a new 12 digit alpha-numeric code unique to this LPA and Actor"
+      operationId: api.resources.handle_create
       security:
         - sigv4: []
       x-amazon-apigateway-request-validator: "all"
@@ -132,6 +134,7 @@ paths:
     post:
       summary: "Validate a code"
       description: "Validate a code"
+      operationId: api.resources.handle_validate
       security:
         - sigv4: []
       x-amazon-apigateway-request-validator: "all"
@@ -221,6 +224,7 @@ paths:
     post:
       summary: "Revoke a code"
       description: "Revoke a code"
+      operationId: api.resources.handle_revoke
       security:
         - sigv4: []
       x-amazon-apigateway-request-validator: "all"
@@ -303,6 +307,7 @@ components:
       name: Authorization
       in: header
       x-amazon-apigateway-authtype: awsSigv4
+      x-apikeyInfoFunc: lpa_codes_mock.apikey_auth
   schemas:
     CodeCreated:
       properties:
