@@ -1,6 +1,7 @@
 from lambda_functions.v1.functions.lpa_codes.app.api.lets_see_about_this import (
     handle_create,
 )
+from lambda_functions.v1.tests.conftest import remove_test_data
 
 
 def test_post(mock_database, mock_generate_code):
@@ -26,3 +27,5 @@ def test_post(mock_database, mock_generate_code):
     ]
 
     assert result == expected_response
+
+    remove_test_data(expected_response)

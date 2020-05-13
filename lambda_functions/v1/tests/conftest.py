@@ -6,6 +6,7 @@ from flask import request
 from moto import mock_dynamodb2
 import os
 
+
 from lambda_functions.v1.functions.lpa_codes.app.api import code_generator
 
 
@@ -110,8 +111,8 @@ def mock_database(aws_credentials):
 
         yield mock_db
 
-        # print("db teardown")
-        # table.delete()
+        print("db teardown")
+        table.delete()
 
 
 def insert_test_data(test_data):
