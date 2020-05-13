@@ -5,8 +5,19 @@ from lambda_functions.v1.functions.lpa_codes.app.api.helpers import (
     custom_logger,
     db_client,
 )
+import os
 
 logger = custom_logger("code generator")
+
+
+def get_dynamodb():
+    environment = os.environ["ENVIRONMENT"]
+    if environment == "ci":
+        return boto3.resource(
+            "dynamodb", endpoint_url="http://localhost:8000", region_name="eu-west-1"
+        )
+    else:
+        return boto3.resource("dynamodb")
 
 
 def handle_create(data):
@@ -16,7 +27,7 @@ def handle_create(data):
     json
     """
 
-    db_resource = boto3.resource("dynamodb")
+    db_resource = get_dynamodb()
 
     code_list = []
 
@@ -25,7 +36,7 @@ def handle_create(data):
         key = {"lpa": entry["lpa"], "actor": entry["actor"]}
 
         # 1. expire all existing codes for LPA/Actor combo
-        # code_generator.update_codes(database=database, key=key, status=False)
+        code_generator.update_codes(database=db_resource, key=key, status=False)
 
         # 2. generate a new code
         generated_code = code_generator.generate_code(database=db_resource)
