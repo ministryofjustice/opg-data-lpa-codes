@@ -10,13 +10,14 @@ def test_get_codes(mock_database, case_data: CaseDataGetter):
     test_data, code, key, expected_result, expected_result_count = case_data.get()
 
     # Set up test data
-    table = boto3.resource("dynamodb").Table("lpa_codes")
+    db = boto3.resource("dynamodb")
+    table = db.Table("lpa_codes")
 
     for row in test_data:
         table.put_item(Item=row)
 
     # Run test function
-    result = get_codes(code=code, key=key)
+    result = get_codes(database=db, code=code, key=key)
 
     for row in result:
 

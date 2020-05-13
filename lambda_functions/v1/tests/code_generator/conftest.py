@@ -10,9 +10,10 @@ from lambda_functions.v1.functions.lpa_codes.app.api import code_generator
 
 @pytest.fixture(params=[True, False])
 def mock_unique_code(monkeypatch, request):
-    monkeypatch.setattr(
-        code_generator, "check_code_unique", lambda check_result: request.param
-    )
+    def return_unique(*args, **kwargs):
+        return lambda check_result: request.param
+
+    monkeypatch.setattr(code_generator, "check_code_unique", return_unique)
 
 
 @pytest.fixture(scope="session")

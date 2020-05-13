@@ -1,12 +1,15 @@
 import logging
 
+import boto3
+
 from lambda_functions.v1.functions.lpa_codes.app.api.code_generator import generate_code
 
 
 def test_generate_code(mock_unique_code, caplog):
     unacceptable_characters = ["1", "0", "l", "o", "I", "O"]
 
-    new_code = generate_code()
+    db = None
+    new_code = generate_code(database=db)
 
     if new_code is not None:
         assert len(new_code) == 12
