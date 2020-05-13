@@ -44,6 +44,7 @@ def handle_create():
     logger.info("starting create endpoint")
 
     data = request.get_json()
+    database = db_client()
 
     logger.info(f"data: {data}")
 
@@ -52,7 +53,6 @@ def handle_create():
     for entry in data:
         key = {"lpa": entry["lpa"], "actor": entry["actor"]}
         logger.info(f"key: {key}")
-        database = db_client()
 
         # 1. expire all existing codes for LPA/Actor combo
         code_generator.update_codes(database=database, key=key, status=False)

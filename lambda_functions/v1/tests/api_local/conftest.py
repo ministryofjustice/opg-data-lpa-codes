@@ -1,3 +1,5 @@
+import random
+import string
 import threading
 import socket
 import time
@@ -10,6 +12,7 @@ from flask import Flask
 from moto import mock_dynamodb2
 
 from lambda_functions.v1.functions.lpa_codes.app import create_app
+from lambda_functions.v1.functions.lpa_codes.app.api import code_generator
 
 
 def get_open_port():
@@ -188,3 +191,11 @@ def create_database(aws_credentials):
 
     # print("db teardown")
     # table.delete()
+
+
+@pytest.fixture()
+def mock_generate_code(monkeypatch):
+    def generate_predictable_code(*args, **kwargs):
+        return "idFCGZIvjess"
+
+    monkeypatch.setattr(code_generator, "generate_code", generate_predictable_code)

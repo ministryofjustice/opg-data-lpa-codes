@@ -16,6 +16,14 @@ def mock_unique_code(monkeypatch, request):
     monkeypatch.setattr(code_generator, "check_code_unique", return_unique)
 
 
+@pytest.fixture()
+def mock_generate_code(monkeypatch):
+    def generate_predictable_code(*args, **kwargs):
+        return "idFCGZIvjess"
+
+    monkeypatch.setattr(code_generator, "generate_code", generate_predictable_code)
+
+
 @pytest.fixture(scope="session")
 def aws_credentials():
     """Mocked AWS Credentials for moto."""
