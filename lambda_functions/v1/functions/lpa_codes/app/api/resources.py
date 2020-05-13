@@ -1,10 +1,12 @@
 import boto3
+from flask import current_app as app
 from flask import Blueprint
 from flask import request, jsonify
 
 from . import code_generator
 from .errors import error_message
 from .helpers import custom_logger, db_client
+from .lets_see_about_this import handle_create
 
 logger = custom_logger("code generator")
 
@@ -35,51 +37,16 @@ def handle_healthcheck():
 
 
 @api.route("/create", methods=("GET", "POST"))
-def handle_create():
+def create_route():
     """
     Placeholder for create a code endpoint
     Returns:
     json
     """
-    logger.info("starting create endpoint")
 
-    data = request.get_json()
-    database = db_client()
+    result = handle_create(data=request.get_json())
 
-    logger.info(f"data: {data}")
-
-    code_list = []
-
-    for entry in data:
-        key = {"lpa": entry["lpa"], "actor": entry["actor"]}
-        logger.info(f"key: {key}")
-
-        # 1. expire all existing codes for LPA/Actor combo
-        code_generator.update_codes(database=database, key=key, status=False)
-
-        # 2. generate a new code
-        generated_code = code_generator.generate_code(database=database)
-        logger.info(f"generated_code: {generated_code}")
-
-        # 3. insert new code into database
-        new_code = code_generator.insert_new_code(
-            database=database, key=key, code=generated_code
-        )
-
-        logger.info(f"newcode: {new_code}")
-
-        # 4. return the new code in lambda payload
-        response = {
-            "lpa": entry["lpa"],
-            "actor": entry["actor"],
-            "code": new_code[0]["code"],
-        }
-
-        code_list.append(response)
-
-    logger.info(f"code_list: {code_list}")
-
-    return jsonify(code_list), 200
+    return jsonify(result), 200
 
 
 @api.route("/revoke", methods=("GET", "POST"))

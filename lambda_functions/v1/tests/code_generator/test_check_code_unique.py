@@ -7,7 +7,7 @@ from lambda_functions.v1.functions.lpa_codes.app.api.code_generator import (
     check_code_unique,
 )
 from lambda_functions.v1.tests.code_generator import cases_check_code_unique
-from lambda_functions.v1.tests.code_generator.conftest import (
+from lambda_functions.v1.tests.conftest import (
     insert_test_data,
     remove_test_data,
 )

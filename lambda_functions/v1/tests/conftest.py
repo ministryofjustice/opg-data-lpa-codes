@@ -2,6 +2,7 @@ import json
 
 import boto3
 import pytest
+from flask import request
 from moto import mock_dynamodb2
 import os
 
@@ -22,6 +23,23 @@ def mock_generate_code(monkeypatch):
         return "idFCGZIvjess"
 
     monkeypatch.setattr(code_generator, "generate_code", generate_predictable_code)
+
+
+@pytest.fixture()
+def fake_create_data(monkeypatch):
+    def create_data(*args, **kwargs):
+        print("fake post data")
+        data = [
+            {
+                "lpa": "this is my lpa",
+                "actor": "this is my actor",
+                "dob": "this is my dob",
+            }
+        ]
+
+        return data
+
+    monkeypatch.setattr(request, "get_json", create_data)
 
 
 @pytest.fixture(scope="session")
@@ -92,8 +110,8 @@ def mock_database(aws_credentials):
 
         yield mock_db
 
-        print("db teardown")
-        table.delete()
+        # print("db teardown")
+        # table.delete()
 
 
 def insert_test_data(test_data):
