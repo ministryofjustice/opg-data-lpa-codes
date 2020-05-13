@@ -1,5 +1,6 @@
 import os
 
+import boto3
 from pytest_cases import cases_data, CaseDataGetter
 
 from lambda_functions.v1.functions.lpa_codes.app.api.code_generator import get_codes
@@ -23,7 +24,8 @@ def test_get_codes(case_data: CaseDataGetter):
     #     table.put_item(Item=row)
 
     # Run test function
-    result = get_codes(code=code, key=key)
+    db = boto3.resource("dynamodb", endpoint_url=os.environ["DYNAMODB_URL"])
+    result = get_codes(database=db, code=code, key=key)
 
     # lpa = key["lpa"]
     # actor = key["actor"]

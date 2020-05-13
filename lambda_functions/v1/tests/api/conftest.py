@@ -67,11 +67,6 @@ def server():
     p.join(timeout=0.5)
 
 
-# @pytest.fixture(autouse=True)
-# def mock_env_setup(monkeypatch):
-#     monkeypatch.setenv("DYNAMODB_URL", "http://localhost:8000")
-
-
 @pytest.fixture(autouse=True)
 def aws_credentials():
     """Mocked AWS Credentials for moto."""

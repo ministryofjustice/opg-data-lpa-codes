@@ -1,10 +1,10 @@
+import boto3
 from flask import Blueprint
 from flask import request, jsonify
 
 from . import code_generator
 from .errors import error_message
-from .helpers import custom_logger
-
+from .helpers import custom_logger, db_client
 
 logger = custom_logger("code generator")
 
@@ -52,19 +52,21 @@ def handle_create():
     for entry in data:
         key = {"lpa": entry["lpa"], "actor": entry["actor"]}
         logger.info(f"key: {key}")
+        database = db_client()
 
         # 1. expire all existing codes for LPA/Actor combo
-        code_generator.update_codes(key=key, status=False)
+        code_generator.update_codes(database=database, key=key, status=False)
 
         # 2. generate a new code
-        generated_code = code_generator.generate_code()
+        generated_code = code_generator.generate_code(database=database)
+        logger.info(f"generated_code: {generated_code}")
 
         # 3. insert new code into database
-        new_code = code_generator.insert_new_code(key=key, code=generated_code)
+        new_code = code_generator.insert_new_code(
+            database=database, key=key, code=generated_code
+        )
 
-        logger.info(f"new code is this: {new_code}")
-        # new_code = {}
-        # new_code['code'] = 'this is code'
+        logger.info(f"newcode: {new_code}")
 
         # 4. return the new code in lambda payload
         response = {
@@ -74,6 +76,8 @@ def handle_create():
         }
 
         code_list.append(response)
+
+    logger.info(f"code_list: {code_list}")
 
     return jsonify(code_list), 200
 

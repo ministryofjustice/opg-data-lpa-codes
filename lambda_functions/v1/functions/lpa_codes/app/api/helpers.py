@@ -1,6 +1,8 @@
 import logging
 import os
 
+import boto3
+
 
 def custom_logger(name):
     formatter = logging.Formatter(
@@ -19,3 +21,7 @@ def custom_logger(name):
         logger.setLevel("INFO")
     logger.addHandler(handler)
     return logger
+
+
+def db_client():
+    return boto3.resource("dynamodb", endpoint_url="http://localhost:8000")

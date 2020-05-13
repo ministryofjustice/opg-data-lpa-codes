@@ -25,8 +25,7 @@ def generate_code():
 
     while unique is not True:
         new_code = "".join(secrets.choice(acceptable_characters) for i in range(0, 12))
-        # unique = check_code_unique(new_code)
-        unique = True
+        unique = check_code_unique(code=new_code)
         attempts += 1
         if attempts == max_attempts:
             logger.error("Unable to generate unique code - failed after 10 attempts")
