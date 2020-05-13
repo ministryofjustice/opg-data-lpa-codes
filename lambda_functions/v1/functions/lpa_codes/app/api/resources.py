@@ -1,7 +1,13 @@
 from flask import Blueprint
 from flask import request, jsonify
 
+from . import code_generator
 from .errors import error_message
+from .helpers import custom_logger
+
+
+logger = custom_logger("code generator")
+
 
 api = Blueprint("api", __name__)
 
@@ -18,7 +24,7 @@ def handle405(error=None):
 
 @api.app_errorhandler(500)
 def handle500(error=None):
-    return error_message(500, "Something went wrong")
+    return error_message(500, f"Something went wrong: {error}")
 
 
 @api.route("/healthcheck", methods=("HEAD", "GET"))
@@ -35,14 +41,41 @@ def handle_create():
     Returns:
     json
     """
+    logger.info("starting create endpoint")
 
-    response_message = {
-        "code": "example_code",
-        "status": "generated",
-        "id": "91d9860e-f759-4214-8ffa-bfd87a12a995",
-    }
+    data = request.get_json()
 
-    return jsonify(response_message), 501
+    logger.info(f"data: {data}")
+
+    code_list = []
+
+    for entry in data:
+        key = {"lpa": entry["lpa"], "actor": entry["actor"]}
+        logger.info(f"key: {key}")
+
+        # 1. expire all existing codes for LPA/Actor combo
+        code_generator.update_codes(key=key, status=False)
+
+        # 2. generate a new code
+        generated_code = code_generator.generate_code()
+
+        # 3. insert new code into database
+        new_code = code_generator.insert_new_code(key=key, code=generated_code)
+
+        logger.info(f"new code is this: {new_code}")
+        # new_code = {}
+        # new_code['code'] = 'this is code'
+
+        # 4. return the new code in lambda payload
+        response = {
+            "lpa": entry["lpa"],
+            "actor": entry["actor"],
+            "code": new_code[0]["code"],
+        }
+
+        code_list.append(response)
+
+    return jsonify(code_list), 200
 
 
 @api.route("/revoke", methods=("GET", "POST"))

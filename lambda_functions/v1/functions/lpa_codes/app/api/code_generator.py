@@ -85,8 +85,8 @@ def get_codes(key=None, code=None):
         actor = key["actor"]
         query_result = table.query(
             IndexName="key_index",
-            KeyConditionExpression=Key("lpa").eq(lpa),
-            FilterExpression=Attr("actor").eq(actor),
+            KeyConditionExpression=Key("lpa").eq(lpa) & Key("actor").eq(actor),
+            # FilterExpression=Attr("actor").eq(actor),
             ProjectionExpression=return_fields,
         )
 
