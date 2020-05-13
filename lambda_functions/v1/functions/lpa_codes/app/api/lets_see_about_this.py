@@ -33,7 +33,7 @@ def handle_create(data):
         # 3. insert new code into database
         new_code = code_generator.insert_new_code(
             database=db_resource, key=key, code=generated_code
-        )
+        )[0]["code"]
 
         # 4. return the new code in lambda payload
         response = {

@@ -1,7 +1,3 @@
-import pytest
-import requests
-from moto import mock_dynamodb2
-
 from lambda_functions.v1.functions.lpa_codes.app.api.lets_see_about_this import (
     handle_create,
 )
@@ -20,7 +16,6 @@ def test_post(mock_database, mock_generate_code):
     }
 
     result = handle_create(data=data)
-    print(f"result: {result}")
 
     expected_response = [
         {
