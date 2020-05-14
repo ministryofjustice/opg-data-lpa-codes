@@ -1,10 +1,7 @@
 import boto3
 
-from lambda_functions.v1.functions.lpa_codes.app.api import code_generator
-from lambda_functions.v1.functions.lpa_codes.app.api.helpers import (
-    custom_logger,
-    db_client,
-)
+from . import code_generator
+from .helpers import custom_logger
 import os
 
 logger = custom_logger("code generator")

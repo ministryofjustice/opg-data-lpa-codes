@@ -25,3 +25,10 @@ def custom_logger(name):
 
 def db_client():
     return boto3.resource("dynamodb", endpoint_url="http://localhost:8000")
+
+
+def db_tables():
+    logger = custom_logger("helpers")
+
+    logger.info("real table name generator")
+    return f"lpa-codes-{os.environ['ENVIRONMENT']}"

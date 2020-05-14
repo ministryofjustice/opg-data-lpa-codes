@@ -3,10 +3,10 @@ import secrets
 import os
 import boto3
 from boto3.dynamodb.conditions import Key, Attr
-from .helpers import custom_logger
+from .helpers import custom_logger, db_tables
 
 logger = custom_logger("code generator")
-codes_table = "lpa_codes"
+codes_table = db_tables()
 
 
 def generate_code(database):
