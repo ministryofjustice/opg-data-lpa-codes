@@ -5,7 +5,7 @@ from flask import request, jsonify
 
 from . import code_generator
 from .errors import error_message
-from .helpers import custom_logger, db_client
+from .helpers import custom_logger
 from .lets_see_about_this import handle_create
 
 logger = custom_logger("code generator")

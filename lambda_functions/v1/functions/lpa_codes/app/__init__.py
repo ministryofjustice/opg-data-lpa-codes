@@ -5,6 +5,4 @@ def create_app(Flask):
 
     app.register_blueprint(api_blueprint)
 
-    app.config["TESTING"] = False
-
     return app

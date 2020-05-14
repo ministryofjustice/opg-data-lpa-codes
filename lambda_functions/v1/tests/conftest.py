@@ -1,5 +1,3 @@
-import json
-
 import boto3
 import pytest
 from flask import request
@@ -7,14 +5,17 @@ from moto import mock_dynamodb2
 import os
 
 
-from lambda_functions.v1.functions.lpa_codes.app.api import code_generator, helpers
+from lambda_functions.v1.functions.lpa_codes.app.api import (
+    code_generator,
+    lets_see_about_this,
+)
 
 
-# @pytest.fixture(autouse=True)
-# def mock_env_setup(monkeypatch):
-#     monkeypatch.setenv("LOGGER_LEVEL", "DEBUG")
-#     monkeypatch.setenv("ENVIRONMENT", "local")
-#
+@pytest.fixture(autouse=True)
+def mock_env_setup(monkeypatch):
+    monkeypatch.setenv("LOGGER_LEVEL", "DEBUG")
+    monkeypatch.setenv("ENVIRONMENT", "local")
+    monkeypatch.setenv("API_VERSION", "testing")
 
 
 @pytest.fixture(params=[True, False])
@@ -34,11 +35,15 @@ def mock_generate_code(monkeypatch):
 
 
 @pytest.fixture(autouse=True)
-def mock_db_tables(monkeypatch):
-    def generate_table_names(*args, **kwargs):
-        return "lpa-codes-local-testing"
+def mock_db_connection(monkeypatch):
+    def moto_db_connection(*args, **kwargs):
+        return boto3.resource("dynamodb")
 
-    monkeypatch.setattr(helpers, "db_tables", generate_table_names)
+    monkeypatch.setattr(lets_see_about_this, "db_connection", moto_db_connection)
+
+
+def mock_db_table_name():
+    return "lpa_codes"
 
 
 @pytest.fixture()
@@ -73,9 +78,10 @@ def mock_database(aws_credentials):
     with mock_dynamodb2():
         print("db setup")
         mock_db = boto3.resource("dynamodb")
+        table_name = mock_db_table_name()
 
         table = mock_db.create_table(
-            TableName="lpa-codes-local",
+            TableName=table_name,
             KeySchema=[{"AttributeName": "code", "KeyType": "HASH"}],
             AttributeDefinitions=[
                 {"AttributeName": "code", "AttributeType": "S"},

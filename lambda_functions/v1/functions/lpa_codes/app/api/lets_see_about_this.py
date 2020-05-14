@@ -4,17 +4,16 @@ from . import code_generator
 from .helpers import custom_logger
 import os
 
-logger = custom_logger("code generator")
+logger = custom_logger()
 
 
-def get_dynamodb():
-    environment = os.environ["ENVIRONMENT"]
-    if environment == "ci":
-        return boto3.resource(
-            "dynamodb", endpoint_url="http://localhost:8000", region_name="eu-west-1"
-        )
+def db_connection():
+    if os.environ.get("ENVIRONMENT") in ["ci", "local"]:
+        conn = boto3.resource("dynamodb", endpoint_url="http://localhost:8000")
     else:
-        return boto3.resource("dynamodb")
+        conn = boto3.resource("dynamodb")
+
+    return conn
 
 
 def handle_create(data):
@@ -24,7 +23,7 @@ def handle_create(data):
     json
     """
 
-    db_resource = get_dynamodb()
+    db = db_connection()
 
     code_list = []
 
@@ -33,14 +32,14 @@ def handle_create(data):
         key = {"lpa": entry["lpa"], "actor": entry["actor"]}
 
         # 1. expire all existing codes for LPA/Actor combo
-        code_generator.update_codes(database=db_resource, key=key, status=False)
+        code_generator.update_codes(database=db, key=key, status=False)
 
         # 2. generate a new code
-        generated_code = code_generator.generate_code(database=db_resource)
+        generated_code = code_generator.generate_code(database=db)
 
         # 3. insert new code into database
         new_code = code_generator.insert_new_code(
-            database=db_resource, key=key, code=generated_code
+            database=db, key=key, code=generated_code
         )[0]["code"]
 
         # 4. return the new code in lambda payload
