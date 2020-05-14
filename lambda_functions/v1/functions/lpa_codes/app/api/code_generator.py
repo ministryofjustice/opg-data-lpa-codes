@@ -8,7 +8,7 @@ from .helpers import custom_logger
 logger = custom_logger()
 
 lpa_codes_table = (
-    f"lpa_codes_{os.environ.get('ENVIRONMENT')}"
+    f"lpa-codes-{os.environ.get('ENVIRONMENT')}"
     if os.environ.get("ENVIRONMENT")
     else "lpa_codes"
 )
@@ -99,6 +99,10 @@ def update_codes(database, key=None, code=None, status=False):
 
     table = database.Table(lpa_codes_table)
     entries = get_codes(database=database, key=key, code=code)
+    logger.info(f"entries: {entries}")
+    if len(entries) == 0:
+        logger.info(f"0 rows updated for LPA/Actor")
+        return 0
 
     updated_rows = 0
     for entry in entries:
