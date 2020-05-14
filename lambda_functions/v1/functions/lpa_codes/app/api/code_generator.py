@@ -5,10 +5,16 @@ import boto3
 from boto3.dynamodb.conditions import Key, Attr
 from .helpers import custom_logger
 
-logger = custom_logger("code generator")
+logger = custom_logger()
+
+lpa_codes_table = (
+    f"lpa-codes-{os.environ.get('ENVIRONMENT')}"
+    if os.environ.get("ENVIRONMENT")
+    else "lpa_codes"
+)
 
 
-def generate_code():
+def generate_code(database):
     """
     Generates a 12-digit alphanumeric code containing no ambiguous characters.
     Codes should be unique.
@@ -25,8 +31,7 @@ def generate_code():
 
     while unique is not True:
         new_code = "".join(secrets.choice(acceptable_characters) for i in range(0, 12))
-        # unique = check_code_unique(new_code)
-        unique = True
+        unique = check_code_unique(database=database, code=new_code)
         attempts += 1
         if attempts == max_attempts:
             logger.error("Unable to generate unique code - failed after 10 attempts")
@@ -35,7 +40,7 @@ def generate_code():
     return new_code
 
 
-def check_code_unique(code):
+def check_code_unique(database, code):
     """
     Check the new code we've generated has not been used before
     Args:
@@ -44,7 +49,7 @@ def check_code_unique(code):
     Returns:
         boolean
     """
-    response = get_codes(code=code)
+    response = get_codes(database=database, code=code)
 
     print(f"response: {response}")
 
@@ -53,18 +58,10 @@ def check_code_unique(code):
     return False
 
 
-def get_dynamodb():
-    environment = os.environ["ENVIRONMENT"]
-    if environment == "ci":
-        return boto3.resource(
-            "dynamodb", endpoint_url="http://localhost:8000", region_name="eu-west-1"
-        )
-    else:
-        return boto3.resource("dynamodb")
+def get_codes(database, key=None, code=None):
 
+    table = database.Table(lpa_codes_table)
 
-def get_codes(key=None, code=None):
-    table = get_dynamodb().Table("lpa_codes")
     return_fields = "lpa, actor, code, active, last_updated_date"
 
     codes = []
@@ -85,8 +82,7 @@ def get_codes(key=None, code=None):
         actor = key["actor"]
         query_result = table.query(
             IndexName="key_index",
-            KeyConditionExpression=Key("lpa").eq(lpa),
-            FilterExpression=Attr("actor").eq(actor),
+            KeyConditionExpression=Key("lpa").eq(lpa) & Key("actor").eq(actor),
             ProjectionExpression=return_fields,
         )
 
@@ -99,10 +95,14 @@ def get_codes(key=None, code=None):
     return codes
 
 
-def update_codes(key=None, code=None, status=False):
-    table = get_dynamodb().Table("lpa_codes")
+def update_codes(database, key=None, code=None, status=False):
 
-    entries = get_codes(key=key, code=code)
+    table = database.Table(lpa_codes_table)
+    entries = get_codes(database=database, key=key, code=code)
+    logger.info(f"entries: {entries}")
+    if len(entries) == 0:
+        logger.info(f"0 rows updated for LPA/Actor")
+        return 0
 
     updated_rows = 0
     for entry in entries:
@@ -122,8 +122,9 @@ def update_codes(key=None, code=None, status=False):
     return updated_rows
 
 
-def insert_new_code(key, code):
-    table = get_dynamodb().Table("lpa_codes")
+def insert_new_code(database, key, code):
+
+    table = database.Table(lpa_codes_table)
     lpa = key["lpa"]
     actor = key["actor"]
 
@@ -137,6 +138,6 @@ def insert_new_code(key, code):
         }
     )
 
-    inserted_item = get_codes(code=code)
+    inserted_item = get_codes(database, code=code)
 
     return inserted_item

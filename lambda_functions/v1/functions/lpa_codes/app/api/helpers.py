@@ -2,9 +2,10 @@ import logging
 import os
 
 
-def custom_logger(name):
+def custom_logger(name=None):
+    logger_name = name if name else "lpa_code_generator"
     formatter = logging.Formatter(
-        fmt=f"%(asctime)s - %(levelname)s - {name} - in %("
+        fmt=f"%(asctime)s - %(levelname)s - {logger_name} - in %("
         f"funcName)s:%(lineno)d - %(message)s"
     )
 

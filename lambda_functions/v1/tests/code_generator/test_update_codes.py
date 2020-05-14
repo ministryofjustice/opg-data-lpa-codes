@@ -9,7 +9,7 @@ from lambda_functions.v1.functions.lpa_codes.app.api.code_generator import (
     get_codes,
 )
 from lambda_functions.v1.tests.code_generator import cases_update_codes
-from lambda_functions.v1.tests.code_generator.conftest import (
+from lambda_functions.v1.tests.conftest import (
     insert_test_data,
     remove_test_data,
 )
@@ -27,11 +27,12 @@ def test_update_codes_by_key(mock_database, case_data: CaseDataGetter):
     last_updated_date_should_be = datetime.datetime.now().strftime("%d/%m/%Y")
 
     # Run test function
-    test_result = update_codes(key=key, code=code, status=status)
+    db = boto3.resource("dynamodb")
+    test_result = update_codes(database=db, key=key, code=code, status=status)
 
     # Test db contents after function
 
-    after_test_data = get_codes(key=key, code=code)
+    after_test_data = get_codes(database=db, key=key, code=code)
 
     for row in after_test_data:
         assert isinstance(row["active"], bool)

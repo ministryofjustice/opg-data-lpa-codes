@@ -1,7 +1,15 @@
+import boto3
+from flask import current_app as app
 from flask import Blueprint
 from flask import request, jsonify
 
+from . import code_generator
 from .errors import error_message
+from .helpers import custom_logger
+from .lets_see_about_this import handle_create
+
+logger = custom_logger("code generator")
+
 
 api = Blueprint("api", __name__)
 
@@ -18,7 +26,7 @@ def handle405(error=None):
 
 @api.app_errorhandler(500)
 def handle500(error=None):
-    return error_message(500, "Something went wrong")
+    return error_message(500, f"Something went wrong: {error}")
 
 
 @api.route("/healthcheck", methods=("HEAD", "GET"))
@@ -29,20 +37,16 @@ def handle_healthcheck():
 
 
 @api.route("/create", methods=("GET", "POST"))
-def handle_create():
+def create_route():
     """
     Placeholder for create a code endpoint
     Returns:
     json
     """
 
-    response_message = {
-        "code": "example_code",
-        "status": "generated",
-        "id": "91d9860e-f759-4214-8ffa-bfd87a12a995",
-    }
+    result = handle_create(data=request.get_json())
 
-    return jsonify(response_message), 501
+    return jsonify(result), 200
 
 
 @api.route("/revoke", methods=("GET", "POST"))

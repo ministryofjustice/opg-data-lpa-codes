@@ -68,7 +68,10 @@ data "aws_iam_policy_document" "lambda" {
       "dynamodb:UpdateTable",
     ]
 
-    resources = [var.dynamodb_table.arn]
+    resources = [
+      var.dynamodb_table.arn,
+      "${var.dynamodb_table.arn}/index/*"
+    ]
   }
 }
 

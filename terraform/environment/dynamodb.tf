@@ -1,8 +1,12 @@
 resource "aws_dynamodb_table" "lpa_codes" {
   name         = "lpa-codes-${local.environment}"
   billing_mode = "PAY_PER_REQUEST"
-  hash_key     = "lpa"
-  range_key    = "actor"
+  hash_key     = "code"
+
+  attribute {
+    name = "code"
+    type = "S"
+  }
 
   attribute {
     name = "lpa"
@@ -14,16 +18,11 @@ resource "aws_dynamodb_table" "lpa_codes" {
     type = "S"
   }
 
-  attribute {
-    name = "code"
-    type = "S"
-  }
-
   global_secondary_index {
-    name            = "identifier_index"
+    name            = "key_index"
     hash_key        = "actor"
-    range_key       = "code"
-    projection_type = "KEYS_ONLY"
+    range_key       = "lpa"
+    projection_type = "ALL"
   }
 
   point_in_time_recovery {

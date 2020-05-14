@@ -175,3 +175,31 @@ def case_update_single_active_codes_to_active() -> CaseData:
     expected_result = 0
 
     return test_data, key, code, status, expected_result
+
+
+@case_name("Try to update entries but key doesn't exist")
+def case_update_nonexistant_codes_to_active() -> CaseData:
+
+    test_data = [
+        {
+            "active": True,
+            "actor": "royalblue",
+            "code": "3XgMCwsiF2h2",
+            "expiry_date": "15/05/2020",
+            "generated_date": "16/05/2019",
+            "last_updated_date": "06/04/2020",
+            "lpa": "embrace_rich_initiatives",
+        }
+    ]
+
+    key = {
+        "lpa": "this_key_does_not_exist",
+        "actor": "neither_doess_this_actor",
+    }
+    code = None
+
+    status = False
+
+    expected_result = 0
+
+    return test_data, key, code, status, expected_result
