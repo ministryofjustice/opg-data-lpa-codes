@@ -6,7 +6,7 @@ from flask import request, jsonify
 from . import code_generator
 from .errors import error_message
 from .helpers import custom_logger
-from .lets_see_about_this import handle_create
+from .lets_see_about_this import handle_create, handle_validate
 
 logger = custom_logger("code generator")
 
@@ -67,17 +67,12 @@ def handle_revoke():
 
 
 @api.route("/validate", methods=("GET", "POST"))
-def handle_validate():
+def validate_route():
     """
     Placeholder for validate a code endpoint
     Returns:
     json
     """
+    result = handle_validate(data=request.get_json())
 
-    response_message = {
-        "code": "example_code",
-        "status": "valid",
-        "id": "7c94fd39-7680-43a8-ba25-7430760c52b3",
-    }
-
-    return jsonify(response_message), 501
+    return jsonify(result), 200
