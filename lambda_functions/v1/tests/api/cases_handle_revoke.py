@@ -22,7 +22,7 @@ def case_revoke_a_code_1() -> CaseData:
         "code": "jmABs6fFaNJG",
     }
 
-    expected_result = 1
+    expected_result = {"codes revoked": 1}
     expected_last_updated_date = datetime.datetime.now().strftime("%d/%m/%Y")
     return test_data, data, expected_result, expected_last_updated_date
 
@@ -45,7 +45,7 @@ def case_revoke_a_code_2() -> CaseData:
         "code": "jmABs6fFaNJG",
     }
 
-    expected_result = 0
+    expected_result = {"codes revoked": 0}
     expected_last_updated_date = "26/12/2019"
     return test_data, data, expected_result, expected_last_updated_date
 
@@ -68,6 +68,6 @@ def case_revoke_a_code_3() -> CaseData:
         "code": "not_a_code",
     }
 
-    expected_result = 0
+    expected_result = {"codes revoked": 0}
     expected_last_updated_date = "26/12/2019"
     return test_data, data, expected_result, expected_last_updated_date
