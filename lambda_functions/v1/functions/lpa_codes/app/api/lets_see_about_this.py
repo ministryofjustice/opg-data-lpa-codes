@@ -52,3 +52,38 @@ def handle_create(data):
         code_list.append(response)
 
     return code_list
+
+
+def handle_revoke(data):
+    db = db_connection()
+
+    update_result = code_generator.update_codes(database=db, code=data["code"])
+
+    return update_result
+
+
+def handle_validate(data):
+    db = db_connection()
+    code_to_test = data["code"]
+
+    code_details = code_generator.get_codes(database=db, code=code_to_test)
+
+    if len(code_details) != 1:
+        return (False, None)
+
+    data["active"] = True
+    test_code_details = data
+
+    valid_code_details = {
+        "code": code_details[0]["code"],
+        "dob": code_details[0]["dob"],
+        "lpa": code_details[0]["lpa"],
+        "active": code_details[0]["active"],
+    }
+
+    if dict(sorted(test_code_details.items())) == dict(
+        sorted(valid_code_details.items())
+    ):
+        return (True, code_details[0]["actor"])
+    else:
+        return (False, None)
