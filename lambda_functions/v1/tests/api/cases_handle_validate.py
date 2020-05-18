@@ -24,7 +24,7 @@ def case_validate_valid_code_1() -> CaseData:
         "code": "t39hg7zQdE59",
     }
 
-    expected_result = (True, "lightcyan")
+    expected_result = {"actor": "lightcyan"}
     return test_data, data, expected_result
 
 
@@ -49,7 +49,7 @@ def case_validate_valid_code_2() -> CaseData:
         "code": "t39hg7zQdE59",
     }
 
-    expected_result = (False, None)
+    expected_result = {"actor": None}
     return test_data, data, expected_result
 
 
@@ -73,7 +73,7 @@ def case_validate_non_existent_code() -> CaseData:
         "code": "YsSu4iAztUXm",
     }
 
-    expected_result = (False, None)
+    expected_result = {"actor": None}
     return test_data, data, expected_result
 
 
@@ -98,7 +98,7 @@ def case_validate_invalid_code_1() -> CaseData:
         "code": "t39hg7zQdE59",
     }
 
-    expected_result = (False, None)
+    expected_result = {"actor": None}
     return test_data, data, expected_result
 
 
@@ -119,5 +119,5 @@ def case_validate_invalid_code_2() -> CaseData:
 
     data = {"lpa": "not_the_right_lpa", "dob": "1960-06-05", "code": "t39hg7zQdE59"}
 
-    expected_result = (False, None)
+    expected_result = {"actor": None}
     return test_data, data, expected_result

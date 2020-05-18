@@ -1,31 +1,19 @@
 from lambda_functions.v1.functions.lpa_codes.app.api.lets_see_about_this import (
     handle_create,
 )
+
+from pytest_cases import CaseDataGetter, cases_data
+
+from lambda_functions.v1.tests.api import cases_handle_create
 from lambda_functions.v1.tests.conftest import remove_test_data
 
 
-def test_post(mock_database, mock_generate_code):
-
-    data = {
-        "lpas": [
-            {
-                "lpa": "eed4f597-fd87-4536-99d0-895778824861",
-                "actor": "12ad81a9-f89d-4804-99f5-7c0c8669ac9b",
-                "dob": "1960-06-05",
-            }
-        ]
-    }
+@cases_data(module=cases_handle_create)
+def test_post(mock_database, mock_generate_code, case_data: CaseDataGetter):
+    data, expected_result = case_data.get()
 
     result = handle_create(data=data)
 
-    expected_response = [
-        {
-            "actor": "12ad81a9-f89d-4804-99f5-7c0c8669ac9b",
-            "code": "idFCGZIvjess",
-            "lpa": "eed4f597-fd87-4536-99d0-895778824861",
-        }
-    ]
+    assert result == expected_result
 
-    assert result == expected_response
-
-    remove_test_data(expected_response)
+    remove_test_data(expected_result["codes"])

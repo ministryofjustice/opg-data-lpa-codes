@@ -6,7 +6,7 @@ from flask import request, jsonify
 from . import code_generator
 from .errors import error_message
 from .helpers import custom_logger
-from .lets_see_about_this import handle_create, handle_validate
+from .lets_see_about_this import handle_create, handle_validate, handle_revoke
 
 logger = custom_logger("code generator")
 
@@ -36,7 +36,7 @@ def handle_healthcheck():
     return jsonify(response_message), 200
 
 
-@api.route("/create", methods=("GET", "POST"))
+@api.route("/create", methods=("POST"))
 def create_route():
     """
     Placeholder for create a code endpoint
@@ -49,24 +49,20 @@ def create_route():
     return jsonify(result), 200
 
 
-@api.route("/revoke", methods=("GET", "POST"))
-def handle_revoke():
+@api.route("/revoke", methods=("POST"))
+def revoke_route():
     """
     Placeholder for revoke a code endpoint
     Returns:
     json
     """
 
-    response_message = {
-        "code": "example_code",
-        "status": "revoked",
-        "id": "33857363-76cb-4d7e-9f1f-740e04a5456d",
-    }
+    result = handle_revoke(data=request.get_json())
 
-    return jsonify(response_message), 501
+    return jsonify(result), 200
 
 
-@api.route("/validate", methods=("GET", "POST"))
+@api.route("/validate", methods=("POST"))
 def validate_route():
     """
     Placeholder for validate a code endpoint
