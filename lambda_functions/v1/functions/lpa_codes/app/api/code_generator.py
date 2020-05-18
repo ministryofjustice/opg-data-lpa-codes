@@ -62,7 +62,7 @@ def get_codes(database, key=None, code=None):
 
     table = database.Table(lpa_codes_table)
 
-    return_fields = "lpa, actor, code, active, last_updated_date"
+    return_fields = "lpa, actor, code, active, last_updated_date, dob"
 
     codes = []
 
