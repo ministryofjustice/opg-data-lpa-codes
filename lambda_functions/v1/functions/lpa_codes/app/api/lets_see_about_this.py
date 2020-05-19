@@ -50,8 +50,9 @@ def handle_create(data):
         }
 
         code_list.append(response)
+        logger.info(f"code_list: {code_list}")
 
-    return code_list
+    return {"codes": code_list}
 
 
 def handle_revoke(data):
@@ -59,7 +60,7 @@ def handle_revoke(data):
 
     update_result = code_generator.update_codes(database=db, code=data["code"])
 
-    return update_result
+    return {"codes revoked": update_result}
 
 
 def handle_validate(data):
@@ -69,7 +70,7 @@ def handle_validate(data):
     code_details = code_generator.get_codes(database=db, code=code_to_test)
 
     if len(code_details) != 1:
-        return (False, None)
+        return {"actor": None}
 
     data["active"] = True
     test_code_details = data
@@ -84,6 +85,6 @@ def handle_validate(data):
     if dict(sorted(test_code_details.items())) == dict(
         sorted(valid_code_details.items())
     ):
-        return (True, code_details[0]["actor"])
+        return {"actor": code_details[0]["actor"]}
     else:
-        return (False, None)
+        return {"actor": None}
