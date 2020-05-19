@@ -203,3 +203,56 @@ def case_update_nonexistant_codes_to_active() -> CaseData:
     expected_result = 0
 
     return test_data, key, code, status, expected_result
+
+
+@case_name("Try to update code but code doesn't exist")
+def case_update_single_codes_1() -> CaseData:
+
+    test_data = [
+        {
+            "active": True,
+            "actor": "mediumorchid",
+            "code": "yhfyAV6yhC7d",
+            "expiry_date": "05/11/2020",
+            "generated_date": "06/11/2019",
+            "last_updated_date": "09/02/2020",
+            "lpa": "target_bricks_and_clicks_convergence",
+        }
+    ]
+
+    key = None
+    code = "I_do_not_exist"
+
+    status = False
+
+    expected_result = 0
+
+    return test_data, key, code, status, expected_result
+
+
+@case_name("Set multiple existing codes to active")
+def case_update_multiple_codes_1() -> CaseData:
+
+    test_data = [
+        {
+            "active": True,
+            "actor": "royalblue",
+            "code": "3XgMCwsiF2h2",
+            "expiry_date": "15/05/2020",
+            "generated_date": "16/05/2019",
+            "last_updated_date": "06/04/2020",
+            "lpa": "embrace_rich_initiatives",
+        }
+    ]
+
+    key = {
+        "lpa": "embrace_rich_initiatives",
+        "actor": "royalblue",
+    }
+    code = None
+
+    status = True
+
+    expected_result = 0
+
+    return test_data, key, code, status, expected_result
