@@ -1,4 +1,4 @@
-from .flask_lambda import FlaskLambda
+from flask_lambda import FlaskLambda
 from . import create_app
 
 
