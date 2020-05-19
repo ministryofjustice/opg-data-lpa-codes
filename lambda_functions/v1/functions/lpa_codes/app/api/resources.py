@@ -1,12 +1,9 @@
-import boto3
-from flask import current_app as app
 from flask import Blueprint
 from flask import request, jsonify
 
-from . import code_generator
 from .errors import error_message
 from .helpers import custom_logger
-from .lets_see_about_this import handle_create, handle_validate, handle_revoke
+from .endpoints import handle_create, handle_validate, handle_revoke
 
 logger = custom_logger("code generator")
 

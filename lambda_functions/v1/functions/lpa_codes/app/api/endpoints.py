@@ -1,26 +1,11 @@
 import boto3
 
 from . import code_generator
+from .database import db_connection
 from .helpers import custom_logger
 import os
 
 logger = custom_logger()
-
-
-def db_connection():
-
-    if os.environ.get("ENVIRONMENT") in ["ci", "local"]:
-        if os.environ.get("LOCAL_URL"):
-            url = "host.docker.internal"
-        else:
-            url = "localhost"
-        conn = boto3.resource(
-            "dynamodb", endpoint_url="http://" + url + ":8000", region_name="eu-west-1"
-        )
-    else:
-        conn = boto3.resource("dynamodb")
-
-    return conn
 
 
 def handle_create(data):

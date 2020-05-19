@@ -3,14 +3,9 @@ import secrets
 import os
 from boto3.dynamodb.conditions import Key, Attr
 from .helpers import custom_logger
+from .database import lpa_codes_table
 
 logger = custom_logger()
-
-lpa_codes_table = (
-    f"lpa-codes-{os.environ.get('ENVIRONMENT')}"
-    if os.environ.get("ENVIRONMENT")
-    else "lpa_codes"
-)
 
 
 def generate_code(database):
@@ -59,7 +54,7 @@ def check_code_unique(database, code):
 
 def get_codes(database, key=None, code=None):
 
-    table = database.Table(lpa_codes_table)
+    table = database.Table(lpa_codes_table())
 
     return_fields = "lpa, actor, code, active, last_updated_date, dob"
 
@@ -96,7 +91,7 @@ def get_codes(database, key=None, code=None):
 
 def update_codes(database, key=None, code=None, status=False):
 
-    table = database.Table(lpa_codes_table)
+    table = database.Table(lpa_codes_table())
     entries = get_codes(database=database, key=key, code=code)
     logger.info(f"entries: {entries}")
     if len(entries) == 0:
@@ -123,7 +118,7 @@ def update_codes(database, key=None, code=None, status=False):
 
 def insert_new_code(database, key, code):
 
-    table = database.Table(lpa_codes_table)
+    table = database.Table(lpa_codes_table())
     lpa = key["lpa"]
     actor = key["actor"]
 

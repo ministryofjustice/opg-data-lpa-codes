@@ -8,14 +8,14 @@ import string
 
 from lambda_functions.v1.functions.lpa_codes.app.api import (
     code_generator,
-    lets_see_about_this,
+    endpoints,
 )
 
 
 @pytest.fixture(autouse=True)
 def mock_env_setup(monkeypatch):
     monkeypatch.setenv("LOGGER_LEVEL", "DEBUG")
-    monkeypatch.setenv("ENVIRONMENT", "local")
+    monkeypatch.setenv("ENVIRONMENT", "mock")
     monkeypatch.setenv("API_VERSION", "testing")
 
 
@@ -41,7 +41,7 @@ def mock_db_connection(monkeypatch):
     def moto_db_connection(*args, **kwargs):
         return boto3.resource("dynamodb")
 
-    monkeypatch.setattr(lets_see_about_this, "db_connection", moto_db_connection)
+    monkeypatch.setattr(endpoints, "db_connection", moto_db_connection)
 
 
 def mock_db_table_name():
