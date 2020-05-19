@@ -1,5 +1,7 @@
 import datetime
 from copy import deepcopy
+import random
+import string
 
 from pytest_cases import CaseData, case_name, case_tags
 
@@ -17,13 +19,82 @@ def case_create_a_code_1() -> CaseData:
         ]
     }
 
+    code = "tOhkrldOqewm"
+
     expected_result = {
         "codes": [
             {
                 "lpa": "eed4f597-fd87-4536-99d0-895778824861",
                 "actor": "12ad81a9-f89d-4804-99f5-7c0c8669ac9b",
-                "code": "idFCGZIvjess",
+                "code": code,
             }
+        ]
+    }
+    return data, expected_result
+
+
+@case_name("Create multiple codes")
+def case_create_a_code_2() -> CaseData:
+
+    data = {
+        "lpas": [
+            {
+                "actor": "violet",
+                "dob": datetime.date(1966, 5, 21),
+                "lpa": "productize_out_of_the_box_portals",
+            },
+            {
+                "actor": "violet",
+                "dob": datetime.date(1988, 11, 21),
+                "lpa": "productize_out_of_the_box_portals",
+            },
+            {
+                "actor": "violet",
+                "dob": datetime.date(1969, 1, 28),
+                "lpa": "productize_out_of_the_box_portals",
+            },
+            {
+                "actor": "violet",
+                "dob": datetime.date(1967, 5, 11),
+                "lpa": "productize_out_of_the_box_portals",
+            },
+            {
+                "actor": "violet",
+                "dob": datetime.date(1967, 12, 10),
+                "lpa": "productize_out_of_the_box_portals",
+            },
+        ]
+    }
+
+    code = "tOhkrldOqewm"
+
+    expected_result = {
+        "codes": [
+            {
+                "actor": "violet",
+                "code": code,
+                "lpa": "productize_out_of_the_box_portals",
+            },
+            {
+                "actor": "violet",
+                "code": code,
+                "lpa": "productize_out_of_the_box_portals",
+            },
+            {
+                "actor": "violet",
+                "code": code,
+                "lpa": "productize_out_of_the_box_portals",
+            },
+            {
+                "actor": "violet",
+                "code": code,
+                "lpa": "productize_out_of_the_box_portals",
+            },
+            {
+                "actor": "violet",
+                "code": code,
+                "lpa": "productize_out_of_the_box_portals",
+            },
         ]
     }
     return data, expected_result

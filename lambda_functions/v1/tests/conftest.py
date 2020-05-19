@@ -3,7 +3,8 @@ import pytest
 from flask import request
 from moto import mock_dynamodb2
 import os
-
+import random
+import string
 
 from lambda_functions.v1.functions.lpa_codes.app.api import (
     code_generator,
@@ -29,7 +30,8 @@ def mock_unique_code(monkeypatch, request):
 @pytest.fixture()
 def mock_generate_code(monkeypatch):
     def generate_predictable_code(*args, **kwargs):
-        return "idFCGZIvjess"
+
+        return "tOhkrldOqewm"
 
     monkeypatch.setattr(code_generator, "generate_code", generate_predictable_code)
 
