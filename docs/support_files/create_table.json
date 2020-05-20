@@ -1,19 +1,19 @@
 {
 	"KeySchema": [{
-			"AttributeName": "ID",
+			"AttributeName": "ExampleFieldChangeMe1",
 			"KeyType": "HASH"
 		},
 		{
-			"AttributeName": "Name",
+			"AttributeName": "ExampleFieldChangeMe2",
 			"KeyType": "RANGE"
 		}
 	],
 	"AttributeDefinitions": [{
-			"AttributeName": "ID",
+			"AttributeName": "ExampleFieldChangeMe1",
 			"AttributeType": "N"
 		},
 		{
-			"AttributeName": "Name",
+			"AttributeName": "ExampleFieldChangeMe2",
 			"AttributeType": "S"
 		}
 
@@ -26,7 +26,7 @@
 			"Create": {
 				"IndexName": "first_index",
 				"KeySchema": [{
-					"AttributeName": "first_attr",
+					"AttributeName": "FirstAttr",
 					"KeyType": "HASH"
 				}],
 				"Projection": {
@@ -42,7 +42,7 @@
 			"Create": {
 				"IndexName": "second_index",
 				"KeySchema": [{
-					"AttributeName": "second_attr",
+					"AttributeName": "SecondAttr",
 					"KeyType": "HASH"
 				}],
 				"Projection": {

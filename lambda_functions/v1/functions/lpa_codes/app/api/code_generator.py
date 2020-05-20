@@ -1,7 +1,6 @@
 import datetime
 import secrets
 import os
-import boto3
 from boto3.dynamodb.conditions import Key, Attr
 from .helpers import custom_logger
 

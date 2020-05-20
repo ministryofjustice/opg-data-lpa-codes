@@ -1,7 +1,6 @@
 import connexion
 import boto3
 import os
-
 from botocore.exceptions import ClientError
 from flask import request, jsonify
 from connexion.exceptions import OAuthProblem
@@ -16,14 +15,6 @@ def apikey_auth(token, required_scopes):
         raise OAuthProblem("Invalid token")
 
     return info
-
-
-def aws_credentials():
-    os.environ["AWS_ACCESS_KEY_ID"] = "testing"
-    os.environ["AWS_SECRET_ACCESS_KEY"] = "testing"
-    os.environ["AWS_SECURITY_TOKEN"] = "testing"
-    os.environ["AWS_SESSION_TOKEN"] = "testing"
-    os.environ["AWS_DEFAULT_REGION"] = "eu-west-1"
 
 
 def dynamodb_connection(conn="resource"):
@@ -47,7 +38,6 @@ def dynamodb_connection(conn="resource"):
 
 
 def create_table_default():
-    aws_credentials()
     ddb = dynamodb_connection(conn="client")
     try:
         ddb.create_table(
@@ -82,7 +72,6 @@ def create_table_default():
 
 
 def create_table(table_name, body):
-    aws_credentials()
     ddb = dynamodb_connection(conn="client")
     try:
         table = ddb.create_table(
@@ -99,13 +88,11 @@ def create_table(table_name, body):
 
 
 def list_tables():
-    aws_credentials()
     ddb = dynamodb_connection(conn="client")
     return ddb.list_tables()
 
 
 def delete_table(table_name):
-    aws_credentials()
     ddb = dynamodb_connection(conn="client")
     params = {"TableName": table_name}
     try:
@@ -119,14 +106,14 @@ def delete_table(table_name):
 
 
 def clear_all():
-    aws_credentials()
     ddb = dynamodb_connection(conn="client")
     for table in ddb.list_tables()["TableNames"]:
         delete_table(table)
+    print("Tables to be destroyed: " + str(ddb.list_tables()))
+    return "All tables destroyed"
 
 
 def create_rows(table_name, body):
-    aws_credentials()
     table = dynamodb_connection(conn="resource").Table(table_name)
     count = 0
     for data in body["rows"]:
@@ -139,7 +126,6 @@ def create_rows(table_name, body):
 
 
 def delete_rows(table_name, body):
-    aws_credentials()
     table = dynamodb_connection(conn="resource").Table(table_name)
     count = 0
     for row in body["rows"]:
@@ -152,7 +138,6 @@ def delete_rows(table_name, body):
 
 
 def get_rows(table_name, body):
-    aws_credentials()
     table = dynamodb_connection(conn="resource").Table(table_name)
     response = table.get_item(Key=body)
     if "Item" in response:
@@ -162,7 +147,6 @@ def get_rows(table_name, body):
 
 
 def get_all_rows(table_name):
-    aws_credentials()
     table = dynamodb_connection(conn="resource").Table(table_name)
     all_rows = []
     response = table.scan()
@@ -173,7 +157,6 @@ def get_all_rows(table_name):
 
 # PACT Specific functions
 def update_state():
-    aws_credentials()
     mapping = {
         "generated code exists and active": setup_code_active,
         "generated code exists and not active": setup_code_not_active,
