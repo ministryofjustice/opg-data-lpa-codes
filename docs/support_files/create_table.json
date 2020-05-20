@@ -1,0 +1,58 @@
+{
+	"KeySchema": [{
+			"AttributeName": "ExampleFieldChangeMe1",
+			"KeyType": "HASH"
+		},
+		{
+			"AttributeName": "ExampleFieldChangeMe2",
+			"KeyType": "RANGE"
+		}
+	],
+	"AttributeDefinitions": [{
+			"AttributeName": "ExampleFieldChangeMe1",
+			"AttributeType": "N"
+		},
+		{
+			"AttributeName": "ExampleFieldChangeMe2",
+			"AttributeType": "S"
+		}
+
+	],
+	"ProvisionedThroughput": {
+		"ReadCapacityUnits": 5,
+		"WriteCapacityUnits": 5
+	},
+	"Indexes": [{
+			"Create": {
+				"IndexName": "first_index",
+				"KeySchema": [{
+					"AttributeName": "FirstAttr",
+					"KeyType": "HASH"
+				}],
+				"Projection": {
+					"ProjectionType": "ALL"
+				},
+				"ProvisionedThroughput": {
+					"ReadCapacityUnits": 5,
+					"WriteCapacityUnits": 5
+				}
+			}
+		},
+		{
+			"Create": {
+				"IndexName": "second_index",
+				"KeySchema": [{
+					"AttributeName": "SecondAttr",
+					"KeyType": "HASH"
+				}],
+				"Projection": {
+					"ProjectionType": "ALL"
+				},
+				"ProvisionedThroughput": {
+					"ReadCapacityUnits": 5,
+					"WriteCapacityUnits": 5
+				}
+			}
+		}
+	]
+}

@@ -1,7 +1,6 @@
 import datetime
 import secrets
 import os
-import boto3
 from boto3.dynamodb.conditions import Key, Attr
 from .helpers import custom_logger
 
@@ -65,7 +64,7 @@ def get_codes(database, key=None, code=None):
     return_fields = "lpa, actor, code, active, last_updated_date, dob"
 
     codes = []
-
+    logger.info("We get here!")
     if code:
         query_result = table.get_item(
             Key={"code": code}, ProjectionExpression=return_fields

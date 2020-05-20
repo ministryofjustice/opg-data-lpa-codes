@@ -35,7 +35,7 @@ paths:
     post:
       summary: "Create a new code"
       description: "Create a new 12 digit alpha-numeric code unique to this LPA and Actor"
-      operationId: api.resources.handle_create
+      operationId: api.resources.create_route
       security:
         - sigv4: []
       x-amazon-apigateway-request-validator: "all"
