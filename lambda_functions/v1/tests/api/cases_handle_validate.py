@@ -10,10 +10,10 @@ def case_validate_valid_code_1() -> CaseData:
             "active": True,
             "actor": "lightcyan",
             "code": "t39hg7zQdE59",
-            "expiry_date": "19/10/2020",
-            "generated_date": "20/10/2019",
+            "expiry_date": "2020-08-30",
+            "generated_date": "2019-09-31",
+            "last_updated_date": "2019-12-26",
             "dob": "1960-06-05",
-            "last_updated_date": "26/10/2019",
             "lpa": "scale_virtual_e_commerce",
         }
     ]
@@ -35,10 +35,10 @@ def case_validate_valid_code_2() -> CaseData:
             "active": False,
             "actor": "lightcyan",
             "code": "t39hg7zQdE59",
-            "expiry_date": "19/10/2020",
-            "generated_date": "20/10/2019",
+            "expiry_date": "2020-08-30",
+            "generated_date": "2019-09-31",
+            "last_updated_date": "2019-12-26",
             "dob": "1960-06-05",
-            "last_updated_date": "26/10/2019",
             "lpa": "scale_virtual_e_commerce",
         }
     ]
@@ -60,9 +60,10 @@ def case_validate_non_existent_code() -> CaseData:
             "active": True,
             "actor": "lightcyan",
             "code": "t39hg7zQdE59",
-            "expiry_date": "19/10/2020",
-            "generated_date": "20/10/2019",
-            "last_updated_date": "26/10/2019",
+            "expiry_date": "2020-08-30",
+            "generated_date": "2019-09-31",
+            "last_updated_date": "2019-12-26",
+            "dob": "1960-06-05",
             "lpa": "scale_virtual_e_commerce",
         }
     ]
@@ -84,10 +85,10 @@ def case_validate_invalid_code_1() -> CaseData:
             "active": True,
             "actor": "lightcyan",
             "code": "t39hg7zQdE59",
-            "expiry_date": "19/10/2020",
-            "generated_date": "20/10/2019",
+            "expiry_date": "2020-08-30",
+            "generated_date": "2019-09-31",
+            "last_updated_date": "2019-12-26",
             "dob": "1960-06-05",
-            "last_updated_date": "26/10/2019",
             "lpa": "scale_virtual_e_commerce",
         }
     ]
@@ -109,10 +110,10 @@ def case_validate_invalid_code_2() -> CaseData:
             "active": True,
             "actor": "lightcyan",
             "code": "t39hg7zQdE59",
-            "expiry_date": "19/10/2020",
-            "generated_date": "20/10/2019",
+            "expiry_date": "2020-08-30",
+            "generated_date": "2019-09-31",
+            "last_updated_date": "2019-12-26",
             "dob": "1960-06-05",
-            "last_updated_date": "26/10/2019",
             "lpa": "scale_virtual_e_commerce",
         }
     ]

@@ -1,6 +1,4 @@
-from lambda_functions.v1.functions.lpa_codes.app.api.lets_see_about_this import (
-    handle_create,
-)
+from lambda_functions.v1.functions.lpa_codes.app.api.endpoints import handle_create
 
 from pytest_cases import CaseDataGetter, cases_data
 

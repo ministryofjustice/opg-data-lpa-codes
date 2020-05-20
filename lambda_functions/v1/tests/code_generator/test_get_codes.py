@@ -1,13 +1,9 @@
 import boto3
-import pytest
 from pytest_cases import cases_data, CaseDataGetter
 
-from lambda_functions.v1.functions.lpa_codes import app
 from lambda_functions.v1.functions.lpa_codes.app.api import code_generator
-from lambda_functions.v1.functions.lpa_codes.app.api import helpers
 from lambda_functions.v1.tests.code_generator import cases_get_codes
 from lambda_functions.v1.tests.conftest import (
-    mock_db_table_name,
     insert_test_data,
     remove_test_data,
 )

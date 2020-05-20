@@ -1,7 +1,5 @@
 from pytest_cases import cases_data, CaseDataGetter
-from lambda_functions.v1.functions.lpa_codes.app.api.lets_see_about_this import (
-    handle_validate,
-)
+from lambda_functions.v1.functions.lpa_codes.app.api.endpoints import handle_validate
 from lambda_functions.v1.tests.api import cases_handle_validate
 from lambda_functions.v1.tests.conftest import (
     insert_test_data,

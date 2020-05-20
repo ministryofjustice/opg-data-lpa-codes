@@ -10,6 +10,7 @@ default_test_data = [
         "expiry_date": "29/03/2021",
         "generated_date": "29/03/2020",
         "last_updated_date": "25/08/2020",
+        "dob": "1960-06-05",
         "lpa": "drive_leading-edge_communities",
     },
     {
@@ -19,6 +20,7 @@ default_test_data = [
         "expiry_date": "26/06/2020",
         "generated_date": "27/06/2019",
         "last_updated_date": "03/02/2020",
+        "dob": "1960-06-05",
         "lpa": "drive_leading-edge_communities",
     },
     {
@@ -28,6 +30,7 @@ default_test_data = [
         "expiry_date": "05/04/2021",
         "generated_date": "05/04/2020",
         "last_updated_date": "28/02/2021",
+        "dob": "1960-06-05",
         "lpa": "drive_leading-edge_communities",
     },
     {
@@ -37,6 +40,7 @@ default_test_data = [
         "expiry_date": "06/08/2020",
         "generated_date": "07/08/2019",
         "last_updated_date": "24/03/2020",
+        "dob": "1960-06-05",
         "lpa": "drive_leading-edge_communities",
     },
     {
@@ -46,6 +50,7 @@ default_test_data = [
         "expiry_date": "05/08/2020",
         "generated_date": "06/08/2019",
         "last_updated_date": "01/12/2019",
+        "dob": "1960-06-05",
         "lpa": "drive_leading-edge_communities",
     },
     {
@@ -55,6 +60,7 @@ default_test_data = [
         "expiry_date": "02/01/2021",
         "generated_date": "03/01/2020",
         "last_updated_date": "11/04/2020",
+        "dob": "1960-06-05",
         "lpa": "drive_leading-edge_communities",
     },
     {
@@ -64,6 +70,7 @@ default_test_data = [
         "expiry_date": "09/03/2021",
         "generated_date": "09/03/2020",
         "last_updated_date": "17/10/2020",
+        "dob": "1960-06-05",
         "lpa": "drive_leading-edge_communities",
     },
 ]

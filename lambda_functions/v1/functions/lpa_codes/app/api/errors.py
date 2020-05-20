@@ -25,20 +25,10 @@ def error_message(code, message):
     )
 
 
-def unprocessable_entity(errors):
-    """
-    :param errors:
-    :type errors: dict of (string, list or str)
-        {
-          "artist": [
-            "Should be existing artist."
-          ],
-          "isrc": [
-            "Missing data for required field."
-          ]
-        }
-    :return:
-    """
-    pair = list(errors.items())[0]
-    message = "Key {}. {}".format(pair[0], " ".join(pair[1]))
-    return error_message(422, message)
+# def unprocessable_entity(errors):
+#
+#     pair = list(errors.items())[0]
+#     print(f"pair: {pair}")
+#     message = "Key {}. {}".format(pair[0], " ".join(pair[1]))
+#     print(f"message: {message}")
+#     return error_message(422, message)
