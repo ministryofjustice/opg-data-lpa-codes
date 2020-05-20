@@ -16,3 +16,4 @@ boto3
 moto
 pytest-cases
 pytest-cov
+pytest-ordering

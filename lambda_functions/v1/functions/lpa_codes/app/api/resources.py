@@ -26,14 +26,14 @@ def handle500(error=None):
     return error_message(500, f"Something went wrong: {error}")
 
 
-@api.route("/healthcheck", methods=("HEAD", "GET"))
+@api.route("/healthcheck", methods=["HEAD", "GET"])
 def handle_healthcheck():
     response_message = "OK"
 
     return jsonify(response_message), 200
 
 
-@api.route("/create", methods=("POST"))
+@api.route("/create", methods=["POST"])
 def create_route():
     """
     Placeholder for create a code endpoint
@@ -46,7 +46,7 @@ def create_route():
     return jsonify(result), 200
 
 
-@api.route("/revoke", methods=("POST"))
+@api.route("/revoke", methods=["POST"])
 def revoke_route():
     """
     Placeholder for revoke a code endpoint
@@ -59,7 +59,7 @@ def revoke_route():
     return jsonify(result), 200
 
 
-@api.route("/validate", methods=("POST"))
+@api.route("/validate", methods=["POST"])
 def validate_route():
     """
     Placeholder for validate a code endpoint

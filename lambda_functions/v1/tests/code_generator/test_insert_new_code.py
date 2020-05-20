@@ -5,6 +5,7 @@ from lambda_functions.v1.functions.lpa_codes.app.api.code_generator import (
     insert_new_code,
 )
 from lambda_functions.v1.tests.code_generator import cases_insert_new_code
+
 from lambda_functions.v1.tests.conftest import remove_test_data
 
 
