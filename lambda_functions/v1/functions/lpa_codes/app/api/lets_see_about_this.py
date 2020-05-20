@@ -7,9 +7,24 @@ import os
 logger = custom_logger()
 
 
+def aws_credentials():
+    os.environ["AWS_ACCESS_KEY_ID"] = "testing"
+    os.environ["AWS_SECRET_ACCESS_KEY"] = "testing"
+    os.environ["AWS_SECURITY_TOKEN"] = "testing"
+    os.environ["AWS_SESSION_TOKEN"] = "testing"
+    os.environ["AWS_DEFAULT_REGION"] = "eu-west-1"
+
+
 def db_connection():
+    if os.environ.get("LOCAL_URL"):
+        url = "host.docker.internal"
+    else:
+        url = "localhost"
     if os.environ.get("ENVIRONMENT") in ["ci", "local"]:
-        conn = boto3.resource("dynamodb", endpoint_url="http://localhost:8000")
+        aws_credentials()
+        conn = boto3.resource(
+            "dynamodb", endpoint_url="http://" + url + ":8000", region_name="eu-west-1"
+        )
     else:
         conn = boto3.resource("dynamodb")
 

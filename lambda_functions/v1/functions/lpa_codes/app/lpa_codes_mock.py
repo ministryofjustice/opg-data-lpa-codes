@@ -1,6 +1,8 @@
 import connexion
 import boto3
 import os
+
+from botocore.exceptions import ClientError
 from flask import request, jsonify
 from connexion.exceptions import OAuthProblem
 
@@ -17,7 +19,6 @@ def apikey_auth(token, required_scopes):
 
 
 def aws_credentials():
-    """Mocked AWS Credentials for moto."""
     os.environ["AWS_ACCESS_KEY_ID"] = "testing"
     os.environ["AWS_SECRET_ACCESS_KEY"] = "testing"
     os.environ["AWS_SECURITY_TOKEN"] = "testing"
@@ -25,21 +26,40 @@ def aws_credentials():
     os.environ["AWS_DEFAULT_REGION"] = "eu-west-1"
 
 
-def setup_dynamodb_table():
-    aws_credentials()
-    ddb = boto3.client(
-        "dynamodb", endpoint_url="http://localhost:8000", region_name="eu-west-1"
-    )
-    try:
-        table = ddb.create_table(
-            TableName="lpa_codes",
-            KeySchema=[{"AttributeName": "code", "KeyType": "HASH"}],  # Partition key
-            AttributeDefinitions=[{"AttributeName": "code", "AttributeType": "S"}],
-            ProvisionedThroughput={"ReadCapacityUnits": 10, "WriteCapacityUnits": 10},
+def dynamodb_connection(conn="resource"):
+    if os.environ.get("LOCAL_URL") is not None:
+        local_url = os.environ.get("LOCAL_URL")
+    else:
+        local_url = "localhost"
+    if conn == "resource":
+        ddb = boto3.resource(
+            "dynamodb",
+            endpoint_url="http://" + local_url + ":8000",
+            region_name="eu-west-1",
         )
-        key_index = [
-            {
-                "Create": {
+    else:
+        ddb = boto3.client(
+            "dynamodb",
+            endpoint_url="http://" + local_url + ":8000",
+            region_name="eu-west-1",
+        )
+    return ddb
+
+
+def create_table_default():
+    aws_credentials()
+    ddb = dynamodb_connection(conn="client")
+    try:
+        ddb.create_table(
+            TableName="lpa-codes-local",
+            KeySchema=[{"AttributeName": "code", "KeyType": "HASH"}],
+            AttributeDefinitions=[
+                {"AttributeName": "code", "AttributeType": "S"},
+                {"AttributeName": "lpa", "AttributeType": "S"},
+                {"AttributeName": "actor", "AttributeType": "S"},
+            ],
+            GlobalSecondaryIndexes=[
+                {
                     "IndexName": "key_index",
                     "KeySchema": [
                         {"AttributeName": "lpa", "KeyType": "HASH"},
@@ -51,30 +71,107 @@ def setup_dynamodb_table():
                         "WriteCapacityUnits": 5,
                     },
                 }
-            },
-        ]
-
-        active_index = [
-            {
-                "Create": {
-                    "IndexName": "active_index",
-                    "KeySchema": [{"AttributeName": "active", "KeyType": "HASH"}],
-                    "Projection": {"ProjectionType": "ALL"},
-                    "ProvisionedThroughput": {
-                        "ReadCapacityUnits": 5,
-                        "WriteCapacityUnits": 5,
-                    },
-                }
-            },
-        ]
-
-        table.update(GlobalSecondaryIndexUpdates=key_index)
-        table.update(GlobalSecondaryIndexUpdates=active_index)
-
+            ],
+            ProvisionedThroughput={"ReadCapacityUnits": 10, "WriteCapacityUnits": 10},
+        )
+        return "Table created"
     except ddb.exceptions.ResourceInUseException:
-        print("Table already exists")
+        return "Table already exists: " + str(
+            ddb.describe_table(TableName="lpa-codes-local")
+        )
 
 
+def create_table(table_name, body):
+    aws_credentials()
+    ddb = dynamodb_connection(conn="client")
+    try:
+        table = ddb.create_table(
+            TableName=table_name,
+            KeySchema=body["KeySchema"],  # Partition key
+            AttributeDefinitions=body["AttributeDefinitions"],
+            ProvisionedThroughput=body["ProvisionedThroughput"],
+        )
+        for index in body["Indexes"]:
+            table.update(GlobalSecondaryIndexUpdates=index)
+        return "Table created"
+    except ddb.exceptions.ResourceInUseException:
+        return "Table already exists"
+
+
+def list_tables():
+    aws_credentials()
+    ddb = dynamodb_connection(conn="client")
+    return ddb.list_tables()
+
+
+def delete_table(table_name):
+    aws_credentials()
+    ddb = dynamodb_connection(conn="client")
+    params = {"TableName": table_name}
+    try:
+        ddb.delete_table(**params)
+        print("Waiting for", table_name, "...")
+        waiter = ddb.get_waiter("table_not_exists")
+        waiter.wait(TableName=table_name)
+        return "table deleted"
+    except ddb.exceptions.ResourceNotFoundException:
+        return "table doesn't exist"
+
+
+def clear_all():
+    aws_credentials()
+    ddb = dynamodb_connection(conn="client")
+    for table in ddb.list_tables()["TableNames"]:
+        delete_table(table)
+
+
+def create_rows(table_name, body):
+    aws_credentials()
+    table = dynamodb_connection(conn="resource").Table(table_name)
+    count = 0
+    for data in body["rows"]:
+        try:
+            table.put_item(Item=data)
+            count = count + 1
+        except ClientError as e:
+            print(e.response["Error"]["Message"])
+    return str(count) + " rows created!"
+
+
+def delete_rows(table_name, body):
+    aws_credentials()
+    table = dynamodb_connection(conn="resource").Table(table_name)
+    count = 0
+    for row in body["rows"]:
+        try:
+            response = table.delete_item(Key=row)
+            count = count + 1
+        except ClientError as e:
+            print(e.response["Error"]["Message"])
+    return str(count) + " rows deleted! " + str(response)
+
+
+def get_rows(table_name, body):
+    aws_credentials()
+    table = dynamodb_connection(conn="resource").Table(table_name)
+    response = table.get_item(Key=body)
+    if "Item" in response:
+        return response["Item"]
+    else:
+        return "No row found!"
+
+
+def get_all_rows(table_name):
+    aws_credentials()
+    table = dynamodb_connection(conn="resource").Table(table_name)
+    all_rows = []
+    response = table.scan()
+    for row in response["Items"]:
+        all_rows.append(row)
+    return all_rows
+
+
+# PACT Specific functions
 def update_state():
     aws_credentials()
     mapping = {
@@ -86,9 +183,7 @@ def update_state():
 
 
 def setup_code_active():
-    table = boto3.resource(
-        "dynamodb", endpoint_url="http://localhost:8000", region_name="eu-west-1"
-    ).Table("lpa_codes")
+    table = dynamodb_connection(conn="resource").Table("lpa_codes")
 
     data = {
         "active": True,
@@ -104,9 +199,7 @@ def setup_code_active():
 
 
 def setup_code_not_active():
-    table = boto3.resource(
-        "dynamodb", endpoint_url="http://localhost:8000", region_name="eu-west-1"
-    ).Table("lpa_codes")
+    table = dynamodb_connection(conn="resource").Table("lpa_codes")
 
     data = {
         "active": False,

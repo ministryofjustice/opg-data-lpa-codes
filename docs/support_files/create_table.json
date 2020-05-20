@@ -1,0 +1,58 @@
+{
+	"KeySchema": [{
+			"AttributeName": "ID",
+			"KeyType": "HASH"
+		},
+		{
+			"AttributeName": "Name",
+			"KeyType": "RANGE"
+		}
+	],
+	"AttributeDefinitions": [{
+			"AttributeName": "ID",
+			"AttributeType": "N"
+		},
+		{
+			"AttributeName": "Name",
+			"AttributeType": "S"
+		}
+
+	],
+	"ProvisionedThroughput": {
+		"ReadCapacityUnits": 5,
+		"WriteCapacityUnits": 5
+	},
+	"Indexes": [{
+			"Create": {
+				"IndexName": "first_index",
+				"KeySchema": [{
+					"AttributeName": "first_attr",
+					"KeyType": "HASH"
+				}],
+				"Projection": {
+					"ProjectionType": "ALL"
+				},
+				"ProvisionedThroughput": {
+					"ReadCapacityUnits": 5,
+					"WriteCapacityUnits": 5
+				}
+			}
+		},
+		{
+			"Create": {
+				"IndexName": "second_index",
+				"KeySchema": [{
+					"AttributeName": "second_attr",
+					"KeyType": "HASH"
+				}],
+				"Projection": {
+					"ProjectionType": "ALL"
+				},
+				"ProvisionedThroughput": {
+					"ReadCapacityUnits": 5,
+					"WriteCapacityUnits": 5
+				}
+			}
+		}
+	]
+}
