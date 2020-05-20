@@ -8,9 +8,16 @@ logger = custom_logger()
 
 
 def db_connection():
+
     if os.environ.get("ENVIRONMENT") in ["ci", "local"]:
-        conn = boto3.resource("dynamodb", endpoint_url="http://localhost:8000")
-        logger.info("Connecting to local Docker database container")
+        if os.environ.get("LOCAL_URL"):
+            url = "host.docker.internal"
+        else:
+            url = "localhost"
+        conn = boto3.resource(
+            "dynamodb", endpoint_url="http://" + url + ":8000", region_name="eu-west-1"
+        )
+        logger.info(f"Connecting to local Docker database container with url: {url}")
     else:
         conn = boto3.resource("dynamodb")
 
