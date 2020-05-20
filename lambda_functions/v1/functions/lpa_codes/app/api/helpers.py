@@ -20,3 +20,7 @@ def custom_logger(name=None):
         logger.setLevel("INFO")
     logger.addHandler(handler)
     return logger
+
+
+def date_formatter(date_obj):
+    return date_obj.strftime("%Y-%m-%d")

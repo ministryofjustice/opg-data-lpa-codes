@@ -12,6 +12,7 @@ def case_update_multiple_codes_to_inactive() -> CaseData:
             "expiry_date": "10/11/2020",
             "generated_date": "11/11/2019",
             "last_updated_date": "19/06/2020",
+            "dob": "1960-06-05",
             "lpa": "streamline_distributed_content",
         },
         {
@@ -21,6 +22,7 @@ def case_update_multiple_codes_to_inactive() -> CaseData:
             "expiry_date": "09/08/2020",
             "generated_date": "10/08/2019",
             "last_updated_date": "08/12/2019",
+            "dob": "1960-06-05",
             "lpa": "streamline_distributed_content",
         },
         {
@@ -30,6 +32,7 @@ def case_update_multiple_codes_to_inactive() -> CaseData:
             "expiry_date": "30/03/2021",
             "generated_date": "30/03/2020",
             "last_updated_date": "09/12/2020",
+            "dob": "1960-06-05",
             "lpa": "streamline_distributed_content",
         },
     ]
@@ -58,6 +61,7 @@ def case_update_multiple_codes_to_active() -> CaseData:
             "expiry_date": "15/05/2020",
             "generated_date": "16/05/2019",
             "last_updated_date": "06/04/2020",
+            "dob": "1960-06-05",
             "lpa": "embrace_rich_initiatives",
         },
         {
@@ -67,6 +71,7 @@ def case_update_multiple_codes_to_active() -> CaseData:
             "expiry_date": "16/03/2021",
             "generated_date": "16/03/2020",
             "last_updated_date": "12/05/2020",
+            "dob": "1960-06-05",
             "lpa": "embrace_rich_initiatives",
         },
         {
@@ -76,6 +81,7 @@ def case_update_multiple_codes_to_active() -> CaseData:
             "expiry_date": "14/03/2021",
             "generated_date": "14/03/2020",
             "last_updated_date": "22/10/2020",
+            "dob": "1960-06-05",
             "lpa": "embrace_rich_initiatives",
         },
         {
@@ -85,6 +91,7 @@ def case_update_multiple_codes_to_active() -> CaseData:
             "expiry_date": "21/07/2020",
             "generated_date": "22/07/2019",
             "last_updated_date": "27/07/2019",
+            "dob": "1960-06-05",
             "lpa": "embrace_rich_initiatives",
         },
     ]
@@ -113,6 +120,7 @@ def case_update_single_codes_to_inactive() -> CaseData:
             "expiry_date": "05/11/2020",
             "generated_date": "06/11/2019",
             "last_updated_date": "09/02/2020",
+            "dob": "1960-06-05",
             "lpa": "target_bricks_and_clicks_convergence",
         }
     ]
@@ -138,6 +146,7 @@ def case_update_single_codes_to_active() -> CaseData:
             "expiry_date": "03/04/2021",
             "generated_date": "03/04/2020",
             "last_updated_date": "01/03/2021",
+            "dob": "1960-06-05",
             "lpa": "revolutionize_out_of_the_box_paradigms",
         }
     ]
@@ -163,6 +172,7 @@ def case_update_single_active_codes_to_active() -> CaseData:
             "expiry_date": "03/04/2021",
             "generated_date": "03/04/2020",
             "last_updated_date": "01/03/2021",
+            "dob": "1960-06-05",
             "lpa": "revolutionize_out_of_the_box_paradigms",
         }
     ]
@@ -188,6 +198,7 @@ def case_update_nonexistant_codes_to_active() -> CaseData:
             "expiry_date": "15/05/2020",
             "generated_date": "16/05/2019",
             "last_updated_date": "06/04/2020",
+            "dob": "1960-06-05",
             "lpa": "embrace_rich_initiatives",
         }
     ]
@@ -216,6 +227,7 @@ def case_update_single_codes_1() -> CaseData:
             "expiry_date": "05/11/2020",
             "generated_date": "06/11/2019",
             "last_updated_date": "09/02/2020",
+            "dob": "1960-06-05",
             "lpa": "target_bricks_and_clicks_convergence",
         }
     ]
@@ -241,6 +253,7 @@ def case_update_multiple_codes_1() -> CaseData:
             "expiry_date": "15/05/2020",
             "generated_date": "16/05/2019",
             "last_updated_date": "06/04/2020",
+            "dob": "1960-06-05",
             "lpa": "embrace_rich_initiatives",
         }
     ]

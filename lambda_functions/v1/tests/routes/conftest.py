@@ -10,6 +10,7 @@ from flask import Flask
 
 from lambda_functions.v1.functions.lpa_codes.app import create_app
 from lambda_functions.v1.functions.lpa_codes.app.api import code_generator, endpoints
+from lambda_functions.v1.functions.lpa_codes.app.api.helpers import date_formatter
 
 
 def get_open_port():
@@ -108,7 +109,7 @@ def mock_get_codes(monkeypatch):
                 "actor": key["actor"],
                 "code": code,
                 "active": True,
-                "last_updated_date": datetime.datetime.now().strftime("%d/%m/%Y"),
+                "last_updated_date": date_formatter(datetime.datetime.now()),
                 "dob": None,
             }
         ]
@@ -145,7 +146,7 @@ def mock_insert_new_code(monkeypatch):
                 "actor": key["actor"],
                 "code": "tOhkrldOqewm",
                 "active": True,
-                "last_updated_date": datetime.datetime.now().strftime("%d/%m/%Y"),
+                "last_updated_date": date_formatter(datetime.datetime.now()),
                 "dob": None,
             }
         ]

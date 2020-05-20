@@ -8,6 +8,7 @@ from lambda_functions.v1.functions.lpa_codes.app.api.code_generator import (
     update_codes,
     get_codes,
 )
+from lambda_functions.v1.functions.lpa_codes.app.api.helpers import date_formatter
 from lambda_functions.v1.tests.code_generator import cases_update_codes
 
 from lambda_functions.v1.tests.conftest import (
@@ -25,7 +26,7 @@ def test_update_codes_by_key(mock_database, case_data: CaseDataGetter):
     # Set some expectations
     should_get_updated = [r["code"] for r in before_test_data if r["active"] != status]
     status_should_be = status
-    last_updated_date_should_be = datetime.datetime.now().strftime("%d/%m/%Y")
+    last_updated_date_should_be = date_formatter(datetime.datetime.now())
 
     # Run test function
     db = boto3.resource("dynamodb")

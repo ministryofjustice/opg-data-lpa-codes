@@ -4,7 +4,7 @@ import secrets
 from boto3.dynamodb.conditions import Key
 
 from .database import lpa_codes_table
-from .helpers import custom_logger
+from .helpers import custom_logger, date_formatter
 
 logger = custom_logger()
 
@@ -108,7 +108,7 @@ def update_codes(database, key=None, code=None, status=False):
                 UpdateExpression="set active = :a, last_updated_date = :d",
                 ExpressionAttributeValues={
                     ":a": status,
-                    ":d": datetime.datetime.now().strftime("%d/%m/%Y"),
+                    ":d": date_formatter(datetime.datetime.now()),
                 },
             )
 
@@ -129,7 +129,7 @@ def insert_new_code(database, key, code):
             "actor": actor,
             "code": code,
             "active": True,
-            "last_updated_date": datetime.datetime.now().strftime("%d/%m/%Y"),
+            "last_updated_date": date_formatter(datetime.datetime.now()),
         }
     )
 
