@@ -1,9 +1,15 @@
 import connexion
 import boto3
 import os
+import json
 from botocore.exceptions import ClientError
-from flask import request, jsonify
+from flask import request, jsonify, Response
 from connexion.exceptions import OAuthProblem
+from connexion import decorators
+from jsonschema import ValidationError
+
+
+error = ""
 
 TOKEN_DB = {"asdf1234567890": {"uid": 100}}
 
@@ -197,7 +203,70 @@ def setup_code_not_active():
     return table
 
 
+def get_invalid_response():
+    validation_message = {
+        "code": "OPGDATA-API-INVALIDREQUEST",
+        "message": "Invalid Request",
+    }
+    response = Response(
+        json.dumps(validation_message),
+        status=400,
+        mimetype="application/vnd.opg-data.v1+json",
+    )
+    return response
+
+
+def create():
+    global error
+    if error != "":
+        return get_invalid_response()
+    return "OK"
+
+
+# def render_http_exception(error):
+#
+#     resp = {
+#         'error': {
+#             'status': error.name,
+#             'code': error.code,
+#             'message': error.description,
+#         }
+#     }
+#
+#     return jsonify(resp), error.code
+
+
+# def bad_request_error_handler():
+#     response = connexion.problem(
+#         status=400,
+#         title='Bad request',
+#         detail="YOYOYOYO"
+#     )
+#     return response.flask_response_object()
+
+
+class RequestBodyValidator(decorators.validation.RequestBodyValidator):
+    def validate_schema(self, data, url):
+        print(data)
+        print(repr(decorators.validation.RequestBodyValidator))
+        global error
+        if self.is_null_value_valid and connexion.utils.is_null(data):
+            return None
+
+        try:
+            self.validator.validate(data)
+            error = ""
+        except ValidationError as exception:
+            error = exception
+        return None
+
+
 mock = connexion.FlaskApp(__name__, specification_dir="../../../openapi/")
-mock.add_api("lpa-codes-openapi-v1.yml")
+mock.add_api(
+    "lpa-codes-openapi-v1.yml",
+    strict_validation=True,
+    validate_responses=True,
+    validator_map={"body": RequestBodyValidator},
+)
 mock.add_api("state-openapi-v1.yml")
 mock.run(port=4343)

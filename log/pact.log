@@ -1,0 +1,74 @@
+# Logfile created on 2020-05-20 15:10:10 +0100 by logger.rb/47272
+I, [2020-05-20T15:10:10.763901 #44513]  INFO -- : Running example 'Verifying a pact between sirius and lpa-codes A valid request to generate a code with POST /create returns a response which has status code 200'
+I, [2020-05-20T15:10:10.764437 #44513]  INFO -- : Sending POST request to path: "/create" with headers: {"CONTENT_TYPE"=>"application/json", "HTTP_X_PACT_ORIGINAL_HEADER_NAMES"=>"Content-Type"}, see debug logs for body
+D, [2020-05-20T15:10:10.764494 #44513] DEBUG -- : body :{"lpas":[{"lpa":"700003958294","actor":"700039164827","dob":"1987-01-05"}]}
+I, [2020-05-20T15:10:10.792946 #44513]  INFO -- : Received response with status: 404, headers: {"Content-Type"=>"application/problem+json", "Content-Length"=>"205", "Server"=>"Werkzeug/1.0.1 Python/3.8.3", "Date"=>"Wed, 20 May 2020 14:10:10 GMT"}, see debug logs for body
+D, [2020-05-20T15:10:10.793028 #44513] DEBUG -- : body: {
+  "detail": "The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.",
+  "status": 404,
+  "title": "Not Found",
+  "type": "about:blank"
+}
+
+I, [2020-05-20T15:10:10.801914 #44513]  INFO -- : Running example 'Verifying a pact between sirius and lpa-codes A valid request to generate multiple codes with POST /create returns a response which has status code 200'
+I, [2020-05-20T15:10:10.802122 #44513]  INFO -- : Sending POST request to path: "/create" with headers: {"CONTENT_TYPE"=>"application/json", "HTTP_X_PACT_ORIGINAL_HEADER_NAMES"=>"Content-Type"}, see debug logs for body
+D, [2020-05-20T15:10:10.802250 #44513] DEBUG -- : body :{"lpas":[{"lpa":"700003958294","actor":"700039164827","dob":"1987-01-05"},{"lpa":"700003958294","actor":"700039590384","dob":"1954-12-25"}]}
+I, [2020-05-20T15:10:10.809120 #44513]  INFO -- : Received response with status: 404, headers: {"Content-Type"=>"application/problem+json", "Content-Length"=>"205", "Server"=>"Werkzeug/1.0.1 Python/3.8.3", "Date"=>"Wed, 20 May 2020 14:10:10 GMT"}, see debug logs for body
+D, [2020-05-20T15:10:10.809182 #44513] DEBUG -- : body: {
+  "detail": "The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.",
+  "status": 404,
+  "title": "Not Found",
+  "type": "about:blank"
+}
+
+I, [2020-05-20T15:10:10.812752 #44513]  INFO -- : Running example 'Verifying a pact between sirius and lpa-codes A valid request to generate a codes, but in the wrong order with POST /create returns a response which has status code 200'
+I, [2020-05-20T15:10:10.812937 #44513]  INFO -- : Sending POST request to path: "/create" with headers: {"CONTENT_TYPE"=>"application/json", "HTTP_X_PACT_ORIGINAL_HEADER_NAMES"=>"Content-Type"}, see debug logs for body
+D, [2020-05-20T15:10:10.813015 #44513] DEBUG -- : body :{"lpas":[{"lpa":"700003958294","actor":"700028424928","dob":"1987-01-05"},{"lpa":"700003958294","actor":"700038490382","dob":"1972-08-24"}]}
+I, [2020-05-20T15:10:10.820791 #44513]  INFO -- : Received response with status: 404, headers: {"Content-Type"=>"application/problem+json", "Content-Length"=>"205", "Server"=>"Werkzeug/1.0.1 Python/3.8.3", "Date"=>"Wed, 20 May 2020 14:10:10 GMT"}, see debug logs for body
+D, [2020-05-20T15:10:10.820909 #44513] DEBUG -- : body: {
+  "detail": "The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.",
+  "status": 404,
+  "title": "Not Found",
+  "type": "about:blank"
+}
+
+I, [2020-05-20T15:10:10.826339 #44513]  INFO -- : Running example 'Verifying a pact between sirius and lpa-codes An invalid request to generate a code with empty strings with POST /create returns a response which has status code 400'
+I, [2020-05-20T15:10:10.826490 #44513]  INFO -- : Sending POST request to path: "/create" with headers: {"CONTENT_TYPE"=>"application/json", "HTTP_X_PACT_ORIGINAL_HEADER_NAMES"=>"Content-Type"}, see debug logs for body
+D, [2020-05-20T15:10:10.826589 #44513] DEBUG -- : body :{"lpas":[{"lpa":"700003958294","actor":"","dob":"1987-01-05"}]}
+I, [2020-05-20T15:10:10.837301 #44513]  INFO -- : Received response with status: 404, headers: {"Content-Type"=>"application/problem+json", "Content-Length"=>"205", "Server"=>"Werkzeug/1.0.1 Python/3.8.3", "Date"=>"Wed, 20 May 2020 14:10:10 GMT"}, see debug logs for body
+D, [2020-05-20T15:10:10.837382 #44513] DEBUG -- : body: {
+  "detail": "The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.",
+  "status": 404,
+  "title": "Not Found",
+  "type": "about:blank"
+}
+
+I, [2020-05-20T15:11:30.755216 #44576]  INFO -- : Running example 'Verifying a pact between sirius and lpa-codes A valid request to generate a code with POST /create returns a response which has status code 200'
+I, [2020-05-20T15:11:30.755434 #44576]  INFO -- : Sending POST request to path: "/create" with headers: {"CONTENT_TYPE"=>"application/json", "HTTP_X_PACT_ORIGINAL_HEADER_NAMES"=>"Content-Type"}, see debug logs for body
+D, [2020-05-20T15:11:30.755486 #44576] DEBUG -- : body :{"lpas":[{"lpa":"700003958294","actor":"700039164827","dob":"1987-01-05"}]}
+I, [2020-05-20T15:11:30.863051 #44576]  INFO -- : Received response with status: 200, headers: {"Content-Type"=>"application/json", "Content-Length"=>"80", "Server"=>"Werkzeug/1.0.1 Python/3.8.3", "Date"=>"Wed, 20 May 2020 14:11:30 GMT"}, see debug logs for body
+D, [2020-05-20T15:11:30.863197 #44576] DEBUG -- : body: {"codes":[{"actor":"700039164827","code":"MZkJwedUBEdT","lpa":"700003958294"}]}
+
+I, [2020-05-20T15:11:30.866873 #44576]  INFO -- : Running example 'Verifying a pact between sirius and lpa-codes A valid request to generate multiple codes with POST /create returns a response which has status code 200'
+I, [2020-05-20T15:11:30.867059 #44576]  INFO -- : Sending POST request to path: "/create" with headers: {"CONTENT_TYPE"=>"application/json", "HTTP_X_PACT_ORIGINAL_HEADER_NAMES"=>"Content-Type"}, see debug logs for body
+D, [2020-05-20T15:11:30.867130 #44576] DEBUG -- : body :{"lpas":[{"lpa":"700003958294","actor":"700039164827","dob":"1987-01-05"},{"lpa":"700003958294","actor":"700039590384","dob":"1954-12-25"}]}
+I, [2020-05-20T15:11:31.076681 #44576]  INFO -- : Received response with status: 200, headers: {"Content-Type"=>"application/json", "Content-Length"=>"148", "Server"=>"Werkzeug/1.0.1 Python/3.8.3", "Date"=>"Wed, 20 May 2020 14:11:31 GMT"}, see debug logs for body
+D, [2020-05-20T15:11:31.076839 #44576] DEBUG -- : body: {"codes":[{"actor":"700039164827","code":"huEY8vzNuq4U","lpa":"700003958294"},{"actor":"700039590384","code":"VFbFaeLLciM9","lpa":"700003958294"}]}
+
+I, [2020-05-20T15:11:31.079188 #44576]  INFO -- : Running example 'Verifying a pact between sirius and lpa-codes A valid request to generate a codes, but in the wrong order with POST /create returns a response which has status code 200'
+I, [2020-05-20T15:11:31.079341 #44576]  INFO -- : Sending POST request to path: "/create" with headers: {"CONTENT_TYPE"=>"application/json", "HTTP_X_PACT_ORIGINAL_HEADER_NAMES"=>"Content-Type"}, see debug logs for body
+D, [2020-05-20T15:11:31.079402 #44576] DEBUG -- : body :{"lpas":[{"lpa":"700003958294","actor":"700028424928","dob":"1987-01-05"},{"lpa":"700003958294","actor":"700038490382","dob":"1972-08-24"}]}
+I, [2020-05-20T15:11:31.269480 #44576]  INFO -- : Received response with status: 200, headers: {"Content-Type"=>"application/json", "Content-Length"=>"148", "Server"=>"Werkzeug/1.0.1 Python/3.8.3", "Date"=>"Wed, 20 May 2020 14:11:31 GMT"}, see debug logs for body
+D, [2020-05-20T15:11:31.269589 #44576] DEBUG -- : body: {"codes":[{"actor":"700028424928","code":"yv3F8zjHMxtC","lpa":"700003958294"},{"actor":"700038490382","code":"gqPuUh5EVGih","lpa":"700003958294"}]}
+
+I, [2020-05-20T15:11:31.271601 #44576]  INFO -- : Running example 'Verifying a pact between sirius and lpa-codes An invalid request to generate a code with empty strings with POST /create returns a response which has status code 400'
+I, [2020-05-20T15:11:31.271746 #44576]  INFO -- : Sending POST request to path: "/create" with headers: {"CONTENT_TYPE"=>"application/json", "HTTP_X_PACT_ORIGINAL_HEADER_NAMES"=>"Content-Type"}, see debug logs for body
+D, [2020-05-20T15:11:31.271840 #44576] DEBUG -- : body :{"lpas":[{"lpa":"700003958294","actor":"","dob":"1987-01-05"}]}
+I, [2020-05-20T15:11:31.342233 #44576]  INFO -- : Received response with status: 500, headers: {"Content-Type"=>"application/problem+json", "Content-Length"=>"251", "Server"=>"Werkzeug/1.0.1 Python/3.8.3", "Date"=>"Wed, 20 May 2020 14:11:31 GMT"}, see debug logs for body
+D, [2020-05-20T15:11:31.342331 #44576] DEBUG -- : body: {
+  "detail": "The server encountered an internal error and was unable to complete your request. Either the server is overloaded or there is an error in the application.",
+  "status": 500,
+  "title": "Internal Server Error",
+  "type": "about:blank"
+}
+

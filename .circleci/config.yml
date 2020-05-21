@@ -153,6 +153,10 @@ jobs:
           command: |
             flake8 lambda_functions
       - run:
+          name: get test coverage (fails below 90%)
+          command: |
+            python -m pytest --cov=lambda_functions/v1/functions/lpa_codes/app/api/ --cov-fail-under=90
+      - run:
           name: run unit tests (with pytest)
           command: |
             python -m pytest

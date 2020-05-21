@@ -16,7 +16,8 @@ import (
 func main() {
 
     roleToAssume := "arn:aws:iam::288342028542:role/operator"
-    url := "https://dev.lpa-codes.api.opg.service.justice.gov.uk/v1/healthcheck"
+    //url := "https://dev.lpa-codes.api.opg.service.justice.gov.uk/v1/healthcheck"
+	url := "https://1g5ws8y75a.execute-api.eu-west-1.amazonaws.com/v1/healthcheck"
 	mySession := session.Must(session.NewSession())
 	creds := stscreds.NewCredentials(mySession, roleToAssume)
 	cfg := aws.Config{Credentials: creds,Region: aws.String("eu-west-1")}
