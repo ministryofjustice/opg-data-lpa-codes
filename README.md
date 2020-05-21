@@ -31,7 +31,7 @@ curl -X POST http://127.0.0.1:4343/setup/dynamodb/create/table
 
 **List all tables**
 ```
-curl -X POST http://127.0.0.1:4343/setup/dynamodb/list
+curl -X GET http://127.0.0.1:4343/setup/dynamodb/list
 ```
 
 **Update state for pact**
@@ -85,4 +85,47 @@ virtualenv venv
 source venv/bin/activate
 pip install -r ./lambda_functions/v1/requirements/dev-requirements.txt
 python -m pytest
+```
+
+## PACT
+
+To run pact locally, the easiest way to interact with it is to use the client tools.
+
+The best package to get started can be found here:
+
+https://github.com/pact-foundation/pact-ruby-standalone/releases/latest
+
+You can download the latest version to a directory, unzip it and run the individual tools
+in the `/pact/bin` folder from the command line or put them in your PATH.
+First you should put the contract in our local broker. The local broker is spun up as part
+of the `docker-compose up -d` command and you can push in a contract manually from a json file
+by using the below command (example json included in this repo).
+
+```
+curl -i -X PUT -d '@./docs/support_files/sirius_contract.json' -H 'Content-Type: application/json'
+```
+
+You can then tag the consumer version so that you can run verification against the tags.
+```
+curl -i -X PUT -H 'Content-Type: application/json' http://localhost:9292/pacticipants/sirius/versions/x12345/tags/v1
+```
+
+Then assuming the relative path is right to pact-provider-verifier, you can verify the PACT
+contract against our mock as below.
+
+```
+../pact/bin/pact-provider-verifier --provider-base-url=http://localhost:4343/v1 \
+--custom-provider-header 'Authorization: asdf1234567890' \
+--pact-broker-base-url="http://localhost:9292" \
+--provider="lpa-codes" \
+--consumer-version-tag=v1 \
+--provider-version-tag=v1 \
+--publish-verification-results \
+--provider-app-version=1.2.3
+```
+
+You can then see the verified results in the pact broker through your web browser. Go to:
+
+```
+http://localhost:9292/
 ```

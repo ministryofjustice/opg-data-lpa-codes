@@ -103,7 +103,7 @@ paths:
       x-amazon-apigateway-request-validator: "all"
       summary: "Create a new code"
       description: "Create a new 12 digit alpha-numeric code unique to this LPA and Actor"
-      operationId: lpa_codes_mock.create
+      operationId: api.resources.create_route
       security:
         - sigv4: []
       x-amazon-apigateway-integration:
@@ -155,7 +155,7 @@ paths:
         400:
           description: Generic bad request (generally invalid syntax)
           content:
-            application/json:
+            application/vnd.opg-data.v1+json:
               schema:
                 $ref: '#/components/schemas/Error400'
         401:

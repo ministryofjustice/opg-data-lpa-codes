@@ -271,7 +271,6 @@ jobs:
                   export TF_WORKSPACE=default
                   terraform workspace delete "${WORKSPACE_TO_DELETE}" || echo "no workspace to remove"
   pact_verification:
-#    executor: lpa-codes/python_with_tfvars
     docker:
       # Primary container image where all the steps run.
       - image: circleci/python:3.8.1
@@ -313,16 +312,19 @@ jobs:
       - run:
           name: Set up ready for pact tests
           command: |
-            wget https://github.com/pact-foundation/pact-ruby-standalone/releases/download/v1.82.3/pact-1.82.3-linux-x86_64.tar.gz
-            tar xzf pact-1.82.3-linux-x86_64.tar.gz
+            export PACT_VERSION=$(curl -i -s -X GET https://github.com/pact-foundation/pact-ruby-standalone/releases/latest \
+            | grep "location:" | awk -F'tag' '{print $2}' | awk -F'/v' '{print $2}' | sed 's/.$//')
+            wget https://github.com/pact-foundation/pact-ruby-standalone/releases/download/v${PACT_VERSION}/pact-${PACT_VERSION}-linux-x86_64.tar.gz
+            tar xzf pact-${PACT_VERSION}-linux-x86_64.tar.gz
       - run:
           name: Run the create table endpoint
-          command: curl -X POST http://localhost:4343/state/dynamodb
+          command: |
+            curl -X POST http://127.0.0.1:4343/setup/dynamodb/create/table
       - run:
           name: Set up the data in tables
           command: |
             curl -X POST -d '{"consumer": "sirius", "state": "generated code exists and active"}' \
-            -H 'Content-Type: application/json' http://localhost:4343/state/state
+            -H 'Content-Type: application/json' http://localhost:4343/setup/state
       - run:
           name: verify pact and update github
           command: |

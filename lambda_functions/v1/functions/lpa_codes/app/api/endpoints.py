@@ -1,9 +1,7 @@
-import boto3
-
 from . import code_generator
 from .database import db_connection
 from .helpers import custom_logger
-import os
+
 
 logger = custom_logger()
 
