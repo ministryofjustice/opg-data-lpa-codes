@@ -21,7 +21,7 @@ def mock_env_setup(monkeypatch):
 @pytest.fixture(params=[True, False])
 def mock_unique_code(monkeypatch, request):
     def return_unique(*args, **kwargs):
-        return lambda check_result: request.param
+        return request.param
 
     monkeypatch.setattr(code_generator, "check_code_unique", return_unique)
 
