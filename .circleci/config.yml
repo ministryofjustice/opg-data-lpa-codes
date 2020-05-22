@@ -4,19 +4,23 @@ version: 2.1
 parameters:
   run_pull_request:
     type: boolean
-    default: false
+    default: true
   run_commit_to_master:
     type: boolean
-    default: false
+    default: true
   run_verify_pact:
     type: boolean
     default: true
   consumerversion:
     type: string
     default: ""
+  consumer:
+    type: string
+    default: ""
 
 workflows:
   pull_request:
+    when: << pipeline.parameters.run_pull_request >>
     jobs:
       - build_lambda:
           name: build and artifact
@@ -47,6 +51,7 @@ workflows:
           destroy_workspace: true
           filters: {branches:{ignore:[master]}}
   commit_to_master:
+    when: << pipeline.parameters.run_commit_to_master >>
     jobs:
       - build_lambda:
           name: build and artifact
@@ -280,6 +285,7 @@ jobs:
     working_directory: ~/project
     parameters:
     environment:
+      GIT_CONSUMER: << pipeline.parameters.consumer >>
       GIT_COMMIT_CONSUMER: << pipeline.parameters.consumerversion >>
     steps:
       - checkout
