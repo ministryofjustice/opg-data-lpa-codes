@@ -85,6 +85,14 @@ workflows:
          type: approval
          requires: [preprod apply]
          filters: {branches:{only:[master]}}
+      - terraform_action:
+         name: production apply
+         requires: [approve release to production]
+         tf_command: apply --auto-approve
+         tf_workspace: production
+         applycheck: true
+         filters: {branches:{only:[master]}}
+         pact_tag_production: true
   verify_pact:
     when: << pipeline.parameters.run_verify_pact >>
     jobs:
@@ -228,6 +236,10 @@ jobs:
         description: whether to destroy the empty workspace
         type: boolean
         default: false
+      pact_tag_production:
+        description: to tag the production commit
+        type: boolean
+        default: false
     environment:
       WORKSPACE: << parameters.tf_workspace >>
     working_directory: ~/project
@@ -275,6 +287,25 @@ jobs:
                   echo "Switching workspace to default so we can remove branch workspace"
                   export TF_WORKSPACE=default
                   terraform workspace delete "${WORKSPACE_TO_DELETE}" || echo "no workspace to remove"
+      - when:
+          condition: << parameters.pact_tag_production >>
+          steps:
+            - run:
+                name: tag pact commit with v<x>_production
+                command: |
+                  echo "applying tag on version ${GIT_COMMIT_PROVIDER}"
+                  STATUS_CODE=$(curl -I -s -X GET -u "${PACT_BROKER_USER}":"${PACT_BROKER_PASSWORD}" \
+                  https://"${PACT_BROKER_BASE_URL}"/pacticipants/"${PACT_PROVIDER}"/versions/"${GIT_COMMIT_PROVIDER}" | grep "HTTP" | awk '{print $2}')
+
+                  if [ "${STATUS_CODE}" -eq "200" ]
+                  then
+                    STATUS_CODE=$(curl -I -s -X PUT -u "${PACT_BROKER_USER}":"${PACT_BROKER_PASSWORD}" -H "Content-Type: application/json" \
+                    https://"${PACT_BROKER_BASE_URL}"/pacticipants/"${PACT_PROVIDER}"/versions/"${GIT_COMMIT_PROVIDER}"/tags/"${API_VERSION}_production" \
+                     | grep "HTTP" | awk '{print $2}')
+                    echo "Pact tagging completed with status code: ${STATUS_CODE}"
+                  else
+                    echo "version of provider with git commit ${GIT_COMMIT_PROVIDER}, not found"
+                  fi
   pact_verification:
     docker:
       # Primary container image where all the steps run.
