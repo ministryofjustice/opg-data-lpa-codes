@@ -11,9 +11,9 @@ from lambda_functions.v1.tests.conftest import remove_test_data
 
 @cases_data(module=cases_insert_new_code)
 def test_insert_new_code(mock_database, case_data: CaseDataGetter):
-    key, code, expected_result = case_data.get()
+    key, code, dob, expected_result = case_data.get()
     db = boto3.resource("dynamodb")
-    result = insert_new_code(database=db, key=key, code=code)
+    result = insert_new_code(database=db, key=key, dob=dob, code=code)
 
     print(f"result: {result}")
 
