@@ -17,3 +17,4 @@ moto
 pytest-cases
 pytest-cov
 pytest-ordering
+pytest-env

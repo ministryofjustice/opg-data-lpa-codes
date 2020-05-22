@@ -1,3 +1,5 @@
+import os
+
 from flask import Blueprint
 from flask import request, jsonify
 
@@ -7,8 +9,9 @@ from .endpoints import handle_create, handle_validate, handle_revoke
 
 logger = custom_logger("code generator")
 
-
-api = Blueprint("api", __name__)
+# version = 'v1'
+version = os.getenv("API_VERSION")
+api = Blueprint("api", __name__, url_prefix=f"/{version}")
 
 
 @api.app_errorhandler(404)
