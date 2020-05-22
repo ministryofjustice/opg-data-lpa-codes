@@ -40,27 +40,27 @@ def case_create_a_code_2() -> CaseData:
         "lpas": [
             {
                 "actor": "violet",
-                "dob": datetime.date(1966, 5, 21),
+                "dob": "1966-05-21",
                 "lpa": "productize_out_of_the_box_portals",
             },
             {
                 "actor": "violet",
-                "dob": datetime.date(1988, 11, 21),
+                "dob": "1988-11-21",
                 "lpa": "productize_out_of_the_box_portals",
             },
             {
                 "actor": "violet",
-                "dob": datetime.date(1969, 1, 28),
+                "dob": "1969-01-28",
                 "lpa": "productize_out_of_the_box_portals",
             },
             {
                 "actor": "violet",
-                "dob": datetime.date(1967, 5, 11),
+                "dob": "1967-05-11",
                 "lpa": "productize_out_of_the_box_portals",
             },
             {
                 "actor": "violet",
-                "dob": datetime.date(1967, 12, 10),
+                "dob": "1967-12-10",
                 "lpa": "productize_out_of_the_box_portals",
             },
         ]
