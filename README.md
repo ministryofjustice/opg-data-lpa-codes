@@ -102,7 +102,7 @@ of the `docker-compose up -d` command and you can push in a contract manually fr
 by using the below command (example json included in this repo).
 
 ```
-curl -i -X PUT -d '@./docs/support_files/sirius_contract.json' -H 'Content-Type: application/json'
+curl -i -X PUT -d '@./docs/support_files/sirius_contract.json' -H 'Content-Type: application/json' http://localhost:9292/pacts/provider/lpa-codes/consumer/sirius/version/x12345
 ```
 
 You can then tag the consumer version so that you can run verification against the tags.
