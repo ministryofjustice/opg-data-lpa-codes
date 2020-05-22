@@ -25,9 +25,9 @@ def db_connection():
 
 
 def lpa_codes_table():
-    # TODO these need to be made consistent, no need for this to be a function
-    if os.environ.get("ENVIRONMENT") in ["mock"]:
-        table_name = "lpa_codes"
-    else:
-        table_name = f"lpa-codes-{os.environ.get('ENVIRONMENT')}"
+    # # TODO these need to be made consistent, no need for this to be a function
+    # if os.environ.get("ENVIRONMENT") in ["mock"]:
+    #     table_name = "lpa_codes"
+    # else:
+    table_name = f"lpa-codes-{os.environ.get('ENVIRONMENT')}"
     return table_name

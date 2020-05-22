@@ -1,9 +1,11 @@
 import connexion
 import boto3
 import os
+import json
 from botocore.exceptions import ClientError
-from flask import request, jsonify
+from flask import request, jsonify, Response
 from connexion.exceptions import OAuthProblem
+
 
 TOKEN_DB = {"asdf1234567890": {"uid": 100}}
 
@@ -41,7 +43,7 @@ def create_table_default():
     ddb = dynamodb_connection(conn="client")
     try:
         ddb.create_table(
-            TableName="lpa-codes-local",
+            TableName=f"lpa-codes-{os.environ.get('ENVIRONMENT')}",
             KeySchema=[{"AttributeName": "code", "KeyType": "HASH"}],
             AttributeDefinitions=[
                 {"AttributeName": "code", "AttributeType": "S"},
@@ -67,7 +69,7 @@ def create_table_default():
         return "Table created"
     except ddb.exceptions.ResourceInUseException:
         return "Table already exists: " + str(
-            ddb.describe_table(TableName="lpa-codes-local")
+            ddb.describe_table(TableName=f"lpa-codes-{os.environ.get('ENVIRONMENT')}")
         )
 
 
@@ -166,7 +168,9 @@ def update_state():
 
 
 def setup_code_active():
-    table = dynamodb_connection(conn="resource").Table("lpa_codes")
+    table = dynamodb_connection(conn="resource").Table(
+        f"lpa-codes-{os.environ.get('ENVIRONMENT')}"
+    )
 
     data = {
         "active": True,
@@ -182,7 +186,9 @@ def setup_code_active():
 
 
 def setup_code_not_active():
-    table = dynamodb_connection(conn="resource").Table("lpa_codes")
+    table = dynamodb_connection(conn="resource").Table(
+        f"lpa-codes-{os.environ.get('ENVIRONMENT')}"
+    )
 
     data = {
         "active": False,
@@ -197,7 +203,37 @@ def setup_code_not_active():
     return table
 
 
+def get_invalid_response():
+    validation_message = {
+        "code": "OPGDATA-API-INVALIDREQUEST",
+        "message": "Invalid Request",
+    }
+    response = Response(
+        json.dumps(validation_message),
+        status=400,
+        mimetype="application/vnd.opg-data.v1+json",
+    )
+    return response
+
+
+def rewrite_bad_request(response):
+    if response.status_code == 400:
+        validation_message = {
+            "errors": [
+                {"code": "OPGDATA-API-INVALIDREQUEST", "message": "Invalid Request"},
+            ]
+        }
+
+        response = Response(
+            json.dumps(validation_message),
+            status=400,
+            mimetype="application/vnd.opg-data.v1+json",
+        )
+    return response
+
+
 mock = connexion.FlaskApp(__name__, specification_dir="../../../openapi/")
-mock.add_api("lpa-codes-openapi-v1.yml")
+mock.app.after_request(rewrite_bad_request)
+mock.add_api("lpa-codes-openapi-v1.yml", strict_validation="true")
 mock.add_api("state-openapi-v1.yml")
 mock.run(port=4343)

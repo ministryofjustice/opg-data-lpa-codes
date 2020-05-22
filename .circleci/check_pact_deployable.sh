@@ -91,7 +91,7 @@ then
         # Tag provider with latest version tag (this may be different to what version is being passed from sirius)
         # This is intended as we only want to allow changes that will work against the 'live' provider
         # There is an issue that what we're comparing against may be in master but not prod but it's a fringe case
-        ./pact/bin/pact-provider-verifier --provider-base-url=http://localhost:4343 \
+        ./pact/bin/pact-provider-verifier --provider-base-url=http://localhost:4343/"${API_VERSION}" \
         --custom-provider-header 'Authorization: asdf1234567890' \
         --pact-broker-base-url="https://${PACT_BROKER_BASE_URL}" \
         --provider="lpa-codes" \

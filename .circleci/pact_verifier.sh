@@ -4,7 +4,7 @@ if [ "${CONSUMER_TRIGGERED}" == "false" ]
 then
     echo "Validating against consumer tag ${API_VERSION}"
     #  Verify current provider git_commit against latest consumer git_commit tagged with v<x>
-    ./pact/bin/pact-provider-verifier --provider-base-url=http://localhost:4343 \
+    ./pact/bin/pact-provider-verifier --provider-base-url=http://localhost:4343/"${API_VERSION}" \
     --custom-provider-header 'Authorization: asdf1234567890' \
     --pact-broker-base-url="https://${PACT_BROKER_BASE_URL}" \
     --provider="lpa-codes" \
@@ -16,7 +16,7 @@ then
 
     echo "Validating against consumer tag ${API_VERSION}_production"
     # Verify current provider git_commit against latest consumer git_commit tagged with v<x>_production
-    ./pact/bin/pact-provider-verifier --provider-base-url=http://localhost:4343 \
+    ./pact/bin/pact-provider-verifier --provider-base-url=http://localhost:4343/"${API_VERSION}" \
     --custom-provider-header 'Authorization: asdf1234567890' \
     --pact-broker-base-url="https://${PACT_BROKER_BASE_URL}" \
     --provider="lpa-codes" \

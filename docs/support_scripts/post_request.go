@@ -23,7 +23,7 @@ func main() {
 	sess := session.Must(session.NewSession(&cfg))
 	signer := v4.NewSigner(sess.Config.Credentials)
 
-	json, err := ioutil.ReadFile("create_code_payload.json") // just pass the file name
+	json, err := ioutil.ReadFile("../support_files/create_payload.json") // just pass the file name
 	if err != nil {
 			fmt.Print(err)
 	}
