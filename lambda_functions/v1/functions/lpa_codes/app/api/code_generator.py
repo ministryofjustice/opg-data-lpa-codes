@@ -1,6 +1,5 @@
 import datetime
 import secrets
-
 from boto3.dynamodb.conditions import Key
 
 from .database import lpa_codes_table
@@ -60,7 +59,6 @@ def get_codes(database, key=None, code=None):
     return_fields = "lpa, actor, code, active, last_updated_date, dob"
 
     codes = []
-
     if code:
         query_result = table.get_item(
             Key={"code": code}, ProjectionExpression=return_fields

@@ -46,7 +46,7 @@ def mock_db_connection(monkeypatch):
 
 
 def mock_db_table_name():
-    return "lpa_codes"
+    return "lpa-codes-mock"
 
 
 @pytest.fixture()
@@ -117,7 +117,7 @@ def mock_database(aws_credentials):
 def insert_test_data(test_data):
     # TODO this could be a fixture
     # Set up test data
-    table = boto3.resource("dynamodb").Table("lpa_codes")
+    table = boto3.resource("dynamodb").Table("lpa-codes-mock")
     number_of_rows = len(test_data)
     for row in test_data:
         table.put_item(Item=row)
@@ -133,7 +133,7 @@ def insert_test_data(test_data):
 def remove_test_data(test_data):
     # TODO this could be a fixture
     # Remove test data
-    table = boto3.resource("dynamodb").Table("lpa_codes")
+    table = boto3.resource("dynamodb").Table("lpa-codes-mock")
     for row in test_data:
         table.delete_item(Key=row)
 

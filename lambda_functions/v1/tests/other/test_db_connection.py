@@ -62,7 +62,7 @@ def test_db_connection(monkeypatch, caplog):
 def test_lpa_codes_table(monkeypatch):
     monkeypatch.setenv("ENVIRONMENT", "mock")
 
-    assert lpa_codes_table() == "lpa_codes"
+    assert lpa_codes_table() == "lpa-codes-mock"
 
     monkeypatch.setenv("ENVIRONMENT", "pretend_env")
 
