@@ -17,7 +17,7 @@ def generate_code(database):
     Returns:
         string
     """
-    acceptable_characters = "23456789abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ"
+    acceptable_characters = "3456789abcdefghijkmnpqrstuvwxyABCDEFGHJKLMNPQRSTUVWXY"
 
     unique = False
     attempts = 0
