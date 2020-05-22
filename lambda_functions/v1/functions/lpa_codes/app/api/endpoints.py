@@ -20,6 +20,7 @@ def handle_create(data):
     for entry in data["lpas"]:
 
         key = {"lpa": entry["lpa"], "actor": entry["actor"]}
+        dob = entry["dob"]
 
         # 1. expire all existing codes for LPA/Actor combo
         code_generator.update_codes(database=db, key=key, status=False)
@@ -29,7 +30,7 @@ def handle_create(data):
 
         # 3. insert new code into database
         new_code = code_generator.insert_new_code(
-            database=db, key=key, code=generated_code
+            database=db, key=key, dob=dob, code=generated_code
         )[0]["code"]
 
         # 4. return the new code in lambda payload
@@ -65,12 +66,15 @@ def handle_validate(data):
     data["active"] = True
     test_code_details = data
 
-    valid_code_details = {
-        "code": code_details[0]["code"],
-        "dob": code_details[0]["dob"],
-        "lpa": code_details[0]["lpa"],
-        "active": code_details[0]["active"],
-    }
+    try:
+        valid_code_details = {
+            "code": code_details[0]["code"],
+            "dob": code_details[0]["dob"],
+            "lpa": code_details[0]["lpa"],
+            "active": code_details[0]["active"],
+        }
+    except KeyError:
+        return {"actor": None}
 
     if dict(sorted(test_code_details.items())) == dict(
         sorted(valid_code_details.items())

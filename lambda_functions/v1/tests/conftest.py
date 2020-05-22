@@ -15,13 +15,13 @@ from lambda_functions.v1.functions.lpa_codes.app.api import (
 def mock_env_setup(monkeypatch):
     monkeypatch.setenv("LOGGER_LEVEL", "DEBUG")
     monkeypatch.setenv("ENVIRONMENT", "mock")
-    monkeypatch.setenv("API_VERSION", "testing")
+    monkeypatch.setenv("API_VERSION", "v1")
 
 
 @pytest.fixture(params=[True, False])
 def mock_unique_code(monkeypatch, request):
     def return_unique(*args, **kwargs):
-        return lambda check_result: request.param
+        return request.param
 
     monkeypatch.setattr(code_generator, "check_code_unique", return_unique)
 

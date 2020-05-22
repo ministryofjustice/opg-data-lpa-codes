@@ -17,7 +17,7 @@ def generate_code(database):
     Returns:
         string
     """
-    acceptable_characters = "23456789abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ"
+    acceptable_characters = "3456789abcdefghijkmnpqrstuvwxyABCDEFGHJKLMNPQRSTUVWXY"
 
     unique = False
     attempts = 0
@@ -115,7 +115,7 @@ def update_codes(database, key=None, code=None, status=False):
     return updated_rows
 
 
-def insert_new_code(database, key, code):
+def insert_new_code(database, key, dob, code):
 
     table = database.Table(lpa_codes_table())
     lpa = key["lpa"]
@@ -128,6 +128,7 @@ def insert_new_code(database, key, code):
             "code": code,
             "active": True,
             "last_updated_date": date_formatter(datetime.datetime.now()),
+            "dob": dob,
         }
     )
 

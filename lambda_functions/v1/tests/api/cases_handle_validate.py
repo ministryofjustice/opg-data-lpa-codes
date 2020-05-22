@@ -122,3 +122,27 @@ def case_validate_invalid_code_2() -> CaseData:
 
     expected_result = {"actor": None}
     return test_data, data, expected_result
+
+
+@case_name("Try to validate a code with missing dob")
+def case_validate_invalid_code_3() -> CaseData:
+    test_data = [
+        {
+            "active": True,
+            "actor": "lightcyan",
+            "code": "t39hg7zQdE59",
+            "expiry_date": "2020-08-30",
+            "generated_date": "2019-09-31",
+            "last_updated_date": "2019-12-26",
+            "lpa": "scale_virtual_e_commerce",
+        }
+    ]
+
+    data = {
+        "lpa": "scale_virtual_e_commerce",
+        "dob": "1960-06-15",
+        "code": "t39hg7zQdE59",
+    }
+
+    expected_result = {"actor": None}
+    return test_data, data, expected_result

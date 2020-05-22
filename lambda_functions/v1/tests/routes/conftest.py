@@ -33,10 +33,17 @@ def wait_until(predicate, timeout=5, interval=0.05, *args, **kwargs):
 
 @pytest.fixture
 def server():
+
+    version = os.environ.get("API_VERSION")
+    print(f"version: {version}")
+
     http_server = create_app(Flask)
+    routes = [str(p) for p in http_server.url_map.iter_rules()]
+    print(f"routes: {routes}")
 
     port = get_open_port()
-    http_server.url = "http://localhost:{}".format(port)
+    http_server.url = "http://localhost:{}/{}".format(port, version)
+    print(f"http_server.url: {http_server.url}")
 
     def start():
         print("start server")
