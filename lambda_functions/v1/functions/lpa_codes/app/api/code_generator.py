@@ -1,9 +1,10 @@
 import datetime
 import secrets
 from boto3.dynamodb.conditions import Key
+from dateutil.relativedelta import relativedelta
 
 from .database import lpa_codes_table
-from .helpers import custom_logger, date_formatter
+from .helpers import custom_logger, date_formatter, calculate_expiry_date
 
 logger = custom_logger()
 
@@ -129,6 +130,8 @@ def insert_new_code(database, key, dob, code):
             "active": True,
             "last_updated_date": date_formatter(datetime.datetime.now()),
             "dob": dob,
+            "generated_date": date_formatter(datetime.datetime.now()),
+            "expiry_date": calculate_expiry_date(today=datetime.datetime.now()),
         }
     )
 

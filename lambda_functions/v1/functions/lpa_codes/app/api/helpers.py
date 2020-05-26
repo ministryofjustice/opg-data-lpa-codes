@@ -1,5 +1,9 @@
 import logging
 import os
+import time
+import datetime
+
+from dateutil.relativedelta import relativedelta
 
 
 def custom_logger(name=None):
@@ -22,5 +26,13 @@ def custom_logger(name=None):
     return logger
 
 
-def date_formatter(date_obj):
-    return date_obj.strftime("%Y-%m-%d")
+def date_formatter(date_obj, format="iso"):
+    if format == "unix":
+        return int(time.mktime(date_obj.timetuple()))
+    else:
+        return date_obj.strftime("%Y-%m-%d")
+
+
+def calculate_expiry_date(today, months=12, format="unix"):
+    expiry_date = today + relativedelta(months=+months)
+    return date_formatter(expiry_date, format=format)

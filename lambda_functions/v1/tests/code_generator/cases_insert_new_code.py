@@ -2,7 +2,10 @@ import datetime
 
 from pytest_cases import CaseData
 
-from lambda_functions.v1.functions.lpa_codes.app.api.helpers import date_formatter
+from lambda_functions.v1.functions.lpa_codes.app.api.helpers import (
+    date_formatter,
+    calculate_expiry_date,
+)
 
 
 def case_insert_a_code() -> CaseData:
@@ -21,6 +24,8 @@ def case_insert_a_code() -> CaseData:
             "active": True,
             "last_updated_date": date_formatter(date_obj=datetime.datetime.now()),
             "dob": "1960-06-05",
+            "generated_date": date_formatter(date_obj=datetime.datetime.now()),
+            "expiry_date": calculate_expiry_date(today=datetime.datetime.now()),
         }
     ]
 
