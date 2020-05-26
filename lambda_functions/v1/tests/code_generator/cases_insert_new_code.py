@@ -24,8 +24,6 @@ def case_insert_a_code() -> CaseData:
             "active": True,
             "last_updated_date": date_formatter(date_obj=datetime.datetime.now()),
             "dob": "1960-06-05",
-            "generated_date": date_formatter(date_obj=datetime.datetime.now()),
-            "expiry_date": calculate_expiry_date(today=datetime.datetime.now()),
         }
     ]
 

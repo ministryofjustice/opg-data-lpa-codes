@@ -8,25 +8,38 @@ import datetime
 
 def test_date_formatter():
     test_date = datetime.datetime(
-        year=2020, month=5, day=26, hour=10, minute=0, second=0
+        year=2020,
+        month=5,
+        day=26,
+        hour=10,
+        minute=0,
+        second=0,
+        tzinfo=datetime.timezone.utc,
     )
+
     date = date_formatter(test_date, format="iso")
 
     assert date == "2020-05-26"
 
     date = date_formatter(test_date, format="unix")
 
-    assert date == 1590483600
+    assert date == 1590487200
 
 
 def test_calculate_expiry_date():
     test_date = datetime.datetime(
-        year=2020, month=5, day=26, hour=10, minute=0, second=0
+        year=2020,
+        month=5,
+        day=26,
+        hour=10,
+        minute=0,
+        second=0,
+        tzinfo=datetime.timezone.utc,
     )
 
     expiry_date = calculate_expiry_date(today=test_date, months=12, format="unix")
 
-    assert expiry_date == 1622019600
+    assert expiry_date == 1622023200
 
     expiry_date = calculate_expiry_date(today=test_date, months=12, format="iso")
 

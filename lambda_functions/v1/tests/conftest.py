@@ -9,6 +9,7 @@ from lambda_functions.v1.functions.lpa_codes.app.api import (
     code_generator,
     endpoints,
 )
+import datetime
 
 
 @pytest.fixture(autouse=True)
@@ -146,3 +147,15 @@ def remove_test_data(test_data):
     after_tidyup_data = all_data["Items"]
 
     assert len(after_tidyup_data) == 0
+
+
+@pytest.fixture(autouse=True)
+def mock_datetime_now(monkeypatch):
+    class FakeDate(datetime.datetime):
+        @classmethod
+        def now(cls):
+            return datetime.datetime(
+                year=2017, month=1, day=21, hour=8, minute=0, second=0
+            )
+
+    monkeypatch.setattr(datetime, "datetime", FakeDate)

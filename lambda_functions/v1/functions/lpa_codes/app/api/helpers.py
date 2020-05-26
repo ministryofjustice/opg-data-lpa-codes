@@ -28,7 +28,7 @@ def custom_logger(name=None):
 
 def date_formatter(date_obj, format="iso"):
     if format == "unix":
-        return int(time.mktime(date_obj.timetuple()))
+        return int(date_obj.timestamp())
     else:
         return date_obj.strftime("%Y-%m-%d")
 

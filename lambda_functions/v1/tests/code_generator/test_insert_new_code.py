@@ -21,11 +21,10 @@ def test_insert_new_code(mock_database, case_data: CaseDataGetter):
 
     table_name = mock_db_table_name()
     table = db.Table(table_name)
-    return_fields = (
-        "lpa, actor, code, active, last_updated_date, dob, "
-        "generated_date, expiry_date"
-    )
-    db_row = table.get_item(Key={"code": code}, ProjectionExpression=return_fields)
+
+    db_row = table.get_item(Key={"code": code})
+
+    print(f"db_row['Item']: {db_row['Item']}")
 
     today = datetime.datetime.now()
     in_12_months = datetime.datetime.now() + relativedelta(months=+12)
@@ -35,9 +34,6 @@ def test_insert_new_code(mock_database, case_data: CaseDataGetter):
         date_obj=in_12_months, format="unix"
     )
 
-    print(f"result: {result}")
-
     assert result == expected_result
 
-    # remove_test_data(db_row['Item'])
     table.delete_item(Key=db_row["Item"])
