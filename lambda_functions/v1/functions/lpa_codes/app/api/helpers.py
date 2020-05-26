@@ -1,7 +1,5 @@
 import logging
 import os
-import time
-import datetime
 
 from dateutil.relativedelta import relativedelta
 

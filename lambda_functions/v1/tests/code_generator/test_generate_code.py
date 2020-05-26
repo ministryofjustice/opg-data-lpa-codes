@@ -1,7 +1,5 @@
 import logging
 
-import boto3
-
 from lambda_functions.v1.functions.lpa_codes.app.api.code_generator import generate_code
 
 
