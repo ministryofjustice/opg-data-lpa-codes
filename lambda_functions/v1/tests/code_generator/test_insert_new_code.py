@@ -39,4 +39,5 @@ def test_insert_new_code(mock_database, case_data: CaseDataGetter):
 
     assert result == expected_result
 
-    remove_test_data(expected_result)
+    # remove_test_data(db_row['Item'])
+    table.delete_item(Key=db_row["Item"])
