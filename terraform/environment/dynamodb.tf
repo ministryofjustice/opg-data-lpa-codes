@@ -18,6 +18,11 @@ resource "aws_dynamodb_table" "lpa_codes" {
     type = "S"
   }
 
+  ttl {
+    attribute_name = "expiry_date"
+    enabled        = true
+  }
+
   global_secondary_index {
     name            = "key_index"
     hash_key        = "actor"
