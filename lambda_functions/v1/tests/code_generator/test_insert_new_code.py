@@ -1,12 +1,15 @@
+import datetime
+import time
 import boto3
+from dateutil.relativedelta import relativedelta
 from pytest_cases import cases_data, CaseDataGetter
 
 from lambda_functions.v1.functions.lpa_codes.app.api.code_generator import (
     insert_new_code,
 )
+from lambda_functions.v1.functions.lpa_codes.app.api.helpers import date_formatter
 from lambda_functions.v1.tests.code_generator import cases_insert_new_code
-
-from lambda_functions.v1.tests.conftest import remove_test_data
+from lambda_functions.v1.tests.conftest import test_constants
 
 
 @cases_data(module=cases_insert_new_code)
@@ -15,8 +18,21 @@ def test_insert_new_code(mock_database, case_data: CaseDataGetter):
     db = boto3.resource("dynamodb")
     result = insert_new_code(database=db, key=key, dob=dob, code=code)
 
-    print(f"result: {result}")
+    table_name = test_constants["TABLE_NAME"]
+    table = db.Table(table_name)
+
+    db_row = table.get_item(Key={"code": code})
+
+    print(f"db_row['Item']: {db_row['Item']}")
+
+    today = datetime.datetime.now()
+    in_12_months = datetime.datetime.now() + relativedelta(months=+12)
+
+    assert db_row["Item"]["generated_date"] == date_formatter(today)
+    assert db_row["Item"]["expiry_date"] == date_formatter(
+        date_obj=in_12_months, format="unix"
+    )
 
     assert result == expected_result
 
-    remove_test_data(expected_result)
+    table.delete_item(Key=db_row["Item"])

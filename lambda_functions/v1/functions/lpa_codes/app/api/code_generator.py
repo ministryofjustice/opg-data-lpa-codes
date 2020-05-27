@@ -1,9 +1,9 @@
 import datetime
 import secrets
-from boto3.dynamodb.conditions import Key
+from boto3.dynamodb.conditions import Key, Attr
 
 from .database import lpa_codes_table
-from .helpers import custom_logger, date_formatter
+from .helpers import custom_logger, date_formatter, calculate_expiry_date
 
 logger = custom_logger()
 
@@ -56,7 +56,12 @@ def get_codes(database, key=None, code=None):
 
     table = database.Table(lpa_codes_table())
 
-    return_fields = "lpa, actor, code, active, last_updated_date, dob"
+    return_fields = "lpa, actor, code, active, last_updated_date, dob, expiry_date"
+    ttl_cutoff = int(
+        datetime.datetime.combine(
+            datetime.datetime.now(), datetime.datetime.min.time()
+        ).timestamp()
+    )
 
     codes = []
     if code:
@@ -65,7 +70,10 @@ def get_codes(database, key=None, code=None):
         )
 
         try:
-            codes.append(query_result["Item"])
+            if query_result["Item"]["expiry_date"] > ttl_cutoff:
+                codes.append(query_result["Item"])
+            else:
+                logger.info("Code does not exist in database")
         except KeyError:
             # TODO better error handling here
             logger.info("Code does not exist in database")
@@ -76,6 +84,7 @@ def get_codes(database, key=None, code=None):
         query_result = table.query(
             IndexName="key_index",
             KeyConditionExpression=Key("lpa").eq(lpa) & Key("actor").eq(actor),
+            FilterExpression=Attr("expiry_date").gt(ttl_cutoff),
             ProjectionExpression=return_fields,
         )
 
@@ -129,6 +138,8 @@ def insert_new_code(database, key, dob, code):
             "active": True,
             "last_updated_date": date_formatter(datetime.datetime.now()),
             "dob": dob,
+            "generated_date": date_formatter(datetime.datetime.now()),
+            "expiry_date": calculate_expiry_date(today=datetime.datetime.now()),
         }
     )
 

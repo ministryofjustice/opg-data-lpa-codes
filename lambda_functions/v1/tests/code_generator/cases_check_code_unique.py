@@ -1,12 +1,12 @@
 from pytest_cases import CaseData, case_name
-
+from lambda_functions.v1.tests.conftest import test_constants
 
 default_test_data = [
     {
         "active": False,
         "actor": "blueviolet",
         "code": "daNFwFHVHJ9D",
-        "expiry_date": "21/07/2020",
+        "expiry_date": test_constants["EXPIRY_DATE"],
         "generated_date": "22/07/2019",
         "last_updated_date": "11/09/2019",
         "dob": "1960-06-05",
@@ -16,7 +16,7 @@ default_test_data = [
         "active": True,
         "actor": "blueviolet",
         "code": "zyQ9SWhzmQ9J",
-        "expiry_date": "17/11/2020",
+        "expiry_date": test_constants["EXPIRY_DATE"],
         "generated_date": "18/11/2019",
         "last_updated_date": "23/05/2020",
         "dob": "1960-06-05",
@@ -26,7 +26,7 @@ default_test_data = [
         "active": True,
         "actor": "blueviolet",
         "code": "meEJZW5i7jrt",
-        "expiry_date": "09/09/2020",
+        "expiry_date": test_constants["EXPIRY_DATE"],
         "generated_date": "10/09/2019",
         "last_updated_date": "22/11/2019",
         "dob": "1960-06-05",
@@ -36,7 +36,7 @@ default_test_data = [
         "active": False,
         "actor": "blueviolet",
         "code": "jHxG7ctbFizx",
-        "expiry_date": "24/08/2020",
+        "expiry_date": test_constants["EXPIRY_DATE"],
         "generated_date": "25/08/2019",
         "last_updated_date": "18/08/2020",
         "dob": "1960-06-05",
