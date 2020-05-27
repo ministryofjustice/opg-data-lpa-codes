@@ -2,6 +2,8 @@ from decimal import Decimal
 
 from pytest_cases import CaseData
 
+from lambda_functions.v1.tests.conftest import test_constants
+
 
 def case_insert_a_code() -> CaseData:
     key = {
@@ -17,9 +19,9 @@ def case_insert_a_code() -> CaseData:
             "actor": "6f41cde2-f5f2-45d9-8776-e6dcdb1b56e8",
             "code": "2gVYdRNjUHTX",
             "active": True,
-            "last_updated_date": "2020-01-21",
+            "last_updated_date": test_constants["TODAY_ISO"],
             "dob": "1960-06-05",
-            "expiry_date": Decimal("1611216000"),
+            "expiry_date": test_constants["EXPIRY_DATE"],
         }
     ]
 

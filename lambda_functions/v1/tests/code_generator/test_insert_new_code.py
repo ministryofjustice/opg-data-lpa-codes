@@ -10,9 +10,11 @@ from lambda_functions.v1.functions.lpa_codes.app.api.code_generator import (
 from lambda_functions.v1.functions.lpa_codes.app.api.helpers import date_formatter
 from lambda_functions.v1.tests.code_generator import cases_insert_new_code
 from lambda_functions.v1.tests.conftest import test_constants
+from freezegun import freeze_time
 
 
 @cases_data(module=cases_insert_new_code)
+@freeze_time("2020-01-21")
 def test_insert_new_code(mock_database, case_data: CaseDataGetter):
     key, code, dob, expected_result = case_data.get()
     db = boto3.resource("dynamodb")
