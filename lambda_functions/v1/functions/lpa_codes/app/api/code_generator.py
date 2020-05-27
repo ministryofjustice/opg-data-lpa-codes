@@ -57,6 +57,7 @@ def get_codes(database, key=None, code=None):
     table = database.Table(lpa_codes_table())
 
     return_fields = "lpa, actor, code, active, last_updated_date, dob, expiry_date"
+    # TTL cutoff is set to midnight this morning - does not need to be the exact time
     ttl_cutoff = int(
         datetime.datetime.combine(
             datetime.datetime.now(), datetime.datetime.min.time()
@@ -97,11 +98,11 @@ def get_codes(database, key=None, code=None):
     return codes
 
 
-def update_codes(database, key=None, code=None, status=False):
+def update_codes(database, key=None, code=None, status=False, status_details=None):
 
     table = database.Table(lpa_codes_table())
     entries = get_codes(database=database, key=key, code=code)
-    logger.info(f"entries: {entries}")
+
     if len(entries) == 0:
         logger.info(f"0 rows updated for LPA/Actor")
         return 0
@@ -112,10 +113,12 @@ def update_codes(database, key=None, code=None, status=False):
 
             table.update_item(
                 Key={"code": entry["code"]},
-                UpdateExpression="set active = :a, last_updated_date = :d",
+                UpdateExpression="set active = :a, last_updated_date = :d, "
+                "status_details = :s",
                 ExpressionAttributeValues={
                     ":a": status,
                     ":d": date_formatter(datetime.datetime.now()),
+                    ":s": status_details,
                 },
             )
 
@@ -140,6 +143,7 @@ def insert_new_code(database, key, dob, code):
             "dob": dob,
             "generated_date": date_formatter(datetime.datetime.now()),
             "expiry_date": calculate_expiry_date(today=datetime.datetime.now()),
+            "status_details": "Generated",
         }
     )
 

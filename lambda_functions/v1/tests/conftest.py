@@ -15,8 +15,16 @@ import datetime
 
 test_constants = {
     "TABLE_NAME": "lpa-codes-mock",
-    "EXPIRY_DATE": Decimal(1611223200),  # 21/01/2021 @ 10:00am (UTC)
-    "TODAY": datetime.datetime(year=2020, month=1, day=21, hour=8, minute=0, second=0),
+    "EXPIRY_DATE": Decimal(1611216000),  # 21/01/2021 @ 8:00am (UTC)
+    "EXPIRY_DATE_PAST": Decimal(1577865600),  # 01/01/2020 @ 8:00am (UTC)
+    "TODAY": datetime.datetime(
+        year=2020, month=1, day=21, hour=8, minute=0, second=0
+    ),  # 21/01/2020 @ 8:00am (UTC)
+    "TODAY_ISO": datetime.datetime(
+        year=2020, month=1, day=21, hour=8, minute=0, second=0
+    ).strftime(
+        "%Y-%m-%d"
+    ),  # 2020-01-21 @8:00am (UTC)
     "DEFAULT_CODE": "tOhkrldOqewm",
 }
 

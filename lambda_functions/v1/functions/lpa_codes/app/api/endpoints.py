@@ -23,7 +23,9 @@ def handle_create(data):
         dob = entry["dob"]
 
         # 1. expire all existing codes for LPA/Actor combo
-        code_generator.update_codes(database=db, key=key, status=False)
+        code_generator.update_codes(
+            database=db, key=key, status=False, status_details="Superseded"
+        )
 
         # 2. generate a new code
         generated_code = code_generator.generate_code(database=db)
@@ -49,7 +51,9 @@ def handle_create(data):
 def handle_revoke(data):
     db = db_connection()
 
-    update_result = code_generator.update_codes(database=db, code=data["code"])
+    update_result = code_generator.update_codes(
+        database=db, code=data["code"], status_details="Revoked"
+    )
 
     return {"codes revoked": update_result}
 

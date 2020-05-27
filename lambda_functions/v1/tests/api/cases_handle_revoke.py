@@ -19,6 +19,7 @@ def case_revoke_a_code_1() -> CaseData:
             "last_updated_date": "2019-12-26",
             "dob": "1960-06-05",
             "lpa": "mesh_end_to_end_systems",
+            "status_details": "Generated",
         }
     ]
 
@@ -27,7 +28,7 @@ def case_revoke_a_code_1() -> CaseData:
     }
 
     expected_result = {"codes revoked": 1}
-    expected_last_updated_date = date_formatter(date_obj=datetime.datetime.now())
+    expected_last_updated_date = test_constants["TODAY_ISO"]
     return test_data, data, expected_result, expected_last_updated_date
 
 
@@ -43,6 +44,7 @@ def case_revoke_a_code_2() -> CaseData:
             "last_updated_date": "2019-12-26",
             "dob": "1960-06-05",
             "lpa": "mesh_end_to_end_systems",
+            "status_details": "Superseded",
         }
     ]
 
@@ -67,6 +69,7 @@ def case_revoke_a_code_3() -> CaseData:
             "last_updated_date": "2019-12-26",
             "dob": "1960-06-05",
             "lpa": "mesh_end_to_end_systems",
+            "status_details": "Revoked",
         }
     ]
 
