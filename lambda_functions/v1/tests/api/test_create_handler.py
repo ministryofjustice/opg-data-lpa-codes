@@ -1,5 +1,3 @@
-import datetime
-
 import boto3
 from boto3.dynamodb.conditions import Key
 
@@ -14,6 +12,7 @@ from lambda_functions.v1.tests.conftest import (
     test_constants,
     insert_test_data,
 )
+from freezegun import freeze_time
 
 
 @cases_data(module=cases_handle_create)
@@ -28,6 +27,7 @@ def test_post(mock_database, mock_generate_code, case_data: CaseDataGetter):
 
 
 @cases_data(module=cases_handle_create)
+@freeze_time("2020-01-21")
 def test_data(mock_database, mock_generate_code, case_data: CaseDataGetter):
     test_data, data, expected_result = case_data.get()
 
@@ -45,7 +45,6 @@ def test_data(mock_database, mock_generate_code, case_data: CaseDataGetter):
         IndexName="key_index",
         KeyConditionExpression=Key("lpa").eq(lpa) & Key("actor").eq(actor),
     )
-    print(f"query_result: {query_result}")
 
     for item in query_result["Items"]:
 

@@ -8,9 +8,11 @@ from pytest_cases import cases_data, CaseDataGetter
 
 from lambda_functions.v1.tests.api import cases_handle_revoke
 from lambda_functions.v1.tests.conftest import insert_test_data, remove_test_data
+from freezegun import freeze_time
 
 
 @cases_data(module=cases_handle_revoke)
+@freeze_time("2020-01-21")
 def test_post(mock_database, case_data: CaseDataGetter):
     test_data, data, expected_result, expected_last_updated_date = case_data.get()
     # Set up test data
