@@ -4,21 +4,23 @@
       "active": false,
       "actor": "bob_bobson",
       "code": "yEFJH33hn5nX",
-      "dob": "01/05/1989",
-      "expiry_date": "10/11/2020",
-      "generated_date": "11/11/2019",
-      "last_updated_date": "19/06/2020",
-      "lpa": "random_lpa_name"
+      "dob": "1989-05-01",
+      "expiry_date": "1604995200",
+      "generated_date": "2019-11-11",
+      "last_updated_date": "2020-06-19",
+      "lpa": "random_lpa_name",
+      "status_details": "Revoked"
     },
     {
       "active": true,
       "actor": "hope_hopeful",
       "code": "kpDHIFRahjk",
-      "dob": "01/01/1981",
-      "expiry_date": "10/12/2020",
-      "generated_date": "10/11/2019",
-      "last_updated_date": "19/07/2020",
-      "lpa": "another_lpa_name"
+      "dob": "1981-01-01",
+      "expiry_date": "1607587200",
+      "generated_date": "2019-11-10",
+      "last_updated_date": "2020-07-19",
+      "lpa": "another_lpa_name",
+      "status_details": "Generated"
     }
   ]
 }
