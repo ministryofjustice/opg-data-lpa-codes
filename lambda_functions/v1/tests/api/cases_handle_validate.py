@@ -1,6 +1,5 @@
-from copy import deepcopy
-
-from pytest_cases import CaseData, case_name, case_tags
+from lambda_functions.v1.tests.conftest import test_constants
+from pytest_cases import CaseData, case_name
 
 
 @case_name("Try to validate a code that is valid and active")
@@ -10,7 +9,7 @@ def case_validate_valid_code_1() -> CaseData:
             "active": True,
             "actor": "lightcyan",
             "code": "t39hg7zQdE59",
-            "expiry_date": "2020-08-30",
+            "expiry_date": test_constants["EXPIRY_DATE"],
             "generated_date": "2019-09-31",
             "last_updated_date": "2019-12-26",
             "dob": "1960-06-05",
@@ -35,7 +34,7 @@ def case_validate_valid_code_2() -> CaseData:
             "active": False,
             "actor": "lightcyan",
             "code": "t39hg7zQdE59",
-            "expiry_date": "2020-08-30",
+            "expiry_date": test_constants["EXPIRY_DATE"],
             "generated_date": "2019-09-31",
             "last_updated_date": "2019-12-26",
             "dob": "1960-06-05",
@@ -60,7 +59,7 @@ def case_validate_non_existent_code() -> CaseData:
             "active": True,
             "actor": "lightcyan",
             "code": "t39hg7zQdE59",
-            "expiry_date": "2020-08-30",
+            "expiry_date": test_constants["EXPIRY_DATE"],
             "generated_date": "2019-09-31",
             "last_updated_date": "2019-12-26",
             "dob": "1960-06-05",
@@ -85,7 +84,7 @@ def case_validate_invalid_code_1() -> CaseData:
             "active": True,
             "actor": "lightcyan",
             "code": "t39hg7zQdE59",
-            "expiry_date": "2020-08-30",
+            "expiry_date": test_constants["EXPIRY_DATE"],
             "generated_date": "2019-09-31",
             "last_updated_date": "2019-12-26",
             "dob": "1960-06-05",
@@ -110,7 +109,7 @@ def case_validate_invalid_code_2() -> CaseData:
             "active": True,
             "actor": "lightcyan",
             "code": "t39hg7zQdE59",
-            "expiry_date": "2020-08-30",
+            "expiry_date": test_constants["EXPIRY_DATE"],
             "generated_date": "2019-09-31",
             "last_updated_date": "2019-12-26",
             "dob": "1960-06-05",
@@ -131,7 +130,7 @@ def case_validate_invalid_code_3() -> CaseData:
             "active": True,
             "actor": "lightcyan",
             "code": "t39hg7zQdE59",
-            "expiry_date": "2020-08-30",
+            "expiry_date": test_constants["EXPIRY_DATE"],
             "generated_date": "2019-09-31",
             "last_updated_date": "2019-12-26",
             "lpa": "scale_virtual_e_commerce",
@@ -141,6 +140,31 @@ def case_validate_invalid_code_3() -> CaseData:
     data = {
         "lpa": "scale_virtual_e_commerce",
         "dob": "1960-06-15",
+        "code": "t39hg7zQdE59",
+    }
+
+    expected_result = {"actor": None}
+    return test_data, data, expected_result
+
+
+@case_name("Try to validate a code that is valid and active but past its TTL")
+def case_validate_valid_code_3() -> CaseData:
+    test_data = [
+        {
+            "active": True,
+            "actor": "lightcyan",
+            "code": "t39hg7zQdE59",
+            "expiry_date": test_constants["EXPIRY_DATE_PAST"],
+            "generated_date": "2019-09-31",
+            "last_updated_date": "2019-12-26",
+            "dob": "1960-06-05",
+            "lpa": "scale_virtual_e_commerce",
+        }
+    ]
+
+    data = {
+        "lpa": "scale_virtual_e_commerce",
+        "dob": "1960-06-05",
         "code": "t39hg7zQdE59",
     }
 

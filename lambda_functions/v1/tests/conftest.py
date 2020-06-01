@@ -1,4 +1,5 @@
 import os
+from decimal import Decimal
 
 import boto3
 import pytest
@@ -9,6 +10,23 @@ from lambda_functions.v1.functions.lpa_codes.app.api import (
     code_generator,
     endpoints,
 )
+import datetime
+
+
+test_constants = {
+    "TABLE_NAME": "lpa-codes-mock",
+    "EXPIRY_DATE": Decimal(1611187200),  # 21/01/2021 @ 12:00am (UTC)
+    "EXPIRY_DATE_PAST": Decimal(1577865600),  # 01/01/2020 @ 8:00am (UTC)
+    "TODAY": datetime.datetime(
+        year=2020, month=1, day=21, hour=8, minute=0, second=0
+    ),  # 21/01/2020 @ 8:00am (UTC)
+    "TODAY_ISO": datetime.datetime(
+        year=2020, month=1, day=21, hour=8, minute=0, second=0
+    ).strftime(
+        "%Y-%m-%d"
+    ),  # 2020-01-21 @8:00am (UTC)
+    "DEFAULT_CODE": "tOhkrldOqewm",
+}
 
 
 @pytest.fixture(autouse=True)
@@ -30,7 +48,7 @@ def mock_unique_code(monkeypatch, request):
 def mock_generate_code(monkeypatch):
     def generate_predictable_code(*args, **kwargs):
 
-        return "tOhkrldOqewm"
+        return test_constants["DEFAULT_CODE"]
 
     monkeypatch.setattr(code_generator, "generate_code", generate_predictable_code)
 
@@ -43,10 +61,6 @@ def mock_db_connection(monkeypatch):
         return boto3.resource("dynamodb")
 
     monkeypatch.setattr(endpoints, "db_connection", moto_db_connection)
-
-
-def mock_db_table_name():
-    return "lpa-codes-mock"
 
 
 @pytest.fixture()
@@ -76,12 +90,12 @@ def aws_credentials():
     os.environ["AWS_DEFAULT_REGION"] = "eu-west-1"
 
 
-@pytest.fixture(scope="session", autouse=False)
+@pytest.fixture(scope="function", autouse=False)
 def mock_database(aws_credentials):
     with mock_dynamodb2():
         print("db setup")
         mock_db = boto3.resource("dynamodb")
-        table_name = mock_db_table_name()
+        table_name = test_constants["TABLE_NAME"]
 
         table = mock_db.create_table(
             TableName=table_name,
@@ -117,7 +131,9 @@ def mock_database(aws_credentials):
 def insert_test_data(test_data):
     # TODO this could be a fixture
     # Set up test data
-    table = boto3.resource("dynamodb").Table("lpa-codes-mock")
+
+    table_name = test_constants["TABLE_NAME"]
+    table = boto3.resource("dynamodb").Table(table_name)
     number_of_rows = len(test_data)
     for row in test_data:
         table.put_item(Item=row)
@@ -133,7 +149,9 @@ def insert_test_data(test_data):
 def remove_test_data(test_data):
     # TODO this could be a fixture
     # Remove test data
-    table = boto3.resource("dynamodb").Table("lpa-codes-mock")
+
+    table_name = test_constants["TABLE_NAME"]
+    table = boto3.resource("dynamodb").Table(table_name)
     for row in test_data:
         table.delete_item(Key=row)
 
