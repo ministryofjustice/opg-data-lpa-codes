@@ -246,6 +246,10 @@ jobs:
     steps:
       - attach_workspace:
           at: ~/project
+      - when:
+          condition: << parameters.pact_tag_production >>
+          steps:
+            - lpa-codes/aws_cli_install
       - lpa-codes/terraform_install
       - run:
           name: unzip artifact
@@ -384,9 +388,9 @@ jobs:
             then
               printf "\n\nSetting CONSUMER_TRIGGERED to true\n\n"
               export CONSUMER_TRIGGERED=true
-              printf "Process kicked off by commit %b to sirius\n\n" "${CONSUMER_VER}"
+              printf "Process kicked off by commit %b to sirius\n\n" "${GIT_COMMIT_CONSUMER}"
               printf "\n\nChecking if we can deploy with can-i-deploy\n\n"
               "${SCRIPT_PATH}"/check_pact_deployable.sh
             else
-              printf "\n\nSomething has gone wrong! Check what CONSUMER_VER is set to\n\n"
+              printf "\n\nSomething has gone wrong! Check what GIT_COMMIT_CONSUMER is set to\n\n"
             fi
