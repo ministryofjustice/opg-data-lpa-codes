@@ -10,7 +10,7 @@ parameters:
     default: true
   run_verify_pact:
     type: boolean
-    default: false
+    default: true
   consumerversion:
     type: string
     default: ""
@@ -87,6 +87,13 @@ workflows:
           applycheck: true
           filters: {branches:{only:[master]}}
 
+      - terraform_action:
+          name: integration apply
+          requires: [approve release to production]
+          tf_command: apply --auto-approve
+          tf_workspace: integration
+          applycheck: true
+          filters: {branches:{only:[master]}}
       - terraform_action:
          name: production apply
          requires: [approve release to production]
