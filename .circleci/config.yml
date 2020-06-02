@@ -10,7 +10,7 @@ parameters:
     default: true
   run_verify_pact:
     type: boolean
-    default: true
+    default: false
   consumerversion:
     type: string
     default: ""
@@ -25,66 +25,60 @@ workflows:
       - build_lambda:
           name: build and artifact
           filters: {branches:{ignore:[master]}}
+
       - terraform_pre_checks:
-          name: terraform branch preflight checks
+          name: terraform preflight checks
           requires: [build and artifact]
           filters: {branches:{ignore:[master]}}
-      - terraform_action:
-          name: plan branch environment
-          requires: [terraform branch preflight checks]
-          tf_command: plan
-          filters: {branches:{ignore:[master]}}
+
       - terraform_action:
           name: apply branch environment
-          requires: [plan branch environment]
+          requires: [terraform preflight checks]
           tf_command: apply
           filters: {branches:{ignore:[master]}}
+
       - cleanup:
           name: approve destroy environment
           type: approval
           requires: [apply branch environment]
           filters: {branches:{ignore:[master]}}
+
       - terraform_action:
           name: destroy branch environment
           requires: [approve destroy environment]
           tf_command: destroy
           destroy_workspace: true
           filters: {branches:{ignore:[master]}}
+
   commit_to_master:
     when: << pipeline.parameters.run_commit_to_master >>
     jobs:
       - build_lambda:
           name: build and artifact
           filters: {branches:{only:[master]}}
-      - terraform_pre_checks:
-          name: terraform dev preflight checks
-          requires: [build and artifact]
-          tf_workspace: development
-          filters: {branches:{only:[master]}}
+
       - terraform_action:
           name: development apply
-          requires: [terraform dev preflight checks]
+          requires: [build and artifact]
           tf_command: apply --auto-approve
           tf_workspace: development
           applycheck: true
           filters: {branches:{only:[master]}}
-      - terraform_pre_checks:
-         name: terraform preprod preflight checks
-         requires: [build and artifact]
-         tf_workspace: preproduction
-         filters: {branches:{only:[master]}}
+
       - terraform_action:
          name: preprod apply
-         requires: [terraform preprod preflight checks, development apply]
+         requires: [development apply]
          tf_command: apply --auto-approve
          tf_workspace: preproduction
          applycheck: true
          filters: {branches:{only:[master]}}
+
       - approve:
          name: approve release to production
          type: approval
          requires: [preprod apply]
          filters: {branches:{only:[master]}}
+
       - terraform_action:
           name: integration apply
           requires: [approve release to production]
@@ -92,6 +86,7 @@ workflows:
           tf_workspace: integration
           applycheck: true
           filters: {branches:{only:[master]}}
+
       - terraform_action:
          name: production apply
          requires: [approve release to production]
@@ -100,6 +95,7 @@ workflows:
          applycheck: true
          filters: {branches:{only:[master]}}
          pact_tag_production: true
+
   verify_pact:
     when: << pipeline.parameters.run_verify_pact >>
     jobs:
@@ -197,6 +193,7 @@ jobs:
           root: /tmp
           paths:
             - opg-data-lpa-codes.zip
+
   terraform_pre_checks:
     executor: lpa-codes/python_with_tfvars
     parameters:
@@ -217,6 +214,9 @@ jobs:
           working_directory: ~/project/terraform/environment
           command: terraform init
       - run:
+          name: Set BASH_ENV
+          command: ~/project/.circleci/set_env.sh >> $BASH_ENV
+      - run:
           name: terraform check formatting - environment
           working_directory: ~/project/terraform/environment
           command: terraform fmt -diff -check -recursive
@@ -224,6 +224,27 @@ jobs:
           name: validate terraform - environment
           working_directory: ~/project/terraform/environment
           command: terraform validate
+      - run:
+          name: terraform plan - branch
+          working_directory: ~/project/terraform/environment
+          command: terraform plan -input=false
+      - run:
+          name: terraform plan - development
+          working_directory: ~/project/terraform/environment
+          command: export TF_WORKSPACE=development && terraform plan -input=false
+      - run:
+          name: terraform plan - integration
+          working_directory: ~/project/terraform/environment
+          command: export TF_WORKSPACE=integration && terraform plan -input=false
+      - run:
+          name: terraform plan - preproduction
+          working_directory: ~/project/terraform/environment
+          command: export TF_WORKSPACE=preproduction && terraform plan -input=false
+      - run:
+          name: terraform plan - production
+          working_directory: ~/project/terraform/environment
+          command: export TF_WORKSPACE=production && terraform plan -input=false
+
   terraform_action:
     executor: lpa-codes/python_with_tfvars
     parameters:
