@@ -70,7 +70,8 @@ data "aws_iam_policy_document" "lambda" {
 
     resources = [
       var.dynamodb_table.arn,
-      "${var.dynamodb_table.arn}/index/*"
+      "${var.dynamodb_table.arn}/index/*",
+      var.dynamodb_table.stream_arn,
     ]
   }
 }

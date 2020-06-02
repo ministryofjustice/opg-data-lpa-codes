@@ -1,7 +1,9 @@
 resource "aws_dynamodb_table" "lpa_codes" {
-  name         = "lpa-codes-${local.environment}"
-  billing_mode = "PAY_PER_REQUEST"
-  hash_key     = "code"
+  name             = "lpa-codes-${local.environment}"
+  billing_mode     = "PAY_PER_REQUEST"
+  hash_key         = "code"
+  stream_enabled   = true
+  stream_view_type = "NEW_AND_OLD_IMAGES"
 
   attribute {
     name = "code"
