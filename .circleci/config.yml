@@ -238,19 +238,31 @@ jobs:
       - run:
           name: terraform plan - development
           working_directory: ~/project/terraform/environment
-          command: export TF_WORKSPACE=development && terraform plan -input=false
+          command: |
+            export TF_WORKSPACE=development
+            terraform init
+            terraform plan -input=false
       - run:
           name: terraform plan - integration
           working_directory: ~/project/terraform/environment
-          command: export TF_WORKSPACE=integration && terraform plan -input=false
+          command: |
+            export TF_WORKSPACE=integration
+            terraform init
+            terraform plan -input=false
       - run:
           name: terraform plan - preproduction
           working_directory: ~/project/terraform/environment
-          command: export TF_WORKSPACE=preproduction && terraform plan -input=false
+          command: |
+            export TF_WORKSPACE=preproduction
+            terraform init
+            terraform plan -input=false
       - run:
           name: terraform plan - production
           working_directory: ~/project/terraform/environment
-          command: export TF_WORKSPACE=production && terraform plan -input=false
+          command: |
+            export TF_WORKSPACE=production
+            terraform init
+            terraform plan -input=false
 
   terraform_action:
     executor: lpa-codes/python_with_tfvars
