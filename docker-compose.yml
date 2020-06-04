@@ -46,10 +46,12 @@ services:
         aliases:
           - lpa-codes.local
   dynamodb:
-    image: amazon/dynamodb-local:latest
-    ports:
-      - "8000:8000"
-    networks:
-      default:
-        aliases:
-          - lpa-codes.local
+      image: amazon/dynamodb-local:latest
+      entrypoint: java
+      command: "-jar DynamoDBLocal.jar -sharedDb"
+      ports:
+        - "8000:8000"
+      networks:
+        default:
+          aliases:
+            - lpa-codes.local
