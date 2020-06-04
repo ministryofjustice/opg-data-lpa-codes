@@ -1,6 +1,5 @@
 locals {
   certificate_arn = local.branch_build_flag ? data.aws_acm_certificate.environment_cert[0].arn : aws_acm_certificate.environment_cert[0].arn
-  certificate     = local.branch_build_flag ? data.aws_acm_certificate.environment_cert[0] : aws_acm_certificate.environment_cert[0]
 }
 
 resource "aws_api_gateway_method_settings" "global_gateway_settings" {
@@ -19,7 +18,6 @@ resource "aws_api_gateway_domain_name" "lpa_codes" {
   domain_name              = trimsuffix(local.a_record, ".")
   regional_certificate_arn = local.certificate_arn
 
-  depends_on = [local.certificate]
   endpoint_configuration {
     types = ["REGIONAL"]
   }
