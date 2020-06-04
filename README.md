@@ -51,22 +51,22 @@ curl -X POST http://localhost:4343/setup/dynamodb/table/test_table/delete
 
 **Create new rows**
 ```
-curl -X POST -H 'Content-Type: application/json' -d '@./docs/support_files/create_rows.json' http://localhost:4343/setup/dynamodb/table/lpa_codes/rows/create
+curl -X POST -H 'Content-Type: application/json' -d '@./docs/support_files/create_rows.json' http://localhost:4343/setup/dynamodb/table/lpa-codes-local/rows/create
 ```
 
 **Get all rows**
 ```
-curl -X GET http://localhost:4343/setup/dynamodb/table/lpa_codes/rows/get/all
+curl -X GET http://localhost:4343/setup/dynamodb/table/lpa-codes-local/rows/get/all
 ```
 
 **Query rows**
 ```
-curl -X POST -H 'Content-Type: application/json' -d '{"code": "kpDHIFRahjk"}' http://localhost:4343/setup/dynamodb/table/lpa_codes/rows/get
+curl -X POST -H 'Content-Type: application/json' -d '{"code": "kpDHIFRahjk"}' http://localhost:4343/setup/dynamodb/table/lpa-codes-local/rows/get
 ```
 
 **Delete rows**
 ```
-curl -X POST -H 'Content-Type: application/json' -d '{"rows": [{"code": "kpDHIFRahjk"}]}' http://localhost:4343/setup/dynamodb/table/lpa_codes/rows/delete
+curl -X POST -H 'Content-Type: application/json' -d '{"rows": [{"code": "kpDHIFRahjk"}]}' http://localhost:4343/setup/dynamodb/table/lpa-codes-local/rows/delete
 ```
 
 **Delete all tables in DynamoDb (clear all)**
