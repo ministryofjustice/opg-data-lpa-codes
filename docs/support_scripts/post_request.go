@@ -16,7 +16,7 @@ import (
 func main() {
 
 	roletoassume := "arn:aws:iam::288342028542:role/operator"
-	url := "https://int.lpa-codes.api.opg.service.justice.gov.uk/v1/create"
+	url := "https://dev.lpa-codes.api.opg.service.justice.gov.uk/v1/create"
 	mysession := session.Must(session.NewSession())
 	creds := stscreds.NewCredentials(mysession, roletoassume)
 	cfg := aws.Config{Credentials: creds,Region: aws.String("eu-west-1")}
