@@ -80,18 +80,24 @@ def get_codes(database, key=None, code=None):
             logger.info("Code does not exist in database")
 
     elif key:
-        lpa = key["lpa"]
-        actor = key["actor"]
-        query_result = table.query(
-            IndexName="key_index",
-            KeyConditionExpression=Key("lpa").eq(lpa) & Key("actor").eq(actor),
-            FilterExpression=Attr("expiry_date").gt(ttl_cutoff),
-            ProjectionExpression=return_fields,
-        )
+        try:
+            lpa = key["lpa"]
+            actor = key["actor"]
 
-        if len(query_result["Items"]) > 0:
-            codes.extend(query_result["Items"])
-        else:
+            query_result = table.query(
+                IndexName="key_index",
+                KeyConditionExpression=Key("lpa").eq(lpa) & Key("actor").eq(actor),
+                FilterExpression=Attr("expiry_date").gt(ttl_cutoff),
+                ProjectionExpression=return_fields,
+            )
+
+            if len(query_result["Items"]) > 0:
+                codes.extend(query_result["Items"])
+            else:
+                # TODO better error handling here
+                logger.info("LPA/actor does not exist in database")
+
+        except KeyError:
             # TODO better error handling here
             logger.info("LPA/actor does not exist in database")
 
