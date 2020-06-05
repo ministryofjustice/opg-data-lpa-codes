@@ -18,18 +18,13 @@ def handle_create(data):
     code_list = []
 
     for entry in data["lpas"]:
+
         try:
             lpa = entry["lpa"]
             actor = entry["actor"]
             dob = entry["dob"]
-        except KeyError:
-            break
-            return {"codes": None}
-
-        if "" not in [lpa, actor, dob]:
 
             key = {"lpa": lpa, "actor": actor}
-            print(f"key: {key}")
 
             # 1. expire all existing codes for LPA/Actor combo
             code_generator.update_codes(
@@ -53,7 +48,7 @@ def handle_create(data):
 
             code_list.append(response)
             logger.info(f"code_list: {code_list}")
-        else:
+        except KeyError:
             return {"codes": None}
 
     return {"codes": code_list}
