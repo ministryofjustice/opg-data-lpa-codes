@@ -122,6 +122,50 @@ def case_get_codes_11() -> CaseData:
     )
 
 
+@case_name("Get codes by lpa that doesn't exist")
+def case_get_codes_11_in233() -> CaseData:
+    test_data = deepcopy(default_test_data)
+    code = None
+    key = {
+        "lpa": "fake_lpa_id",
+        "actor": "mediumblue",
+    }
+
+    expected_result = None
+    expected_result_count = 0
+    expected_logger_message = "LPA/actor does not exist in database"
+    return (
+        test_data,
+        code,
+        key,
+        expected_result,
+        expected_result_count,
+        expected_logger_message,
+    )
+
+
+@case_name("Get codes by actor that doesn't exist")
+def case_get_codes_11_in233_1() -> CaseData:
+    test_data = deepcopy(default_test_data)
+    code = None
+    key = {
+        "lpa": "drive_leading-edge_communities",
+        "actor": "fake_actor",
+    }
+
+    expected_result = None
+    expected_result_count = 0
+    expected_logger_message = "LPA/actor does not exist in database"
+    return (
+        test_data,
+        code,
+        key,
+        expected_result,
+        expected_result_count,
+        expected_logger_message,
+    )
+
+
 @case_name("Get codes by code")
 def case_get_codes_2() -> CaseData:
     test_data = deepcopy(default_test_data)

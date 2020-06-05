@@ -1,6 +1,6 @@
 import copy
 
-from pytest_cases import CaseData, case_name
+from pytest_cases import CaseData, case_name, cases_generator
 
 from lambda_functions.v1.tests.conftest import test_constants
 
@@ -87,27 +87,27 @@ def case_create_a_code_2() -> CaseData:
     data = {
         "lpas": [
             {
-                "actor": "violet",
+                "actor": "violet_1",
                 "dob": "1966-05-21",
                 "lpa": "productize_out_of_the_box_portals",
             },
             {
-                "actor": "violet",
+                "actor": "violet_2",
                 "dob": "1988-11-21",
                 "lpa": "productize_out_of_the_box_portals",
             },
             {
-                "actor": "violet",
+                "actor": "violet_3",
                 "dob": "1969-01-28",
                 "lpa": "productize_out_of_the_box_portals",
             },
             {
-                "actor": "violet",
+                "actor": "violet_4",
                 "dob": "1967-05-11",
                 "lpa": "productize_out_of_the_box_portals",
             },
             {
-                "actor": "violet",
+                "actor": "violet_5",
                 "dob": "1967-12-10",
                 "lpa": "productize_out_of_the_box_portals",
             },
@@ -119,30 +119,80 @@ def case_create_a_code_2() -> CaseData:
     expected_result = {
         "codes": [
             {
-                "actor": "violet",
+                "actor": "violet_1",
                 "code": code,
                 "lpa": "productize_out_of_the_box_portals",
             },
             {
-                "actor": "violet",
+                "actor": "violet_2",
                 "code": code,
                 "lpa": "productize_out_of_the_box_portals",
             },
             {
-                "actor": "violet",
+                "actor": "violet_3",
                 "code": code,
                 "lpa": "productize_out_of_the_box_portals",
             },
             {
-                "actor": "violet",
+                "actor": "violet_4",
                 "code": code,
                 "lpa": "productize_out_of_the_box_portals",
             },
             {
-                "actor": "violet",
+                "actor": "violet_5",
                 "code": code,
                 "lpa": "productize_out_of_the_box_portals",
             },
         ]
     }
+    return test_data, data, expected_result
+
+
+@cases_generator(
+    "Try and create a code with blank values - {value}", value=["lpa", "actor", "dob"]
+)
+def case_create_a_code_in233(value) -> CaseData:
+    test_data = copy.deepcopy(default_test_data)
+
+    default_data = {
+        "lpas": [
+            {
+                "lpa": "eed4f597-fd87-4536-99d0-895778824861",
+                "actor": "12ad81a9-f89d-4804-99f5-7c0c8669ac9b",
+                "dob": "1960-06-05",
+            }
+        ]
+    }
+
+    data = copy.deepcopy(default_data)
+    data["lpas"][0][value] = ""
+
+    print(f"data: {data}")
+
+    expected_result = {"codes": None}
+    return test_data, data, expected_result
+
+
+@cases_generator(
+    "Try and create a code with missing values - {value}", value=["lpa", "actor", "dob"]
+)
+def case_create_a_code_in233_1(value) -> CaseData:
+    test_data = copy.deepcopy(default_test_data)
+
+    default_data = {
+        "lpas": [
+            {
+                "lpa": "eed4f597-fd87-4536-99d0-895778824861",
+                "actor": "12ad81a9-f89d-4804-99f5-7c0c8669ac9b",
+                "dob": "1960-06-05",
+            }
+        ]
+    }
+
+    data = copy.deepcopy(default_data)
+    data["lpas"][0].pop(value)
+
+    print(f"data: {data}")
+
+    expected_result = {"codes": []}
     return test_data, data, expected_result
