@@ -194,5 +194,5 @@ def case_create_a_code_in233_1(value) -> CaseData:
 
     print(f"data: {data}")
 
-    expected_result = {"codes": None}
+    expected_result = {"codes": []}
     return test_data, data, expected_result
