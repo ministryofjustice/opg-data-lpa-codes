@@ -306,16 +306,16 @@ jobs:
           name: unzip artifact
           command: unzip ./opg-data-lpa-codes.zip -d .
       - run:
-          name: initialize terraform - environment
-          working_directory: ~/project/terraform/environment
-          command: terraform init
-      - run:
           name: Set BASH_ENV
           command: ~/project/.circleci/set_env.sh >> $BASH_ENV
       - run:
           name: Set Environment variables
           command: |
             eval $(cat $BASH_ENV)
+      - run:
+          name: initialize terraform - environment
+          working_directory: ~/project/terraform/environment
+          command: terraform init
       - run:
           name: terraform << parameters.tf_command >> - environment
           working_directory: ~/project/terraform/environment
