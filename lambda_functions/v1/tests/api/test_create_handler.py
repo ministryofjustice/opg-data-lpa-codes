@@ -44,6 +44,11 @@ def test_data(mock_database, mock_generate_code, case_data: CaseDataGetter):
             actor = data["lpas"][i]["actor"]
 
             dob = data["lpas"][i]["dob"]
+        except KeyError:
+            assert codes_created == expected_result
+            break
+
+        if "" not in [lpa, actor, dob]:
 
             db = boto3.resource("dynamodb")
             table = db.Table(lpa_codes_table())
@@ -67,9 +72,9 @@ def test_data(mock_database, mock_generate_code, case_data: CaseDataGetter):
                 else:
                     assert item["active"] is False
                     assert item["status_details"] == "Superseded"
-
-        except KeyError:
-            assert codes_created == {"codes": None}
+        else:
+            assert codes_created == expected_result
+            break
 
     if expected_result["codes"] is not None:
         remove_test_data(expected_result["codes"] + test_data)
