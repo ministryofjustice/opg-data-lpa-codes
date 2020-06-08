@@ -23,12 +23,3 @@ def error_message(code, message):
         ),
         code,
     )
-
-
-# def unprocessable_entity(errors):
-#
-#     pair = list(errors.items())[0]
-#     print(f"pair: {pair}")
-#     message = "Key {}. {}".format(pair[0], " ".join(pair[1]))
-#     print(f"message: {message}")
-#     return error_message(422, message)

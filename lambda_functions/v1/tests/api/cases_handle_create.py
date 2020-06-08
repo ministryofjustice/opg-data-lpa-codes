@@ -77,7 +77,8 @@ def case_create_a_code_1() -> CaseData:
             }
         ]
     }
-    return test_data, data, expected_result
+    expected_status_code = 200
+    return test_data, data, expected_result, expected_status_code
 
 
 @case_name("Create multiple codes")
@@ -145,4 +146,5 @@ def case_create_a_code_2() -> CaseData:
             },
         ]
     }
-    return test_data, data, expected_result
+    expected_status_code = 200
+    return test_data, data, expected_result, expected_status_code

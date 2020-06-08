@@ -8,6 +8,14 @@ logger = custom_logger()
 
 
 def db_connection():
+    """
+    Sets up the DynamoDB connection. This is different depending on environment. For
+    live (aka AWS) it uses boto3 to connect directly to the AWS DynamoDB instance.
+    For local/Pact testing it points to a local docker container
+
+    Returns:
+        dynamodb resource
+    """
 
     if os.environ.get("ENVIRONMENT") in ["ci", "local"]:
         if os.environ.get("LOCAL_URL"):
