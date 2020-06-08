@@ -11,8 +11,11 @@ logger = custom_logger()
 def generate_code(database):
     """
     Generates a 12-digit alphanumeric code containing no ambiguous characters.
-    Codes should be unique.
-    Codes should not be reused.
+    Codes should be unique - we try 10 times and if we can't generate a new code then
+    error.
+
+    Args:
+        database:
 
     Returns:
         string
@@ -38,6 +41,7 @@ def check_code_unique(database, code):
     """
     Check the new code we've generated has not been used before
     Args:
+        database:
         code: string
 
     Returns:
@@ -45,14 +49,27 @@ def check_code_unique(database, code):
     """
     response = get_codes(database=database, code=code)
 
-    print(f"response: {response}")
-
     if len(response) == 0:
         return True
     return False
 
 
 def get_codes(database, key=None, code=None):
+    """
+    Generic method of getting codes from the db either by key (lpa/actor) or code
+
+    Quick check against TTL - AWS claim it can take up to 48 hours to actually remove
+    records past their TTL so we are checking manually just to be sure
+
+    Args:
+        database:
+        key: dict, eg {"lpa":"lpa_id", "actor":"actor_id"}
+        code: string
+
+    Returns:
+        list: all codes associated with given params
+
+    """
 
     table = database.Table(lpa_codes_table())
 
@@ -105,6 +122,21 @@ def get_codes(database, key=None, code=None):
 
 
 def update_codes(database, key=None, code=None, status=False, status_details=None):
+    """
+    Generic method to update the status of rows in the db, eithet by key (lpa/actor)
+    or code.
+
+    Args:
+        database:
+        dict, eg {"lpa":"lpa_id", "actor":"actor_id"}
+        code: string
+        status: boolean
+        status_details: string
+
+    Returns:
+        int: number of rows updated
+
+    """
 
     table = database.Table(lpa_codes_table())
     entries = get_codes(database=database, key=key, code=code)
@@ -134,6 +166,19 @@ def update_codes(database, key=None, code=None, status=False, status_details=Non
 
 
 def insert_new_code(database, key, dob, code):
+    """
+    Inserts a new code into the db and returns the newly inserted record
+
+    Args:
+        database:
+        key: dict, eg {"lpa":"lpa_id", "actor":"actor_id"}
+        dob: string - should be iso date
+        code: string
+
+    Returns:
+        list: all codes associated with given params
+
+    """
 
     table = database.Table(lpa_codes_table())
     lpa = key["lpa"]
