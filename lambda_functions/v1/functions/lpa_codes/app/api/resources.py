@@ -1,6 +1,7 @@
+import json
 import os
 
-from flask import Blueprint
+from flask import Blueprint, abort
 from flask import request, jsonify
 
 from .errors import error_message
@@ -9,7 +10,6 @@ from .endpoints import handle_create, handle_validate, handle_revoke
 
 logger = custom_logger("code generator")
 
-# version = 'v1'
 version = os.getenv("API_VERSION")
 api = Blueprint("api", __name__, url_prefix=f"/{version}")
 
@@ -22,6 +22,11 @@ def handle404(error=None):
 @api.app_errorhandler(405)
 def handle405(error=None):
     return error_message(405, "Method not supported")
+
+
+@api.app_errorhandler(400)
+def handle400(error=None):
+    return error_message(400, "Bad payload")
 
 
 @api.app_errorhandler(500)
@@ -44,7 +49,20 @@ def create_route():
     json
     """
 
-    result = handle_create(data=request.get_json())
+    post_data = request.get_json()
+
+    for entry in post_data["lpas"]:
+        try:
+            lpa = entry["lpa"]
+            actor = entry["actor"]
+            dob = entry["dob"]
+        except KeyError:
+            return abort(400)
+
+        if "" in [lpa, actor, dob]:
+            return abort(400)
+
+    result = handle_create(data=post_data)
 
     return jsonify(result), 200
 
@@ -56,8 +74,17 @@ def revoke_route():
     Returns:
     json
     """
+    post_data = request.get_json()
 
-    result = handle_revoke(data=request.get_json())
+    try:
+        code = post_data["code"]
+    except KeyError:
+        return abort(400)
+
+    if code == "":
+        return abort(400)
+
+    result = handle_revoke(data=post_data)
 
     return jsonify(result), 200
 
@@ -69,6 +96,17 @@ def validate_route():
     Returns:
     json
     """
-    result = handle_validate(data=request.get_json())
+    post_data = request.get_json()
+    try:
+        code = post_data["code"]
+        lpa = post_data["lpa"]
+        dob = post_data["dob"]
+    except KeyError:
+        return abort(400)
+
+    if "" in [code, lpa, dob]:
+        return abort(400)
+
+    result = handle_validate(data=post_data)
 
     return jsonify(result), 200

@@ -1,3 +1,5 @@
+from werkzeug.exceptions import abort
+
 from . import code_generator
 from .database import db_connection
 from .helpers import custom_logger
@@ -18,43 +20,34 @@ def handle_create(data):
     code_list = []
 
     for entry in data["lpas"]:
-        try:
-            lpa = entry["lpa"]
-            actor = entry["actor"]
-            dob = entry["dob"]
-        except KeyError:
-            break
-            return {"codes": None}
+        lpa = entry["lpa"]
+        actor = entry["actor"]
+        dob = entry["dob"]
 
-        if "" not in [lpa, actor, dob]:
+        key = {"lpa": lpa, "actor": actor}
 
-            key = {"lpa": lpa, "actor": actor}
-            print(f"key: {key}")
+        # 1. expire all existing codes for LPA/Actor combo
+        code_generator.update_codes(
+            database=db, key=key, status=False, status_details="Superseded"
+        )
 
-            # 1. expire all existing codes for LPA/Actor combo
-            code_generator.update_codes(
-                database=db, key=key, status=False, status_details="Superseded"
-            )
+        # 2. generate a new code
+        generated_code = code_generator.generate_code(database=db)
 
-            # 2. generate a new code
-            generated_code = code_generator.generate_code(database=db)
+        # 3. insert new code into database
+        new_code = code_generator.insert_new_code(
+            database=db, key=key, dob=dob, code=generated_code
+        )[0]["code"]
 
-            # 3. insert new code into database
-            new_code = code_generator.insert_new_code(
-                database=db, key=key, dob=dob, code=generated_code
-            )[0]["code"]
+        # 4. return the new code in lambda payload
+        response = {
+            "lpa": entry["lpa"],
+            "actor": entry["actor"],
+            "code": new_code,
+        }
 
-            # 4. return the new code in lambda payload
-            response = {
-                "lpa": entry["lpa"],
-                "actor": entry["actor"],
-                "code": new_code,
-            }
-
-            code_list.append(response)
-            logger.info(f"code_list: {code_list}")
-        else:
-            return {"codes": None}
+        code_list.append(response)
+        logger.info(f"code_list: {code_list}")
 
     return {"codes": code_list}
 

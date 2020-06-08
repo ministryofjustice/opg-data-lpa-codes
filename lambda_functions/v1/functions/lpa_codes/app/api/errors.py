@@ -11,7 +11,7 @@ def error_message(code, message):
         jsonify(
             {
                 "isBase64Encoded": False,
-                "statusCode": 200,
+                "statusCode": code,
                 "headers": {"Content-Type": "application/json"},
                 "body": {
                     "error": {
