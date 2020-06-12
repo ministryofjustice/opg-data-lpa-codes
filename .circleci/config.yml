@@ -175,18 +175,6 @@ jobs:
               pip3 install -r ./lambda_functions/"${i}"/requirements/dev-requirements.txt
             done
       - run:
-          name: install and run git secrets
-          command: |
-            git clone git@github.com:awslabs/git-secrets.git
-            make install
-            git secrets --install
-            git secrets --register-aws
-            export SECRET_COUNT=$(git secrets --scan-history | wc -l)
-            if [ $SECRET_COUNT -gt "0" ]
-            then
-              echo "git secrets found secrets in commit history" && exit 1
-            fi
-      - run:
           name: run flake8 - python PEP8 linter, complexity checker
           command: |
             flake8 lambda_functions

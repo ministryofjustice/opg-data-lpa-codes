@@ -23,7 +23,6 @@
   hooks:
     - id: trailing-whitespace
     - id: detect-private-key
-    - id: detect-aws-credentials
     - id: flake8
       args: ['--ignore=W503', '--exclude=docs/supportscripts/*']
     - id: trailing-whitespace
