@@ -63,13 +63,14 @@ elif [ "${CONSUMER_TRIGGERED}" == "true" ]
 then
 
     # Get the API version from the tag associated with consumer commit
-    CONSUMER_API_VERSION=$(curl -u "${PACT_BROKER_USER}":"${PACT_BROKER_PASSWORD}" \
+    CONSUMER_API_VERSION=$(curl -s -u "${PACT_BROKER_USER}":"${PACT_BROKER_PASSWORD}" \
     -X GET https://"${PACT_BROKER_BASE_URL}"/pacticipants/"${PACT_CONSUMER}"/versions/"${GIT_COMMIT_CONSUMER}" \
-    | jq ._embedded.tags[] | jq .name | sed 's/"//g' | grep '^v[1-9]\+$' | sort -r | head -n1)
+    | jq ._embedded.tags[] | jq .name | sed 's/"//g' | grep '^v[1-9]\+\|^v[1-9]\+_production$' \
+    | awk -F'_' '{print $1}' | sort -r | head -n1)
     echo "The consumer version we are testing is ${CONSUMER_API_VERSION}"
 
     # Get the full commit sha for later use
-    export CONSUMER_FULL_COMMIT_SHA=$(curl -u "${GITHUB_STATUS_CREDS}" \
+    export CONSUMER_FULL_COMMIT_SHA=$(curl -s -u "${GITHUB_STATUS_CREDENTIALS}" \
     -X GET https://"${GITHUB_SIRIUS_GITHUB_URL}"/commits/"${GIT_COMMIT_CONSUMER}" | jq -r .sha) >> /dev/null
 
     # CanIDeploy with consumer git_commit and latest provider tagged with v<x>_production (must get version from tags)
@@ -136,24 +137,29 @@ then
         export CAN_I_DEPLOY="true"
     fi
     # Send status update to sirius
-    if [ "${CAN_I_DEPLOY}" == "true" ]
+    if [ "${CONSUMER_FULL_COMMIT_SHA}" != "" ]
     then
-        echo "Github Status Updated - Verification Successful"
-        curl -X POST \
-        -H "Content-Type: application/json" \
-        -u "${GITHUB_STATUS_CREDS}" \
-        -d '{"state":"success","target_url":"https://'"${PACT_BROKER_BASE_URL}"'/","description":"Our build was verified!","context":"pactbroker"}' \
-        https://"${GITHUB_SIRIUS_GITHUB_URL}"/statuses/"${CONSUMER_FULL_COMMIT_SHA}"
-    elif [ "${CAN_I_DEPLOY}" == "false" ]
-    then
-        echo "Github Status Updated - Verification Failed"
-        curl -X POST \
-        -H "Content-Type: application/json" \
-        -u "${GITHUB_STATUS_CREDS}" \
-        -d '{"state":"failure","target_url":"https://'"${PACT_BROKER_BASE_URL}"'/","description":"Our build failed verification!","context":"pactbroker"}' \
-        https://"${GITHUB_SIRIUS_GITHUB_URL}"/statuses/"${CONSUMER_FULL_COMMIT_SHA}"
+      if [ "${CAN_I_DEPLOY}" == "true" ]
+      then
+          echo "Github Status Updated - Verification Successful"
+          curl -X POST \
+          -H "Content-Type: application/json" \
+          -u "${GITHUB_STATUS_CREDENTIALS}" \
+          -d '{"state":"success","target_url":"https://'"${PACT_BROKER_BASE_URL}"'/","description":"Our build was verified!","context":"pactbroker"}' \
+          https://"${GITHUB_SIRIUS_GITHUB_URL}"/statuses/"${CONSUMER_FULL_COMMIT_SHA}"
+      elif [ "${CAN_I_DEPLOY}" == "false" ]
+      then
+          echo "Github Status Updated - Verification Failed"
+          curl -X POST \
+          -H "Content-Type: application/json" \
+          -u "${GITHUB_STATUS_CREDENTIALS}" \
+          -d '{"state":"failure","target_url":"https://'"${PACT_BROKER_BASE_URL}"'/","description":"Our build failed verification!","context":"pactbroker"}' \
+          https://"${GITHUB_SIRIUS_GITHUB_URL}"/statuses/"${CONSUMER_FULL_COMMIT_SHA}"
+      else
+          echo "CAN_I_DEPLOY not set"
+      fi
     else
-        echo "CAN_I_DEPLOY not set"
+      echo "No value set for CONSUMER_FULL_COMMIT_SHA. Check user has access to repo"
     fi
 else
     echo "Environment variable, CONSUMER_TRIGGERED not set"
