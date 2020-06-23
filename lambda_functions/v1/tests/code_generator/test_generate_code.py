@@ -1,10 +1,15 @@
 import logging
+import string
 
 from lambda_functions.v1.functions.lpa_codes.app.api.code_generator import generate_code
 
 
 def test_generate_unique_code(mock_unique_code, caplog):
-    unacceptable_characters = ["1", "0", "l", "o", "I", "O", "z", "Z", "2"]
+
+    all_chars = list(string.ascii_letters) + list(string.digits)
+    acceptable_chars = list("346789QWERTYUPADFGHJKLXCVBNM")
+
+    unacceptable_characters = [c for c in all_chars if c not in acceptable_chars]
 
     db = None
 
