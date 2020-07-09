@@ -16,7 +16,7 @@ import (
 func main() {
 
 	roleToAssume := "arn:aws:iam::288342028542:role/operator"
-	url := "https://in283.dev.lpa-codes.api.opg.service.justice.gov.uk/v1/validate" //change this for different endpoints
+	url := "https://dev.lpa-codes.api.opg.service.justice.gov.uk/v1/validate" //change this for different endpoints
 	mySession := session.Must(session.NewSession())
 	creds := stscreds.NewCredentials(mySession, roleToAssume)
 	cfg := aws.Config{Credentials: creds,Region: aws.String("eu-west-1")}
