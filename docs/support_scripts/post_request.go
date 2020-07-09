@@ -15,15 +15,15 @@ import (
 
 func main() {
 
-	roletoassume := "arn:aws:iam::288342028542:role/operator"
-	url := "https://dev.lpa-codes.api.opg.service.justice.gov.uk/v1/create"
-	mysession := session.Must(session.NewSession())
-	creds := stscreds.NewCredentials(mysession, roletoassume)
+	roleToAssume := "arn:aws:iam::288342028542:role/operator"
+	url := "https://in283.dev.lpa-codes.api.opg.service.justice.gov.uk/v1/validate" //change this for different endpoints
+	mySession := session.Must(session.NewSession())
+	creds := stscreds.NewCredentials(mySession, roleToAssume)
 	cfg := aws.Config{Credentials: creds,Region: aws.String("eu-west-1")}
 	sess := session.Must(session.NewSession(&cfg))
 	signer := v4.NewSigner(sess.Config.Credentials)
 
-	json, err := ioutil.ReadFile("../support_files/create_payload.json") // just pass the file name
+	json, err := ioutil.ReadFile("../support_files/validate_payload.json") // just pass the file name
 	if err != nil {
 			fmt.Print(err)
 	}
@@ -52,6 +52,7 @@ func main() {
 	buf := new(bytes.Buffer)
 	buf.ReadFrom(res.Body)
 	newStr := buf.String()
-
+	fmt.Println(res.StatusCode)
+	fmt.Println(res.Status)
 	fmt.Println(newStr)
 }
