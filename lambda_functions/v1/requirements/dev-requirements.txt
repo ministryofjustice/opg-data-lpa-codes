@@ -14,7 +14,7 @@ openapi-spec-validator
 requests
 boto3
 moto
-pytest-cases
+pytest-cases==1.17.0
 pytest-cov
 pytest-ordering
 pytest-env
