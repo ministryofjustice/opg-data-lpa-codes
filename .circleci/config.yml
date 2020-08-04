@@ -94,6 +94,7 @@ workflows:
           tf_workspace: integration
           applycheck: true
           filters: {branches:{only:[master]}}
+
       - terraform_action:
          name: production apply
          requires: [approve release to production]
@@ -115,6 +116,7 @@ orbs:
       python_with_tfvars:
         docker:
           - image: circleci/python:3.8.1
+        resource_class: small
         environment:
           TF_CLI_ARGS_plan: -input=false -lock=false
           TF_CLI_ARGS_apply: -input=false -auto-approve
@@ -161,12 +163,36 @@ orbs:
               name: install aws cli
               command: |
                 pip3 install awscli --upgrade --user
-                aws --version
+      cancel_redundant_builds:
+        steps:
+          - run:
+              name: login to code artifact for pip
+              command: ./login_code_artifact.sh -a 288342028542 -t pip
+              working_directory: ~/project/docs/ci_scripts
+          - run:
+              name: install cancel build requirements
+              command: pip3 install -r requirements.txt
+              working_directory: ~/project/docs/ci_scripts
+          - run:
+              name: cancel previous builds
+              command: |
+                python3 cancel_builds.py \
+                --circle_project_username="${CIRCLE_PROJECT_USERNAME}" \
+                --circle_project_reponame="${CIRCLE_PROJECT_REPONAME}" \
+                --circle_branch="${CIRCLE_BRANCH}" \
+                --circle_builds_token="${CIRCLE_BUILDS_TOKEN}" \
+                --terms_to_waitfor="apply,plan,terraform,destroy" \
+                --prod_job_terms="production ,integration ,pact"
+              working_directory: ~/project/docs/ci_scripts
+
 jobs:
   build_lambda:
     executor: lpa-codes/python
+    resource_class: small
     steps:
       - checkout
+      - lpa-codes/aws_cli_install
+      - lpa-codes/cancel_redundant_builds
       - run:
           name: install all requirements locally
           command: |
@@ -206,6 +232,7 @@ jobs:
 
   terraform_pre_checks:
     executor: lpa-codes/python_with_tfvars
+    resource_class: small
     parameters:
       tf_workspace:
         description: terraform workspace
@@ -273,6 +300,7 @@ jobs:
 
   terraform_action:
     executor: lpa-codes/python_with_tfvars
+    resource_class: small
     parameters:
       tf_workspace:
         description: terraform workspace
