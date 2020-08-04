@@ -177,7 +177,7 @@ jobs:
       - run:
           name: run flake8 - python PEP8 linter, complexity checker
           command: |
-            flake8 lambda_functions
+            flake8 --ignore Q000 lambda_functions
       - run:
           name: get test coverage (fails below 90%)
           command: |
