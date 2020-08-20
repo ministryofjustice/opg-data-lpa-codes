@@ -1,0 +1,219 @@
+{
+  "consumer": {
+    "name": "sirius"
+  },
+  "provider": {
+    "name": "lpa-codes"
+  },
+  "interactions": [{
+      "_id": "cbee563db3ae7ed224331f96b167e630d87ccebd",
+      "description": "A valid request to generate a code",
+      "request": {
+        "method": "POST",
+        "path": "/create",
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "lpas": [{
+              "lpa": "700003958294",
+              "actor": "700039164827",
+              "dob": "1987-01-05"
+            }]
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "codes": [{
+              "lpa": "700003958294",
+              "actor": "700039164827",
+              "code": "YsSu4iAztUXm"
+            }]
+        },
+        "matchingRules": {
+          "$.body.codes[0].lpa": {
+            "match": "regex",
+            "regex": "7[0-9]{11}"
+          },
+          "$.body.codes[0].actor": {
+            "match": "regex",
+            "regex": "7[0-9]{11}"
+          },
+          "$.body.codes[0].code": {
+            "match": "type"
+          }
+        }
+      }
+    }, {
+      "_id": "e97415796b4b4f06fd1f77877a6eb4d1917d5e20",
+      "description": "A valid request to generate multiple codes",
+      "request": {
+        "method": "POST",
+        "path": "/create",
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "lpas": [{
+              "lpa": "700003958294",
+              "actor": "700039164827",
+              "dob": "1987-01-05"
+            }, {
+              "lpa": "700003958294",
+              "actor": "700039590384",
+              "dob": "1954-12-25"
+            }]
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "codes": [{
+              "lpa": "700003958294",
+              "actor": "700039164827",
+              "code": "YsSu4iAztUXm"
+            }, {
+              "lpa": "700003958294",
+              "actor": "700039590384",
+              "code": "aEYVS6i9zSwy"
+            }]
+        },
+        "matchingRules": {
+          "$.body.codes[0].lpa": {
+            "match": "regex",
+            "regex": "7[0-9]{11}"
+          },
+          "$.body.codes[0].actor": {
+            "match": "regex",
+            "regex": "7[0-9]{11}"
+          },
+          "$.body.codes[0].code": {
+            "match": "type"
+          },
+          "$.body.codes[1].lpa": {
+            "match": "regex",
+            "regex": "7[0-9]{11}"
+          },
+          "$.body.codes[1].actor": {
+            "match": "regex",
+            "regex": "7[0-9]{11}"
+          },
+          "$.body.codes[1].code": {
+            "match": "type"
+          }
+        }
+      }
+    }, {
+      "_id": "cf3d8c01965659e418b51c9dcb9ce41203db1249",
+      "description": "A valid request to generate a codes, but in the wrong order",
+      "request": {
+        "method": "POST",
+        "path": "/create",
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "lpas": [{
+              "lpa": "700003958294",
+              "actor": "700028424928",
+              "dob": "1987-01-05"
+            }, {
+              "lpa": "700003958294",
+              "actor": "700038490382",
+              "dob": "1972-08-24"
+            }]
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "codes": [{
+              "lpa": "700003958294",
+              "actor": "700038490382",
+              "code": "Attorney2Code"
+            }, {
+              "lpa": "700003958294",
+              "actor": "700028424928",
+              "code": "Attorney1Code"
+            }]
+        },
+        "matchingRules": {
+          "$.body.codes[0].lpa": {
+            "match": "regex",
+            "regex": "7[0-9]{11}"
+          },
+          "$.body.codes[0].actor": {
+            "match": "regex",
+            "regex": "7[0-9]{11}"
+          },
+          "$.body.codes[0].code": {
+            "match": "type"
+          },
+          "$.body.codes[1].lpa": {
+            "match": "regex",
+            "regex": "7[0-9]{11}"
+          },
+          "$.body.codes[1].actor": {
+            "match": "regex",
+            "regex": "7[0-9]{11}"
+          },
+          "$.body.codes[1].code": {
+            "match": "type"
+          }
+        }
+      }
+    }, {
+      "_id": "937248f9848c7aba832a611c6076e4f9d7484155",
+      "description": "An invalid request to generate a code with empty strings",
+      "request": {
+        "method": "POST",
+        "path": "/create",
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "lpas": [{
+              "lpa": "700003958294",
+              "actor": "",
+              "dob": "1987-01-05"
+            }]
+        }
+      },
+      "response": {
+        "status": 400,
+        "headers": {
+          "Content-Type": "application/vnd.opg-data.v1+json"
+        },
+        "body": {
+          "errors": [{
+              "code": "OPGDATA-API-INVALIDREQUEST",
+              "message": "Invalid Request"
+            }]
+        },
+        "matchingRules": {
+          "$.body.errors[0].code": {
+            "match": "type"
+          },
+          "$.body.errors[0].message": {
+            "match": "type"
+          }
+        }
+      }
+    }],
+  "metadata": {
+    "pactSpecification": {
+      "version": "2.0.0"
+    }
+  },
+  "createdAt": "2020-08-19T16:12:38+00:00"
+}
