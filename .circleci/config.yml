@@ -111,11 +111,24 @@ workflows:
           name: verify the latest pact
 
 orbs:
+  dockerhub_helper:
+    orbs:
+      docker: circleci/docker@1.4.0
+    commands:
+      dockerhub_login:
+        steps:
+          - docker/install-docker-credential-helper
+          - docker/check:
+              docker-password: DOCKER_ACCESS_TOKEN
+              docker-username: DOCKER_USER
   lpa-codes:
     executors:
       python_with_tfvars:
         docker:
           - image: circleci/python:3.8.1
+            auth:
+              username: $DOCKER_USER
+              password: $DOCKER_ACCESS_TOKEN
         resource_class: small
         environment:
           TF_CLI_ARGS_plan: -input=false -lock=false
@@ -128,6 +141,9 @@ orbs:
       python:
         docker:
           - image: circleci/python:3.8.1
+            auth:
+              username: $DOCKER_USER
+              password: $DOCKER_ACCESS_TOKEN
     commands:
       terraform_install:
         steps:
@@ -198,6 +214,7 @@ jobs:
     executor: lpa-codes/python
     resource_class: small
     steps:
+      - dockerhub_helper/dockerhub_login
       - checkout
       - lpa-codes/login_codeartifact
       - lpa-codes/cancel_redundant_builds
@@ -401,8 +418,14 @@ jobs:
     docker:
       # Primary container image where all the steps run.
       - image: circleci/python:3.8.1
+        auth:
+          username: $DOCKER_USER
+          password: $DOCKER_ACCESS_TOKEN
       # Service container image made available to the primary container at `host: localhost`
       - image: amazon/dynamodb-local:latest
+        auth:
+          username: $DOCKER_USER
+          password: $DOCKER_ACCESS_TOKEN
         entrypoint: ["java", "-Xmx1G", "-jar", "DynamoDBLocal.jar"]
     working_directory: ~/project
     parameters:
