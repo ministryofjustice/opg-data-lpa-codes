@@ -6,7 +6,7 @@ from flask import request, jsonify
 
 from .errors import error_message
 from .helpers import custom_logger
-from .endpoints import handle_create, handle_validate, handle_revoke
+from .endpoints import handle_create, handle_validate, handle_revoke, handle_check_actor_has_code
 
 logger = custom_logger("code generator")
 
@@ -133,5 +133,30 @@ def validate_route():
         return abort(400)
 
     result, status_code = handle_validate(data=post_data)
+
+    return jsonify(result), status_code
+
+
+@api.route("/actor-code-exists", methods=['POST'])
+def actor_code_exists_route():
+
+    post_data = request.get_json()
+
+    try:
+        lpa = post_data["lpa"]
+        actor = post_data["actor"]
+        dob = post_data["dob"]
+    except KeyError as e:
+        logger.debug(f"Missing param from request: {e}")
+        return abort(400)
+
+    if "" in [lpa, actor, dob]:
+        logger.debug(
+            f"Empty param in request: "
+            f"{[i for i in [lpa, actor, dob] if i == '']}"
+        )
+        return abort(400)
+
+    result, status_code = handle_check_actor_has_code(data=post_data)
 
     return jsonify(result), status_code

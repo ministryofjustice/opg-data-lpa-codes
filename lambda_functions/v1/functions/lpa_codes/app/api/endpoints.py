@@ -196,3 +196,81 @@ def handle_validate(data):
         return {"actor": code_details[0]["actor"]}, 200
     else:
         return {"actor": None}, 200
+
+
+def handle_check_actor_has_code(data):
+    """
+    Args:
+        data: dict of payload data
+
+    Example args:
+        {
+            "lpa": "568c6b37-46ed-44e6-a579-2d82f0504ef4",
+            "actor":"9085ada2-d76f-41f8-a2d9-bea404ce90ac",
+            "dob": "1960-06-05"
+        }
+
+    Returns:
+        tuple: (matched codes, http status code)
+
+    Example return:
+    (
+        {"codes": [
+                {
+                    "lpa": "eed4f597-fd87-4536-99d0-895778824861",
+                    "actor": "12ad81a9-f89d-4804-99f5-7c0c8669ac9b",
+                    "code": "euPtayQAvDqL",
+                    "active": True,
+                    "generated_date": "2020-01-01",
+                },
+                {
+                    "lpa": "eed4f597-fd87-4536-99d0-895778824861",
+                    "actor": "12ad81a9-f89d-4804-99f5-7c0c8669ac9b",
+                    "code": "kpDHIFRahjk",
+                    "active": True,
+                    "generated_date": "2020-01-02",
+                },
+            ]
+        },
+        200
+    )
+    """
+
+    db = db_connection()
+
+    lpa = data["lpa"]
+    actor = data["actor"]
+    dob = data["dob"]
+
+    key = {"lpa": lpa, "actor": actor}
+
+    try:
+        code_details = code_generator.get_codes(database=db, key=key)
+    except Exception as e:
+        logger.error(f"Error in handle_check_actor_has_code > get_codes: {e}")
+        return None, 500
+
+    test_code_details = data
+
+#     print("Found :  ", code_details, flush=True)
+
+    if code_details:
+#         for code in code_details:
+#             valid_code_details = {
+#                 "lpa": code["lpa"],
+#                 "actor": code["actor"],
+#                 "dob": code["dob"],
+#             }
+#
+#             if dict(sorted(test_code_details.items())) != dict(
+#                 sorted(valid_code_details.items())
+#             ):
+#                 logger.info(f"Codes retrieved from database did not match data passed in")
+#                 return {"codes": None}, 200
+
+        return {"codes": code_details}, 200
+
+    else:
+        return {"codes": None}, 200
+
+
