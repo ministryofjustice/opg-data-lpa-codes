@@ -400,13 +400,9 @@ paths:
                   type: string
                 actor:
                   type: string
-                dob:
-                  type: string
-                  format: date
               example:
                 lpa: "eed4f597-fd87-4536-99d0-895778824861"
                 actor: "12ad81a9-f89d-4804-99f5-7c0c8669ac9b"
-                dob: "1960-06-05"
       responses:
         200:
           description: OK
@@ -509,17 +505,12 @@ components:
           type: string
         actor:
           type: string
-        dob:
-          type: string
-          format: date
       example:
         lpa: "eed4f597-fd87-4536-99d0-895778824861"
         actor: "12ad81a9-f89d-4804-99f5-7c0c8669ac9b"
-        dob: "1960-06-05"
       required:
         - lpa
         - actor
-        - dob
     Error400:
       type: object
       required:

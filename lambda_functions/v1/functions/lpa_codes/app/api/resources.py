@@ -145,15 +145,14 @@ def actor_code_exists_route():
     try:
         lpa = post_data["lpa"]
         actor = post_data["actor"]
-        dob = post_data["dob"]
     except KeyError as e:
         logger.debug(f"Missing param from request: {e}")
         return abort(400)
 
-    if "" in [lpa, actor, dob]:
+    if "" in [lpa, actor]:
         logger.debug(
             f"Empty param in request: "
-            f"{[i for i in [lpa, actor, dob] if i == '']}"
+            f"{[i for i in [lpa, actor] if i == '']}"
         )
         return abort(400)
 
