@@ -198,7 +198,7 @@ def handle_validate(data):
         return {"actor": None}, 200
 
 
-def handle_check_actor_has_code(data):
+def handle_exists(data):
     """
     Args:
         data: dict of payload data
@@ -245,7 +245,7 @@ def handle_check_actor_has_code(data):
     try:
         code_details = code_generator.get_codes(database=db, key=key)
     except Exception as e:
-        logger.error(f"Error in handle_check_actor_has_code > get_codes: {e}")
+        logger.error(f"Error in handle_exists > get_codes: {e}")
         return None, 500
 
     test_code_details = data

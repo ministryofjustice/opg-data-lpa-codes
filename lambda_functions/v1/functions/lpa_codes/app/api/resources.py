@@ -6,7 +6,7 @@ from flask import request, jsonify
 
 from .errors import error_message
 from .helpers import custom_logger
-from .endpoints import handle_create, handle_validate, handle_revoke, handle_check_actor_has_code
+from .endpoints import handle_create, handle_validate, handle_revoke, handle_exists
 
 logger = custom_logger("code generator")
 
@@ -137,7 +137,7 @@ def validate_route():
     return jsonify(result), status_code
 
 
-@api.route("/actor-code-exists", methods=['POST'])
+@api.route("/exists", methods=['POST'])
 def actor_code_exists_route():
 
     post_data = request.get_json()
@@ -156,6 +156,6 @@ def actor_code_exists_route():
         )
         return abort(400)
 
-    result, status_code = handle_check_actor_has_code(data=post_data)
+    result, status_code = handle_exists(data=post_data)
 
     return jsonify(result), status_code
