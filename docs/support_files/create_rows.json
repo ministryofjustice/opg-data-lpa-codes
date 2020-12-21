@@ -2,57 +2,24 @@
   "rows": [
     {
       "active": false,
-      "actor": "abcdefg1234567",
+      "actor": "bob_bobson",
       "code": "yEFJH33hn5nX",
       "dob": "1989-05-01",
       "expiry_date": "1604995200",
       "generated_date": "2019-11-11",
       "last_updated_date": "2020-06-19",
-      "lpa": "700000000000",
+      "lpa": "random_lpa_name",
       "status_details": "Revoked"
     },
     {
       "active": true,
-      "actor": "abcdefg1234567",
+      "actor": "hope_hopeful",
       "code": "kpDHIFRahjk",
-      "dob": "1989-05-01",
-      "expiry_date": "1607587200",
-      "generated_date": "2019-11-10",
-      "last_updated_date": "2020-07-19",
-      "lpa": "700000000000",
-      "status_details": "Generated"
-    },
-    {
-      "active": true,
-      "actor": "abcdefg9999999",
-      "code": "AAAAAAAAAAAA",
       "dob": "1981-01-01",
       "expiry_date": "1607587200",
       "generated_date": "2019-11-10",
       "last_updated_date": "2020-07-19",
-      "lpa": "700000000000",
-      "status_details": "Generated"
-    },
-    {
-      "active": true,
-      "actor": "abcdefg1111111",
-      "code": "BBBBBBBBBBBB",
-      "dob": "1981-01-01",
-      "expiry_date": "1607587200",
-      "generated_date": "2019-11-10",
-      "last_updated_date": "2020-07-19",
-      "lpa": "700000000000",
-      "status_details": "Generated"
-    },
-    {
-      "active": true,
-      "actor": "abcdefg1234567",
-      "code": "CCCCCCCCCCC",
-      "dob": "1989-05-01",
-      "expiry_date": "1607587200",
-      "generated_date": "2019-11-10",
-      "last_updated_date": "2020-07-19",
-      "lpa": "700000000123",
+      "lpa": "another_lpa_name",
       "status_details": "Generated"
     }
   ]
