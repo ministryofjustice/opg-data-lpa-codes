@@ -139,7 +139,16 @@ def validate_route():
 
 @api.route("/exists", methods=['POST'])
 def actor_code_exists_route():
+    """
+    Checks if a code exists for a given actor on an LPA
 
+    Payload *should* be validated by API-Gateway before it gets here, but as it causes
+    everything to explode if a required field is missing we are checking here also.
+
+    Returns:
+        if payload is valid - dict of any code details matching actor and lpa id, status code
+        if payload is invalid - 400
+    """
     post_data = request.get_json()
 
     try:
