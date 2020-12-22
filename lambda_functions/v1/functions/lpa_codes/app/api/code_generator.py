@@ -104,7 +104,7 @@ def get_codes(database, key=None, code=None):
             query_result = table.query(
                 IndexName="key_index",
                 KeyConditionExpression=Key("lpa").eq(lpa) & Key("actor").eq(actor),
-#                 FilterExpression=Attr("expiry_date").gt(ttl_cutoff),
+                FilterExpression=Attr("expiry_date").gt(ttl_cutoff),
                 ProjectionExpression=return_fields,
             )
 
