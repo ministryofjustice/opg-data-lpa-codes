@@ -254,5 +254,3 @@ def handle_exists(data):
 
     else:
         return {"codes": None}, 200
-
-

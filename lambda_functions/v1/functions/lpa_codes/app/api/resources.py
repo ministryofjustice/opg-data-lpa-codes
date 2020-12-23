@@ -137,7 +137,7 @@ def validate_route():
     return jsonify(result), status_code
 
 
-@api.route("/exists", methods=['POST'])
+@api.route("/exists", methods=["POST"])
 def actor_code_exists_route():
     """
     Checks if a code exists for a given actor on an LPA
@@ -146,7 +146,7 @@ def actor_code_exists_route():
     everything to explode if a required field is missing we are checking here also.
 
     Returns:
-        if payload is valid - dict of any code details matching actor and lpa id, status code
+        if payload is valid - dict of any matching code details, status code
         if payload is invalid - 400
     """
     post_data = request.get_json()

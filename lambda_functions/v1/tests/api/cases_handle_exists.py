@@ -87,4 +87,3 @@ def case_actor_code_exists_1() -> CaseData:
 
     expected_status_code = 200
     return test_data, data, expected_result, expected_status_code
-

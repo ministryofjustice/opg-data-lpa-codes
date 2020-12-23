@@ -21,5 +21,3 @@ def test_post(mock_database, case_data: CaseDataGetter):
     assert status_code == expected_status_code
 
     remove_test_data(test_data)
-
-

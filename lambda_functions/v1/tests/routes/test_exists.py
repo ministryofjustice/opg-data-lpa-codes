@@ -48,7 +48,7 @@ def test_exists_missing_lpa(server):
 
     with server.app_context():
         test_data = {
-            #"lpa": "eed4f597-fd87-4536-99d0-895778824861",
+            # "lpa": "eed4f597-fd87-4536-99d0-895778824861",
             "actor": "12ad81a9-f89d-4804-99f5-7c0c8669ac9b"
         }
 
@@ -69,7 +69,7 @@ def test_exists_missing_actor(server):
     with server.app_context():
         test_data = {
             "lpa": "eed4f597-fd87-4536-99d0-895778824861",
-            #"actor": "12ad81a9-f89d-4804-99f5-7c0c8669ac9b"
+            # "actor": "12ad81a9-f89d-4804-99f5-7c0c8669ac9b"
         }
 
         test_headers = {"Content-Type": "application/json"}
