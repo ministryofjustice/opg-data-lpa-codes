@@ -3,6 +3,7 @@ import json
 import requests
 
 import pytest
+import datetime
 
 response_400 = {
     "body": {"error": {"code": "Bad Request", "message": "Bad payload"}},
@@ -30,7 +31,7 @@ def test_exists(server):
                     "actor": "12ad81a9-f89d-4804-99f5-7c0c8669ac9b",
                     "code": "tOhkrldOqewm",
                     "dob": None,
-                    "last_updated_date": "2020-12-22",
+                    "last_updated_date": datetime.date.today().strftime("%Y-%m-%d"),
                     "lpa": "eed4f597-fd87-4536-99d0-895778824861",
                 }
             ]
