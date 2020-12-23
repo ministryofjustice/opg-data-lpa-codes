@@ -248,8 +248,6 @@ def handle_exists(data):
         logger.error(f"Error in handle_exists > get_codes: {e}")
         return None, 500
 
-    test_code_details = data
-
     if code_details:
 
         return {"codes": code_details}, 200
