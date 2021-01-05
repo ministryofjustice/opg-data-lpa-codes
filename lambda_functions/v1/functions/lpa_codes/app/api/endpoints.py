@@ -210,26 +210,13 @@ def handle_exists(data):
         }
 
     Returns:
-        tuple: (matched codes, http status code)
+        tuple: (generated date of matched code, http status code)
 
     Example return:
     (
-        {"codes": [
-                {
-                    "lpa": "eed4f597-fd87-4536-99d0-895778824861",
-                    "actor": "12ad81a9-f89d-4804-99f5-7c0c8669ac9b",
-                    "code": "euPtayQAvDqL",
-                    "active": True,
-                    "generated_date": "2020-01-01",
-                },
-                {
-                    "lpa": "eed4f597-fd87-4536-99d0-895778824861",
-                    "actor": "12ad81a9-f89d-4804-99f5-7c0c8669ac9b",
-                    "code": "kpDHIFRahjk",
-                    "active": True,
-                    "generated_date": "2020-01-02",
-                },
-            ]
+        {"Created on": {
+            "2020-01-01"
+            }
         },
         200
     )
@@ -249,8 +236,11 @@ def handle_exists(data):
         return None, 500
 
     if code_details:
+        for code in code_details:
+            if code["active"]:
+                return {"Created on": code["generated_date"]}, 200
 
-        return {"codes": code_details}, 200
+        return None, 200
 
     else:
-        return {"codes": None}, 200
+        return None, 200

@@ -7,7 +7,7 @@ from lambda_functions.v1.functions.lpa_codes.app.api.helpers import date_formatt
 from lambda_functions.v1.tests.conftest import test_constants
 
 
-@case_name("Check if a code exists for an actor")
+@case_name("Check if an active code exists for an actor")
 def case_actor_code_exists_1() -> CaseData:
     test_data = [
         {
@@ -62,27 +62,7 @@ def case_actor_code_exists_1() -> CaseData:
     }
 
     expected_result = {
-        "codes": [
-            {
-                "active": True,
-                "actor": "actor_1",
-                "code": "jmABs6fFaNJG",
-                "dob": "1960-06-05",
-                "expiry_date": test_constants["EXPIRY_DATE"],
-                "last_updated_date": "2019-12-26",
-                "lpa": "lpa_1",
-            },
-            {
-                "active": False,
-                "actor": "actor_1",
-                "code": "MYX426fFaNJG",
-                "dob": "1960-06-05",
-                "expiry_date": test_constants["EXPIRY_DATE"],
-                "last_updated_date": "2019-12-26",
-                "lpa": "lpa_1",
-            }
-
-        ]
+        "Created on": "2019-09-31"
     }
 
     expected_status_code = 200

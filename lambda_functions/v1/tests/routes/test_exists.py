@@ -25,16 +25,7 @@ def test_exists(server):
         test_headers = {"Content-Type": "application/json"}
 
         expected_return = {
-            "codes": [
-                {
-                    "active": True,
-                    "actor": "12ad81a9-f89d-4804-99f5-7c0c8669ac9b",
-                    "code": "tOhkrldOqewm",
-                    "dob": None,
-                    "last_updated_date": datetime.date.today().strftime("%Y-%m-%d"),
-                    "lpa": "eed4f597-fd87-4536-99d0-895778824861",
-                }
-            ]
+            "Created on": "2019-11-10"
         }
 
         r = requests.post(

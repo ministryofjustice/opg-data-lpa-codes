@@ -146,7 +146,7 @@ def actor_code_exists_route():
     everything to explode if a required field is missing we are checking here also.
 
     Returns:
-        if payload is valid - dict of any matching code details, status code
+        if payload is valid - dict of matching code generated date, status code
         if payload is invalid - 400
     """
     post_data = request.get_json()
