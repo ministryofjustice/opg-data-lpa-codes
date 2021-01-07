@@ -68,6 +68,7 @@ def case_actor_code_exists_1() -> CaseData:
     expected_status_code = 200
     return test_data, data, expected_result, expected_status_code
 
+
 @case_name("Returns null if no active codes in query result")
 def case_actor_code_exists_2() -> CaseData:
     test_data = [
@@ -145,7 +146,7 @@ def case_actor_code_exists_3() -> CaseData:
 
 
 @case_name("Returns null with 200 if no match found")
-def case_actor_code_exists_3() -> CaseData:
+def case_actor_code_exists_4() -> CaseData:
     test_data = [
         {
             "active": True,
