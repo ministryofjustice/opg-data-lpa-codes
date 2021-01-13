@@ -62,7 +62,7 @@ def case_actor_code_exists_1() -> CaseData:
     }
 
     expected_result = {
-        "Created on": "2019-09-31"
+        "Created": "2019-09-31"
     }
 
     expected_status_code = 200
@@ -101,7 +101,9 @@ def case_actor_code_exists_2() -> CaseData:
         "actor": "actor_1"
     }
 
-    expected_result = None
+    expected_result = {
+        "Created": None
+    }
 
     expected_status_code = 200
     return test_data, data, expected_result, expected_status_code
@@ -139,7 +141,9 @@ def case_actor_code_exists_3() -> CaseData:
         "actor": "actor_1"
     }
 
-    expected_result = None
+    expected_result = {
+        "Created": None
+    }
 
     expected_status_code = 200
     return test_data, data, expected_result, expected_status_code
@@ -177,7 +181,9 @@ def case_actor_code_exists_4() -> CaseData:
         "actor": "actor_1"
     }
 
-    expected_result = None
+    expected_result = {
+        "Created": None
+    }
 
     expected_status_code = 200
     return test_data, data, expected_result, expected_status_code

@@ -25,7 +25,7 @@ def test_exists(server):
         test_headers = {"Content-Type": "application/json"}
 
         expected_return = {
-            "Created on": "2019-11-10"
+            "Created": "2019-11-10"
         }
 
         r = requests.post(

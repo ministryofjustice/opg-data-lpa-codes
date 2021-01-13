@@ -238,9 +238,9 @@ def handle_exists(data):
     if code_details:
         for code in code_details:
             if code["active"]:
-                return {"Created on": code["generated_date"]}, 200
+                return {"Created": code["generated_date"]}, 200
 
-        return None, 200
+        return {"Created": None}, 200
 
     else:
-        return None, 200
+        return {"Created": None}, 200
