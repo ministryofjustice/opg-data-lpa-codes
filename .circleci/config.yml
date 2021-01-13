@@ -407,7 +407,7 @@ jobs:
                 command: |
                   echo ${API_VERSION}
                   python tag_pact.py \
-                  --pact_broker_url"${PACT_BROKER_BASE_URL}" \
+                  --pact_broker_url="${PACT_BROKER_BASE_URL}" \
                   --broker_user_name="admin" \
                   --broker_secret_name="pactbroker_admin" \
                   --pacticipant="${PACT_PROVIDER}" \
