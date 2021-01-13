@@ -6,7 +6,7 @@ from flask import request, jsonify
 
 from .errors import error_message
 from .helpers import custom_logger
-from .endpoints import handle_create, handle_validate, handle_revoke
+from .endpoints import handle_create, handle_validate, handle_revoke, handle_exists
 
 logger = custom_logger("code generator")
 
@@ -133,5 +133,38 @@ def validate_route():
         return abort(400)
 
     result, status_code = handle_validate(data=post_data)
+
+    return jsonify(result), status_code
+
+
+@api.route("/exists", methods=["POST"])
+def actor_code_exists_route():
+    """
+    Checks if a code exists for a given actor on an LPA
+
+    Payload *should* be validated by API-Gateway before it gets here, but as it causes
+    everything to explode if a required field is missing we are checking here also.
+
+    Returns:
+        if payload is valid - dict of matching code generated date, status code
+        if payload is invalid - 400
+    """
+    post_data = request.get_json()
+
+    try:
+        lpa = post_data["lpa"]
+        actor = post_data["actor"]
+    except KeyError as e:
+        logger.debug(f"Missing param from request: {e}")
+        return abort(400)
+
+    if "" in [lpa, actor]:
+        logger.debug(
+            f"Empty param in request: "
+            f"{[i for i in [lpa, actor] if i == '']}"
+        )
+        return abort(400)
+
+    result, status_code = handle_exists(data=post_data)
 
     return jsonify(result), status_code

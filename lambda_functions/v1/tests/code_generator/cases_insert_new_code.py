@@ -21,6 +21,7 @@ def case_insert_a_code() -> CaseData:
             "active": True,
             "last_updated_date": test_constants["TODAY_ISO"],
             "dob": "1960-06-05",
+            "generated_date": test_constants["TODAY_ISO"],
             "expiry_date": test_constants["EXPIRY_DATE"],
         }
     ]

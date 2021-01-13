@@ -371,6 +371,94 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error503'
 
+
+  /exists:
+    post:
+      summary: "Checks if a code exists for a specific actor on an LPA"
+      description: "Checks if a code exists for a specific actor on an LPA"
+      operationId: api.resources.actor_code_exists_route
+      security:
+        - sigv4: []
+      x-amazon-apigateway-request-validator: "all"
+      x-amazon-apigateway-integration:
+        uri: arn:aws:apigateway:${region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${region}:${account_id}:function:$${stageVariables.lpa_codes_function_name}/invocations
+        responses:
+          default:
+            statusCode: "200"
+        passthroughBehavior: "when_no_match"
+        httpMethod: "POST"
+        contentHandling: "CONVERT_TO_TEXT"
+        type: "aws_proxy"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                lpa:
+                  type: string
+                actor:
+                  type: string
+              example:
+                lpa: "eed4f597-fd87-4536-99d0-895778824861"
+                actor: "12ad81a9-f89d-4804-99f5-7c0c8669ac9b"
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActorCodeExists'
+        400:
+          description: Generic bad request (generally invalid syntax)
+          content:
+            application/vnd.opg-data.v1+json:
+              schema:
+                $ref: '#/components/schemas/Error400'
+        401:
+          description: Unauthorised (no current user and there should be)
+          content:
+            application/vnd.opg-data.v1+json:
+              schema:
+                $ref: '#/components/schemas/Error401'
+        403:
+          description: Forbidden - The current user is forbidden from accessing this data (in this way)
+          content:
+            application/vnd.opg-data.v1+json:
+              schema:
+                $ref: '#/components/schemas/Error403'
+        404:
+          description: That URL is not a valid route, or the item resource does not exist
+          content:
+            application/vnd.opg-data.v1+json:
+              schema:
+                $ref: '#/components/schemas/Error404'
+        413:
+          description: Payload too large
+          content:
+            application/vnd.opg-data.v1+json:
+              schema:
+                $ref: '#/components/schemas/Error413'
+        415:
+          description: Unsupported media type
+          content:
+            application/vnd.opg-data.v1+json:
+              schema:
+                $ref: '#/components/schemas/Error415'
+        500:
+          description: Something unexpected happened and it is the API"s fault
+          content:
+            application/vnd.opg-data.v1+json:
+              schema:
+                $ref: '#/components/schemas/Error500'
+        503:
+          description: Service Unavailable - please try again later
+          content:
+            application/vnd.opg-data.v1+json:
+              schema:
+                $ref: '#/components/schemas/Error503'
+
 components:
   securitySchemes:
     sigv4:
@@ -410,6 +498,18 @@ components:
       example:
         actor: "12ad81a9-f89d-4804-99f5-7c0c8669ac9b"
       required:
+        - actor
+    ActorCodeExists:
+      properties:
+        lpa:
+          type: string
+        actor:
+          type: string
+      example:
+        lpa: "eed4f597-fd87-4536-99d0-895778824861"
+        actor: "12ad81a9-f89d-4804-99f5-7c0c8669ac9b"
+      required:
+        - lpa
         - actor
     Error400:
       type: object
@@ -659,3 +759,4 @@ components:
                   x-ray:
                     type: string
                     example: "93c330d4-7d84-4c1b-8fdb-54cec5bfe747"
+

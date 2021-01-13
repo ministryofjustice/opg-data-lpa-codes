@@ -196,3 +196,51 @@ def handle_validate(data):
         return {"actor": code_details[0]["actor"]}, 200
     else:
         return {"actor": None}, 200
+
+
+def handle_exists(data):
+    """
+    Args:
+        data: dict of payload data
+
+    Example args:
+        {
+            "lpa": "568c6b37-46ed-44e6-a579-2d82f0504ef4",
+            "actor":"9085ada2-d76f-41f8-a2d9-bea404ce90ac",
+        }
+
+    Returns:
+        tuple: (generated date of matched code, http status code)
+
+    Example return:
+    (
+        {"Created": {
+            "2020-01-01"
+            }
+        },
+        200
+    )
+    """
+
+    db = db_connection()
+
+    lpa = data["lpa"]
+    actor = data["actor"]
+
+    key = {"lpa": lpa, "actor": actor}
+
+    try:
+        code_details = code_generator.get_codes(database=db, key=key)
+    except Exception as e:
+        logger.error(f"Error in handle_exists > get_codes: {e}")
+        return None, 500
+
+    if code_details:
+        for code in code_details:
+            if code["active"]:
+                return {"Created": code["generated_date"]}, 200
+
+        return {"Created": None}, 200
+
+    else:
+        return {"Created": None}, 200
