@@ -463,7 +463,7 @@ jobs:
           name: Set up ready for pact tests
           command: |
             export PACT_VERSION=$(curl -i -s -X GET https://github.com/pact-foundation/pact-ruby-standalone/releases/latest \
-            | grep "location:" | awk -F'tag' '{print $2}' | awk -F'/v' '{print $2}' | sed 's/.$//')
+            | grep "Location:" | awk -F'tag' '{print $2}' | awk -F'/v' '{print $2}' | sed 's/.$//')
             wget https://github.com/pact-foundation/pact-ruby-standalone/releases/download/v${PACT_VERSION}/pact-${PACT_VERSION}-linux-x86_64.tar.gz
             tar xzf pact-${PACT_VERSION}-linux-x86_64.tar.gz
       - run:

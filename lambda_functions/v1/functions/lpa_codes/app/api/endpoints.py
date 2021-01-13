@@ -214,7 +214,7 @@ def handle_exists(data):
 
     Example return:
     (
-        {"Created on": {
+        {"Created": {
             "2020-01-01"
             }
         },
