@@ -14,7 +14,7 @@ from freezegun import freeze_time
 
 
 @cases_data(module=cases_insert_new_code)
-@freeze_time("2020-01-21")
+@freeze_time(datetime.date.today())
 def test_insert_new_code(mock_database, case_data: CaseDataGetter):
     key, code, dob, expected_result, expected_row = case_data.get()
     db = boto3.resource("dynamodb")
