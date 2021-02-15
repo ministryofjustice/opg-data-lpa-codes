@@ -1,5 +1,5 @@
 import logging
-
+import datetime
 import boto3
 from boto3.dynamodb.conditions import Key
 
@@ -14,7 +14,7 @@ from freezegun import freeze_time
 
 
 @cases_data(module=cases_handle_revoke)
-@freeze_time("2020-01-21")
+@freeze_time(datetime.date.today())
 def test_post(mock_database, case_data: CaseDataGetter):
     (
         test_data,
