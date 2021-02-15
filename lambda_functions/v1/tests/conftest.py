@@ -11,13 +11,14 @@ from lambda_functions.v1.functions.lpa_codes.app.api import (
     endpoints,
 )
 
+today = datetime.date.today()
 
 test_constants = {
     "TABLE_NAME": "lpa-codes-mock",
-    "EXPIRY_DATE": Decimal((datetime.date.today() + datetime.timedelta(days=365)).strftime('%s')),
+    "EXPIRY_DATE": Decimal((today + datetime.timedelta(days=365)).strftime("%s")),
     "EXPIRY_DATE_PAST": Decimal(1577865600),  # 01/01/2020 @ 8:00am (UTC)
-    "TODAY": datetime.date.today(),
-    "TODAY_ISO": datetime.date.today().strftime("%Y-%m-%d"),
+    "TODAY": today,
+    "TODAY_ISO": today.strftime("%Y-%m-%d"),
     "DEFAULT_CODE": "tOhkrldOqewm",
 }
 
