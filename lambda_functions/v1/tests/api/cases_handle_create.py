@@ -77,7 +77,8 @@ def case_create_a_code_1() -> CaseData:
             }
         ]
     }
-    return test_data, data, expected_result
+    expected_status_code = 200
+    return test_data, data, expected_result, expected_status_code
 
 
 @case_name("Create multiple codes")
@@ -145,54 +146,5 @@ def case_create_a_code_2() -> CaseData:
             },
         ]
     }
-    return test_data, data, expected_result
-
-
-@cases_generator(
-    "Try and create a code with blank values - {value}", value=["lpa", "actor", "dob"]
-)
-def case_create_a_code_in233(value) -> CaseData:
-    test_data = copy.deepcopy(default_test_data)
-
-    default_data = {
-        "lpas": [
-            {
-                "lpa": "eed4f597-fd87-4536-99d0-895778824861",
-                "actor": "12ad81a9-f89d-4804-99f5-7c0c8669ac9b",
-                "dob": "1960-06-05",
-            }
-        ]
-    }
-
-    data = copy.deepcopy(default_data)
-    data["lpas"][0][value] = ""
-
-    print(f"data: {data}")
-
-    expected_result = {"codes": None}
-    return test_data, data, expected_result
-
-
-@cases_generator(
-    "Try and create a code with missing values - {value}", value=["lpa", "actor", "dob"]
-)
-def case_create_a_code_in233_1(value) -> CaseData:
-    test_data = copy.deepcopy(default_test_data)
-
-    default_data = {
-        "lpas": [
-            {
-                "lpa": "eed4f597-fd87-4536-99d0-895778824861",
-                "actor": "12ad81a9-f89d-4804-99f5-7c0c8669ac9b",
-                "dob": "1960-06-05",
-            }
-        ]
-    }
-
-    data = copy.deepcopy(default_data)
-    data["lpas"][0].pop(value)
-
-    print(f"data: {data}")
-
-    expected_result = {"codes": []}
-    return test_data, data, expected_result
+    expected_status_code = 200
+    return test_data, data, expected_result, expected_status_code

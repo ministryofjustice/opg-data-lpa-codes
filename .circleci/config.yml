@@ -94,6 +94,7 @@ workflows:
           tf_workspace: integration
           applycheck: true
           filters: {branches:{only:[master]}}
+
       - terraform_action:
          name: production apply
          requires: [approve release to production]
@@ -110,11 +111,25 @@ workflows:
           name: verify the latest pact
 
 orbs:
+  dockerhub_helper:
+    orbs:
+      docker: circleci/docker@1.4.0
+    commands:
+      dockerhub_login:
+        steps:
+          - docker/install-docker-credential-helper
+          - docker/check:
+              docker-password: DOCKER_ACCESS_TOKEN
+              docker-username: DOCKER_USER
   lpa-codes:
     executors:
       python_with_tfvars:
         docker:
           - image: circleci/python:3.8.1
+            auth:
+              username: $DOCKER_USER
+              password: $DOCKER_ACCESS_TOKEN
+        resource_class: small
         environment:
           TF_CLI_ARGS_plan: -input=false -lock=false
           TF_CLI_ARGS_apply: -input=false -auto-approve
@@ -126,6 +141,9 @@ orbs:
       python:
         docker:
           - image: circleci/python:3.8.1
+            auth:
+              username: $DOCKER_USER
+              password: $DOCKER_ACCESS_TOKEN
     commands:
       terraform_install:
         steps:
@@ -155,18 +173,51 @@ orbs:
 #                | awk '{print $1}')
 #                echo "export TF_VERSION=${TERRAFORM_LATEST_VERSION}" >> $BASH_ENV
 #                echo "export TF_SHA256SUM=${TERRAFORM_SHA256SUM}" >> $BASH_ENV
-      aws_cli_install:
+      pact_install:
+        steps:
+          - run:
+              name: Set up ready for pact tests
+              command: |
+                wget https://github.com/pact-foundation/pact-ruby-standalone/releases/download/v1.82.3/pact-1.82.3-linux-x86_64.tar.gz
+                tar xzf pact-1.82.3-linux-x86_64.tar.gz
+              working_directory: ~/project
+      login_codeartifact:
         steps:
           - run:
               name: install aws cli
               command: |
                 pip3 install awscli --upgrade --user
-                aws --version
+          - run:
+              name: login to code artifact for pip
+              command: ./login_code_artifact.sh -a 288342028542 -t pip
+              working_directory: ~/project/docs/ci_scripts
+      cancel_redundant_builds:
+        steps:
+          - run:
+              name: install cancel build requirements
+              command: pip3 install -r requirements.txt
+              working_directory: ~/project/docs/ci_scripts
+          - run:
+              name: cancel previous builds
+              command: |
+                python3 cancel_builds.py \
+                --circle_project_username="${CIRCLE_PROJECT_USERNAME}" \
+                --circle_project_reponame="${CIRCLE_PROJECT_REPONAME}" \
+                --circle_branch="${CIRCLE_BRANCH}" \
+                --circle_builds_token="${CIRCLE_BUILDS_TOKEN}" \
+                --terms_to_waitfor="apply,plan,terraform,destroy" \
+                --prod_job_terms="production ,integration ,pact"
+              working_directory: ~/project/docs/ci_scripts
+
 jobs:
   build_lambda:
     executor: lpa-codes/python
+    resource_class: small
     steps:
+      - dockerhub_helper/dockerhub_login
       - checkout
+      - lpa-codes/login_codeartifact
+      - lpa-codes/cancel_redundant_builds
       - run:
           name: install all requirements locally
           command: |
@@ -177,7 +228,7 @@ jobs:
       - run:
           name: run flake8 - python PEP8 linter, complexity checker
           command: |
-            flake8 lambda_functions
+            flake8 --ignore Q000 lambda_functions
       - run:
           name: get test coverage (fails below 90%)
           command: |
@@ -206,6 +257,7 @@ jobs:
 
   terraform_pre_checks:
     executor: lpa-codes/python_with_tfvars
+    resource_class: small
     parameters:
       tf_workspace:
         description: terraform workspace
@@ -273,6 +325,7 @@ jobs:
 
   terraform_action:
     executor: lpa-codes/python_with_tfvars
+    resource_class: small
     parameters:
       tf_workspace:
         description: terraform workspace
@@ -300,10 +353,6 @@ jobs:
     steps:
       - attach_workspace:
           at: ~/project
-      - when:
-          condition: << parameters.pact_tag_production >>
-          steps:
-            - lpa-codes/aws_cli_install
       - lpa-codes/terraform_install
       - run:
           name: unzip artifact
@@ -348,28 +397,35 @@ jobs:
       - when:
           condition: << parameters.pact_tag_production >>
           steps:
+            - lpa-codes/login_codeartifact
+            - run:
+                name: install ci requirements
+                command: pip3 install -r requirements.txt
+                working_directory: ~/project/pact
             - run:
                 name: tag pact commit with v<x>_production
                 command: |
-                  echo "applying tag on version ${GIT_COMMIT_PROVIDER}"
-                  STATUS_CODE=$(curl -I -s -X GET -u "${PACT_BROKER_USER}":"${PACT_BROKER_PASSWORD}" \
-                  https://"${PACT_BROKER_BASE_URL}"/pacticipants/"${PACT_PROVIDER}"/versions/"${GIT_COMMIT_PROVIDER}" | grep "HTTP" | awk '{print $2}')
-
-                  if [ "${STATUS_CODE}" -eq "200" ]
-                  then
-                    STATUS_CODE=$(curl -I -s -X PUT -u "${PACT_BROKER_USER}":"${PACT_BROKER_PASSWORD}" -H "Content-Type: application/json" \
-                    https://"${PACT_BROKER_BASE_URL}"/pacticipants/"${PACT_PROVIDER}"/versions/"${GIT_COMMIT_PROVIDER}"/tags/"${API_VERSION}_production" \
-                     | grep "HTTP" | awk '{print $2}')
-                    echo "Pact tagging completed with status code: ${STATUS_CODE}"
-                  else
-                    echo "version of provider with git commit ${GIT_COMMIT_PROVIDER}, not found"
-                  fi
+                  echo ${API_VERSION}
+                  python tag_pact.py \
+                  --pact_broker_url="${PACT_BROKER_BASE_URL}" \
+                  --broker_user_name="admin" \
+                  --broker_secret_name="pactbroker_admin" \
+                  --pacticipant="${PACT_PROVIDER}" \
+                  --tag="${API_VERSION}_production" \
+                  --git_commit="${GIT_COMMIT_PROVIDER}"
+                working_directory: ~/project/pact
   pact_verification:
     docker:
       # Primary container image where all the steps run.
       - image: circleci/python:3.8.1
+        auth:
+          username: $DOCKER_USER
+          password: $DOCKER_ACCESS_TOKEN
       # Service container image made available to the primary container at `host: localhost`
       - image: amazon/dynamodb-local:latest
+        auth:
+          username: $DOCKER_USER
+          password: $DOCKER_ACCESS_TOKEN
         entrypoint: ["java", "-Xmx1G", "-jar", "DynamoDBLocal.jar"]
     working_directory: ~/project
     parameters:
@@ -378,7 +434,6 @@ jobs:
       GIT_COMMIT_CONSUMER: << pipeline.parameters.consumerversion >>
     steps:
       - checkout
-      - lpa-codes/aws_cli_install
       - run:
           name: Set BASH_ENV
           command: ~/project/.circleci/set_env.sh >> $BASH_ENV
@@ -420,31 +475,24 @@ jobs:
           command: |
             curl -X POST -d '{"consumer": "sirius", "state": "generated code exists and active"}' \
             -H 'Content-Type: application/json' http://localhost:4343/setup/state
+      - lpa-codes/pact_install
+      - lpa-codes/login_codeartifact
       - run:
-          name: verify pact and update github
+          name: install ci requirements
+          command: pip3 install -r requirements.txt
+          working_directory: ~/project/pact
+      - run:
+          name: verify pact
           command: |
-            export SCRIPT_PATH="/home/circleci/project/.circleci"
-            if [ "${GIT_COMMIT_CONSUMER}" == "" ]
-            then
-              printf "\n\nProcess kicked off by commit to lpa-codes\n\n"
-              if [ "$TF_WORKSPACE" != "development" ] && [ "$TF_WORKSPACE" != "preproduction" ] && [ "$TF_WORKSPACE" != "production" ]
-              then
-                printf "\n\nSetting CONSUMER_TRIGGERED to false\n\n"
-                export CONSUMER_TRIGGERED=false
-                printf "\n\nOn working branch, performing pact verification\n\n"
-                "${SCRIPT_PATH}"/pact_verifier.sh
-                printf "\n\nChecking if we can deploy with can-i-deploy\n\n"
-                "${SCRIPT_PATH}"/check_pact_deployable.sh
-              else
-                printf "\n\nOn master branch for lpa-codes, no need to perform verification\n\n"
-              fi
-            elif [ "${GIT_COMMIT_CONSUMER}" != "" ]
-            then
-              printf "\n\nSetting CONSUMER_TRIGGERED to true\n\n"
-              export CONSUMER_TRIGGERED=true
-              printf "Process kicked off by commit %b to sirius\n\n" "${GIT_COMMIT_CONSUMER}"
-              printf "\n\nChecking if we can deploy with can-i-deploy\n\n"
-              "${SCRIPT_PATH}"/check_pact_deployable.sh
-            else
-              printf "\n\nSomething has gone wrong! Check what GIT_COMMIT_CONSUMER is set to\n\n"
-            fi
+            echo ${API_VERSION}
+            python check_pact_deployable.py \
+            --provider_base_url="http://localhost:4343/v1" \
+            --pact_broker_url="${PACT_BROKER_BASE_URL}" \
+            --broker_user_name="admin" \
+            --broker_secret_name="pactbroker_admin" \
+            --consumer_pacticipant="${PACT_CONSUMER}" \
+            --provider_pacticipant="${PACT_PROVIDER}" \
+            --api_version="${API_VERSION}" \
+            --git_commit_consumer="${GIT_COMMIT_CONSUMER}" \
+            --git_commit_provider="${GIT_COMMIT_PROVIDER}"
+          working_directory: ~/project/pact

@@ -1,6 +1,9 @@
 import boto3
+import pytest
 from boto3.dynamodb.conditions import Key
-
+import logging
+import datetime
+from lambda_functions.v1.functions.lpa_codes.app.api import code_generator
 from lambda_functions.v1.functions.lpa_codes.app.api.database import lpa_codes_table
 from lambda_functions.v1.functions.lpa_codes.app.api.endpoints import handle_create
 
@@ -17,24 +20,25 @@ from freezegun import freeze_time
 
 @cases_data(module=cases_handle_create)
 def test_post(mock_database, mock_generate_code, case_data: CaseDataGetter):
-    test_data, data, expected_result = case_data.get()
+    test_data, data, expected_result, expected_status_code = case_data.get()
 
-    result = handle_create(data=data)
+    result, status_code = handle_create(data=data)
 
     assert result == expected_result
+    assert status_code == expected_status_code
 
     if expected_result["codes"] is not None:
         remove_test_data(expected_result["codes"])
 
 
 @cases_data(module=cases_handle_create)
-@freeze_time("2020-01-21")
+@freeze_time(datetime.date.today())
 def test_data(mock_database, mock_generate_code, case_data: CaseDataGetter):
-    test_data, data, expected_result = case_data.get()
+    test_data, data, expected_result, expected_status_code = case_data.get()
 
     insert_test_data(test_data=test_data)
 
-    codes_created = handle_create(data=data)
+    codes_created, status_code = handle_create(data=data)
 
     for i, item in enumerate(data):
 
@@ -46,6 +50,7 @@ def test_data(mock_database, mock_generate_code, case_data: CaseDataGetter):
             dob = data["lpas"][i]["dob"]
         except KeyError:
             assert codes_created == expected_result
+            assert status_code == expected_status_code
             break
 
         if "" not in [lpa, actor, dob]:
@@ -80,3 +85,55 @@ def test_data(mock_database, mock_generate_code, case_data: CaseDataGetter):
         remove_test_data(expected_result["codes"] + test_data)
     else:
         remove_test_data(test_data)
+
+
+@cases_data(module=cases_handle_create)
+def test_get_codes_broken(
+    mock_database,
+    mock_generate_code,
+    broken_get_code,
+    caplog,
+    case_data: CaseDataGetter,
+):
+    test_data, data, expected_result, expected_status_code = case_data.get()
+
+    result, status_code = handle_create(data=data)
+
+    assert status_code == 500
+    with caplog.at_level(logging.ERROR):
+        assert "get_codes" in caplog.text
+
+
+@cases_data(module=cases_handle_create)
+def test_generate_code_broken(
+    mock_database,
+    mock_generate_code,
+    broken_generate_code,
+    caplog,
+    case_data: CaseDataGetter,
+):
+    test_data, data, expected_result, expected_status_code = case_data.get()
+
+    result, status_code = handle_create(data=data)
+
+    assert status_code == 500
+    with caplog.at_level(logging.ERROR):
+        assert "generate_code" in caplog.text
+
+
+@cases_data(module=cases_handle_create)
+def test_insert_new_code_broken(
+    mock_database,
+    mock_generate_code,
+    broken_insert_new_code,
+    caplog,
+    case_data: CaseDataGetter,
+):
+    test_data, data, expected_result, expected_status_code = case_data.get()
+
+    result, status_code = handle_create(data=data)
+
+    assert status_code == 500
+
+    with caplog.at_level(logging.ERROR):
+        assert "insert_new_code" in caplog.text

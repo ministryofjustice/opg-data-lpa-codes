@@ -29,7 +29,14 @@ def case_revoke_a_code_1() -> CaseData:
 
     expected_result = {"codes revoked": 1}
     expected_last_updated_date = test_constants["TODAY_ISO"]
-    return test_data, data, expected_result, expected_last_updated_date
+    expected_status_code = 200
+    return (
+        test_data,
+        data,
+        expected_result,
+        expected_last_updated_date,
+        expected_status_code,
+    )
 
 
 @case_name("Revoke an inactive code")
@@ -54,7 +61,14 @@ def case_revoke_a_code_2() -> CaseData:
 
     expected_result = {"codes revoked": 0}
     expected_last_updated_date = "2019-12-26"
-    return test_data, data, expected_result, expected_last_updated_date
+    expected_status_code = 200
+    return (
+        test_data,
+        data,
+        expected_result,
+        expected_last_updated_date,
+        expected_status_code,
+    )
 
 
 @case_name("Try to revoke a code but it doesn't exist")
@@ -79,29 +93,11 @@ def case_revoke_a_code_3() -> CaseData:
 
     expected_result = {"codes revoked": 0}
     expected_last_updated_date = "2019-12-26"
-    return test_data, data, expected_result, expected_last_updated_date
-
-
-@case_name("Revoke a code by sending empty string")
-def case_revoke_a_code_in233() -> CaseData:
-    test_data = [
-        {
-            "active": True,
-            "actor": "violet",
-            "code": "jmABs6fFaNJG",
-            "expiry_date": test_constants["EXPIRY_DATE"],
-            "generated_date": "2019-09-31",
-            "last_updated_date": "2019-12-26",
-            "dob": "1960-06-05",
-            "lpa": "mesh_end_to_end_systems",
-            "status_details": "Generated",
-        }
-    ]
-
-    data = {
-        "code": "",
-    }
-
-    expected_result = {"codes revoked": 0}
-    expected_last_updated_date = test_constants["TODAY_ISO"]
-    return test_data, data, expected_result, expected_last_updated_date
+    expected_status_code = 200
+    return (
+        test_data,
+        data,
+        expected_result,
+        expected_last_updated_date,
+        expected_status_code,
+    )

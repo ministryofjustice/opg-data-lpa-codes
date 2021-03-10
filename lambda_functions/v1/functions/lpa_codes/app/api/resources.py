@@ -1,15 +1,15 @@
+import json
 import os
 
-from flask import Blueprint
+from flask import Blueprint, abort
 from flask import request, jsonify
 
 from .errors import error_message
 from .helpers import custom_logger
-from .endpoints import handle_create, handle_validate, handle_revoke
+from .endpoints import handle_create, handle_validate, handle_revoke, handle_exists
 
 logger = custom_logger("code generator")
 
-# version = 'v1'
 version = os.getenv("API_VERSION")
 api = Blueprint("api", __name__, url_prefix=f"/{version}")
 
@@ -22,6 +22,11 @@ def handle404(error=None):
 @api.app_errorhandler(405)
 def handle405(error=None):
     return error_message(405, "Method not supported")
+
+
+@api.app_errorhandler(400)
+def handle400(error=None):
+    return error_message(400, "Bad payload")
 
 
 @api.app_errorhandler(500)
@@ -39,36 +44,127 @@ def handle_healthcheck():
 @api.route("/create", methods=["POST"])
 def create_route():
     """
-    Placeholder for create a code endpoint
+    Creates a new code for the given lpa/actor/dob combo.
+
+    Payload *should* be validated by API-Gateway before it gets here, but as it causes
+    everything to explode if a required field is missing we are checking here also.
+
     Returns:
-    json
+        tuple: (json result of handle_create method, status code)
     """
 
-    result = handle_create(data=request.get_json())
+    post_data = request.get_json()
 
-    return jsonify(result), 200
+    for entry in post_data["lpas"]:
+        try:
+            lpa = entry["lpa"]
+            actor = entry["actor"]
+            dob = entry["dob"]
+        except KeyError as e:
+            logger.debug(f"Missing param from request: {e}")
+            return abort(400)
+
+        if "" in [lpa, actor, dob]:
+            logger.debug(
+                f"Empty param in request: "
+                f"{[i for i in [lpa, actor, dob] if i == '']}"
+            )
+            return abort(400)
+
+    result, status_code = handle_create(data=post_data)
+
+    return jsonify(result), status_code
 
 
 @api.route("/revoke", methods=["POST"])
 def revoke_route():
     """
-    Placeholder for revoke a code endpoint
+    Revokes the given code
+
+    Payload *should* be validated by API-Gateway before it gets here, but as it causes
+    everything to explode if a required field is missing we are checking here also.
+
     Returns:
-    json
+        if payload is valid - dict of the posted data, status code
+        if payload is invalid - 400
     """
+    post_data = request.get_json()
 
-    result = handle_revoke(data=request.get_json())
+    try:
+        code = post_data["code"]
+    except KeyError as e:
+        logger.debug(f"Missing param from request: {e}")
+        return abort(400)
 
-    return jsonify(result), 200
+    if code == "":
+        logger.debug(f"Empty param in request: code")
+        return abort(400)
+
+    result, status_code = handle_revoke(data=post_data)
+
+    return jsonify(result), status_code
 
 
 @api.route("/validate", methods=["POST"])
 def validate_route():
     """
-    Placeholder for validate a code endpoint
-    Returns:
-    json
-    """
-    result = handle_validate(data=request.get_json())
+    Validates a code/lpa/dob combo
 
-    return jsonify(result), 200
+    Payload *should* be validated by API-Gateway before it gets here, but as it causes
+    everything to explode if a required field is missing we are checking here also.
+
+    Returns:
+        if payload is valid - dict of the posted data, status code
+        if payload is invalid - 400
+    """
+    post_data = request.get_json()
+    try:
+        code = post_data["code"]
+        lpa = post_data["lpa"]
+        dob = post_data["dob"]
+    except KeyError as e:
+        logger.debug(f"Missing param from request: {e}")
+        return abort(400)
+
+    if "" in [code, lpa, dob]:
+        logger.debug(
+            f"Empty param in request: " f"{[i for i in [lpa, code, dob] if i == '']}"
+        )
+        return abort(400)
+
+    result, status_code = handle_validate(data=post_data)
+
+    return jsonify(result), status_code
+
+
+@api.route("/exists", methods=["POST"])
+def actor_code_exists_route():
+    """
+    Checks if a code exists for a given actor on an LPA
+
+    Payload *should* be validated by API-Gateway before it gets here, but as it causes
+    everything to explode if a required field is missing we are checking here also.
+
+    Returns:
+        if payload is valid - dict of matching code generated date, status code
+        if payload is invalid - 400
+    """
+    post_data = request.get_json()
+
+    try:
+        lpa = post_data["lpa"]
+        actor = post_data["actor"]
+    except KeyError as e:
+        logger.debug(f"Missing param from request: {e}")
+        return abort(400)
+
+    if "" in [lpa, actor]:
+        logger.debug(
+            f"Empty param in request: "
+            f"{[i for i in [lpa, actor] if i == '']}"
+        )
+        return abort(400)
+
+    result, status_code = handle_exists(data=post_data)
+
+    return jsonify(result), status_code

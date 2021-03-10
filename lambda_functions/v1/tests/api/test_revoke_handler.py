@@ -1,3 +1,5 @@
+import logging
+import datetime
 import boto3
 from boto3.dynamodb.conditions import Key
 
@@ -12,18 +14,27 @@ from freezegun import freeze_time
 
 
 @cases_data(module=cases_handle_revoke)
-@freeze_time("2020-01-21")
+@freeze_time(datetime.date.today())
 def test_post(mock_database, case_data: CaseDataGetter):
-    test_data, data, expected_result, expected_last_updated_date = case_data.get()
+    (
+        test_data,
+        data,
+        expected_result,
+        expected_last_updated_date,
+        expected_status_code,
+    ) = case_data.get()
     # Set up test data
     insert_test_data(test_data=test_data)
 
-    result = handle_revoke(data=data)
+    # Perform revoke & check return
+    result, status_code = handle_revoke(data=data)
+    assert result == expected_result
+    assert status_code == expected_status_code
 
+    # Check the data after revoke has been performed
     db = boto3.resource("dynamodb")
     after_revoke = code_generator.get_codes(database=db, code=data["code"])
 
-    assert result == expected_result
     if after_revoke:
         lpa = after_revoke[0]["lpa"]
         actor = after_revoke[0]["actor"]
@@ -47,3 +58,26 @@ def test_post(mock_database, case_data: CaseDataGetter):
             assert row_data["active"] is False
 
     remove_test_data(test_data)
+
+
+@cases_data(module=cases_handle_revoke)
+def test_get_codes_broken(
+    mock_database,
+    mock_generate_code,
+    broken_update_codes,
+    caplog,
+    case_data: CaseDataGetter,
+):
+    (
+        test_data,
+        data,
+        expected_result,
+        expected_last_updated_date,
+        expected_status_code,
+    ) = case_data.get()
+
+    result, status_code = handle_revoke(data=data)
+
+    assert status_code == 500
+    with caplog.at_level(logging.ERROR):
+        assert "update_codes" in caplog.text

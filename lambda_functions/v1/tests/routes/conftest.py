@@ -118,6 +118,7 @@ def mock_get_codes(monkeypatch):
                 "active": True,
                 "last_updated_date": date_formatter(datetime.datetime.now()),
                 "dob": None,
+                "generated_date": "2019-11-10"
             }
         ]
 
