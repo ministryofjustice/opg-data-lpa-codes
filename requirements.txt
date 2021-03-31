@@ -1,5 +1,5 @@
 attrs==20.3.0
-importlib-metadata==1.6.1
+importlib-metadata==3.10.0
 jsonschema==3.2.0
 openapi-spec-validator==0.3.0
 pyrsistent==0.17.3
