@@ -1,4 +1,4 @@
-attrs==20.3.0
+attrs==21.2.0
 importlib-metadata==4.0.1
 jsonschema==3.2.0
 openapi-spec-validator==0.3.0
