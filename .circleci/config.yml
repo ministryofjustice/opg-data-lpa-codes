@@ -136,8 +136,8 @@ orbs:
           TF_CLI_ARGS_destroy: -input=false -auto-approve
           TF_CLI_ARGS_init: -input=false -upgrade=true -reconfigure
           TF_VAR_default_role: sirius-ci
-          TF_VERSION: 0.12.26
-          TF_SHA256SUM: 607bc802b1c6c2a5e62cc48640f38aaa64bef1501b46f0ae4829feb51594b257
+          TF_VERSION: 0.13.5
+          TF_SHA256SUM: f7b7a7b1bfbf5d78151cfe3d1d463140b5fd6a354e71a7de2b5644e652ca5147
       python:
         docker:
           - image: circleci/python:3.8.1
