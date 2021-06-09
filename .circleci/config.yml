@@ -22,33 +22,29 @@ workflows:
   pull_request:
     when: << pipeline.parameters.run_pull_request >>
     jobs:
-#      - build_lambda:
-#          name: build and artifact
-#          filters: {branches:{ignore:[master]}}
-#
-#      - terraform_pre_checks:
-#          name: terraform preflight checks
-#          requires: [build and artifact]
-#          filters: {branches:{ignore:[master]}}
-#
-#      - terraform_action:
-#          name: apply branch environment
-#          requires: [terraform preflight checks]
-#          tf_command: apply
-#          filters: {branches:{ignore:[master]}}
+      - build_lambda:
+          name: build and artifact
+          filters: {branches:{ignore:[master]}}
+
+      - terraform_pre_checks:
+          name: terraform preflight checks
+          requires: [build and artifact]
+          filters: {branches:{ignore:[master]}}
+
+      - terraform_action:
+          name: apply branch environment
+          requires: [terraform preflight checks]
+          tf_command: apply
+          filters: {branches:{ignore:[master]}}
 
       - workspace_protection:
           name: protect current workspace
-#          requires: [terraform preflight checks]
+          requires: [terraform preflight checks]
           filters: {branches:{ignore:[master]}}
 
       - workflow_complete:
           name: workflow complete
-#          requires: [apply branch environment, protect current workspace]
-          filters: {branches:{ignore:[master]}}
-
-      - destroy_workspaces:
-          name: destroy non protected workspaces
+          requires: [apply branch environment, protect current workspace]
           filters: {branches:{ignore:[master]}}
 
   commit_to_master:
