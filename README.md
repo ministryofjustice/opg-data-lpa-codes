@@ -1,4 +1,7 @@
 # opg-data-lpa-codes
+
+[![CircleCI](https://circleci.com/gh/ministryofjustice/opg-data-lpa-codes/tree/master.svg?style=svg)](https://circleci.com/gh/ministryofjustice/opg-data-lpa-codes/tree/master)
+
 LPA Integration with microservice for the generation of registration codes: Managed by opg-org-infra &amp; Terraform
 
 ## Local Environment
@@ -86,6 +89,26 @@ source venv/bin/activate
 pip install -r ./lambda_functions/v1/requirements/dev-requirements.txt
 python -m pytest
 ```
+
+## CI Pipeline
+
+When working on a ticket you should name your branch as the jira identifier of the ticket you are working on.
+
+When you push your changes to your branch and create a PR then the CircleCi workflow will run and create a branch
+based environment in aws. This includes an api gateway instance, the lambda function and all the relevant DNS to access
+the environment.
+
+You can test against the endpoints by assuming a sirius dev role and hitting the following endpoint (replacing branch_name and api_path:
+
+```
+https://branch_name.dev.lpa-codes.api.opg.service.justice.gov.uk/v1/api_path
+```
+
+Once merged you can do the same tests against dev by removing the branch_name portion of above url.
+
+Environments get destroyed overnight and by default your environment is protected for the first night's destroy but
+will be cleaned up on the subsequent night. If you want to work on it longer either recreate it by rerunning the workflow
+or  change the protection TTL in dynamodb.
 
 ## PACT
 

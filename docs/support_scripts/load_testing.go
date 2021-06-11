@@ -108,7 +108,7 @@ func makeRequests (baseUrl string, endpoint string, codesToAction []*strings.Rea
 func main() {
 
 	roleToAssume := "arn:aws:iam::288342028542:role/operator"
-	baseUrl := "https://dev.lpa-codes.api.opg.service.justice.gov.uk/v1"
+	baseUrl := "https://in673.dev.lpa-codes.api.opg.service.justice.gov.uk/v1"
 	
 	mySession := session.Must(session.NewSession())
 	creds := stscreds.NewCredentials(mySession, roleToAssume)
