@@ -143,7 +143,7 @@ orbs:
           TF_CLI_ARGS_apply: -input=false -auto-approve
           TF_CLI_ARGS_destroy: -input=false -auto-approve
           TF_CLI_ARGS_init: -input=false -upgrade=true -reconfigure
-          TF_VAR_default_role: sirius-ci
+          TF_VAR_default_role: integrations-ci
           TF_VERSION: 0.14.11
           TF_SHA256SUM: 171ef5a4691b6f86eab524feaf9a52d5221c875478bd63dd7e55fef3939f7fd4
       python:
@@ -533,7 +533,7 @@ jobs:
           command: ~/project/.circleci/set_env.sh >> $BASH_ENV
       - run:
           name: Add workspace to protected list
-          command: terraform-workspace-manager -register-workspace="${TF_WORKSPACE}" -time-to-protect="${PROTECT_TIME}" -aws-account-id=288342028542 -aws-iam-role=sirius-ci
+          command: terraform-workspace-manager -register-workspace="${TF_WORKSPACE}" -time-to-protect="${PROTECT_TIME}" -aws-account-id=288342028542 -aws-iam-role=integrations-ci
   workflow_complete:
     executor: lpa-codes/python_with_tfvars
     resource_class: small
@@ -560,7 +560,7 @@ jobs:
           name: destroy unprotected workspaces
           command: |
             unset TF_WORKSPACE
-            ./scripts/workspace_cleanup.sh $(terraform-workspace-manager -protected-workspaces=true -aws-account-id=288342028542 -aws-iam-role=sirius-ci)
+            ./scripts/workspace_cleanup.sh $(terraform-workspace-manager -protected-workspaces=true -aws-account-id=288342028542 -aws-iam-role=integrations-ci)
       - slack/status:
           channel: opg-integrations
           failure_message: nightly destroy of lpa codes workspaces has failed.

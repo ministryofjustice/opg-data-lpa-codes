@@ -1,9 +1,9 @@
 variable "default_role" {
-  default = "sirius-ci"
+  default = "integrations-ci"
 }
 
 variable "management_role" {
-  default = "sirius-ci"
+  default = "integrations-ci"
 }
 
 variable "accounts" {
