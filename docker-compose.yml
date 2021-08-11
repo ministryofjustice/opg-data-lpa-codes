@@ -55,3 +55,23 @@ services:
         default:
           aliases:
             - lpa-codes.local
+
+  pact-verifier:
+    image: pactfoundation/pact-cli:0.39.0.0
+    volumes: ["./pact/output:/output/"]
+    network_mode: "host"
+    environment:
+      - PACT_BROKER_PUBLISH_VERIFICATION_RESULTS
+    command: >
+      verify
+        --pact-broker-base-url https://pact-broker.api.opg.service.justice.gov.uk
+        --broker-username admin
+        --format RspecJunitFormatter
+        --out /output/junit.xml
+        --consumer-version-tag latest
+        --provider lpa-codes
+        --provider-version-tag latest
+        --provider-app-version ${PACT_VERSION_TAG}
+        --provider-base-url http://localhost:4343/v1
+        --publish-verification-results
+        --wait 30

@@ -49,122 +49,132 @@ jobs:
           name: Lambdas
           path: /tmp/opg-data-lpa-codes.zip
 
-  terraform_checks:
-    name: Validate ${{ matrix.environment }}
-    runs-on: "ubuntu-latest"
-    needs: build_lambda
-    strategy:
-      max-parallel: 1
-      matrix:
-        include:
-          - environment: "development"
+  # terraform_checks:
+  #   name: Validate ${{ matrix.environment }}
+  #   runs-on: "ubuntu-latest"
+  #   needs: build_lambda
+  #   strategy:
+  #     max-parallel: 1
+  #     matrix:
+  #       include:
+  #         - environment: "development"
 
-          - environment: "preproduction"
+  #         - environment: "preproduction"
 
-          - environment: "production"
-    steps:
-      - uses: actions/checkout@v2
-      - uses: hashicorp/setup-terraform@v1
-        with:
-          terraform_version: 1.0.0
-      - name: Configure AWS Credentials For Terraform
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: eu-west-1
-          role-session-name: GitHubActionsTerraform
-      - name: Setup Workspace
-        run: echo TF_WORKSPACE=${{ matrix.environment }} >> $GITHUB_ENV
-      - name: Download Lambda Artifact
-        uses: actions/download-artifact@v2
-        with:
-          name: Lambdas
-      - name: Unzip Artifact
-        run: unzip ./opg-data-lpa-codes.zip -d .
-      - name: Terraform init
-        working-directory: ./terraform/environment
-        run: |
-          terraform init
-      - name: Terraform formatting
-        working-directory: ./terraform/environment
-        run: |
-          terraform fmt -diff -check -recursive
-      - name: Terraform validate
-        working-directory: ./terraform/environment
-        run: |
-          terraform validate
-      - name: Terraform Plan
-        working-directory: ./terraform/environment
-        run: |
-          terraform plan -input=false
+  #         - environment: "production"
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - uses: hashicorp/setup-terraform@v1
+  #       with:
+  #         terraform_version: 1.0.0
+  #     - name: Configure AWS Credentials For Terraform
+  #       uses: aws-actions/configure-aws-credentials@v1
+  #       with:
+  #         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  #         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  #         aws-region: eu-west-1
+  #         role-session-name: GitHubActionsTerraform
+  #     - name: Setup Workspace
+  #       run: echo TF_WORKSPACE=${{ matrix.environment }} >> $GITHUB_ENV
+  #     - name: Download Lambda Artifact
+  #       uses: actions/download-artifact@v2
+  #       with:
+  #         name: Lambdas
+  #     - name: Unzip Artifact
+  #       run: unzip ./opg-data-lpa-codes.zip -d .
+  #     - name: Terraform init
+  #       working-directory: ./terraform/environment
+  #       run: |
+  #         terraform init
+  #     - name: Terraform formatting
+  #       working-directory: ./terraform/environment
+  #       run: |
+  #         terraform fmt -diff -check -recursive
+  #     - name: Terraform validate
+  #       working-directory: ./terraform/environment
+  #       run: |
+  #         terraform validate
+  #     - name: Terraform Plan
+  #       working-directory: ./terraform/environment
+  #       run: |
+  #         terraform plan -input=false
 
-  ephemeral_environment:
-    name: Create Ephemeral Environment
-    runs-on: "ubuntu-latest"
-    needs: terraform_checks
-    steps:
-      - uses: actions/checkout@v2
-      - uses: hashicorp/setup-terraform@v1
-        with:
-          terraform_version: 1.0.0
-      - name: Extract branch name
-        shell: bash
-        run: echo "##[set-output name=branch;]$(echo ${GITHUB_HEAD_REF#refs/heads/})"
-        id: extract_branch
-      - name: Install workspace manager
-        run: |
-          wget https://github.com/TomTucka/terraform-workspace-manager/releases/download/v0.3.0/terraform-workspace-manager_Linux_x86_64.tar.gz -O $HOME/terraform-workspace-manager.tar.gz
-          sudo tar -xvf $HOME/terraform-workspace-manager.tar.gz -C /usr/local/bin
-          sudo chmod +x /usr/local/bin/terraform-workspace-manager
-      - name: Configure AWS Credentials For Terraform
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: eu-west-1
-          role-session-name: GitHubActionsTerraform
-      - name: Download Lambda Artifact
-        uses: actions/download-artifact@v2
-        with:
-          name: Lambdas
-      - name: Unzip Artifact
-        run: unzip ./opg-data-lpa-codes.zip -d .
-      - name: Setup Workspace
-        run: echo TF_WORKSPACE= ${{ steps.extract_branch.outputs.branch }}
-      - name: Terraform init
-        working-directory: ./terraform/environment
-        run: |
-          terraform init
-      - name: Terraform apply
-        working-directory: ./terraform/environment
-        run: |
-          terraform apply --auto-approve
-      - name: Protect Workspace
-        run: terraform-workspace-manager -register-workspace=$TF_WORKSPACE -time-to-protect=1 -aws-account-id=288342028542 -aws-iam-role=integrations-ci
+  # ephemeral_environment:
+  #   name: Create Ephemeral Environment
+  #   runs-on: "ubuntu-latest"
+  #   needs: terraform_checks
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - uses: hashicorp/setup-terraform@v1
+  #       with:
+  #         terraform_version: 1.0.0
+  #     - name: Extract branch name
+  #       shell: bash
+  #       run: echo "##[set-output name=branch;]$(echo ${GITHUB_HEAD_REF#refs/heads/})"
+  #       id: extract_branch
+  #     - name: Install workspace manager
+  #       run: |
+  #         wget https://github.com/TomTucka/terraform-workspace-manager/releases/download/v0.3.0/terraform-workspace-manager_Linux_x86_64.tar.gz -O $HOME/terraform-workspace-manager.tar.gz
+  #         sudo tar -xvf $HOME/terraform-workspace-manager.tar.gz -C /usr/local/bin
+  #         sudo chmod +x /usr/local/bin/terraform-workspace-manager
+  #     - name: Configure AWS Credentials For Terraform
+  #       uses: aws-actions/configure-aws-credentials@v1
+  #       with:
+  #         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  #         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  #         aws-region: eu-west-1
+  #         role-session-name: GitHubActionsTerraform
+  #     - name: Download Lambda Artifact
+  #       uses: actions/download-artifact@v2
+  #       with:
+  #         name: Lambdas
+  #     - name: Unzip Artifact
+  #       run: unzip ./opg-data-lpa-codes.zip -d .
+  #     - name: Setup Workspace
+  #       run: echo TF_WORKSPACE= ${{ steps.extract_branch.outputs.branch }}
+  #     - name: Terraform init
+  #       working-directory: ./terraform/environment
+  #       run: |
+  #         terraform init
+  #     - name: Terraform apply
+  #       working-directory: ./terraform/environment
+  #       run: |
+  #         terraform apply --auto-approve
+  #     - name: Protect Workspace
+  #       run: terraform-workspace-manager -register-workspace=$TF_WORKSPACE -time-to-protect=1 -aws-account-id=288342028542 -aws-iam-role=integrations-ci
 
   verify_pact:
     name: Verify Pacts
-    runs-on: "ubuntu-latest"
-    needs: build_lambda
+    # needs: build_lambda
     env:
       PACT_DIR: ./pact
       PACT_BROKER_URL: https://pact-broker.api.opg.service.justice.gov.uk
       PACT_BROKER_USERNAME: admin
       PACT_PROVIDER: lpa-codes
       PACT_CONSUMER: sirius
+    runs-on: ubuntu-latest
     services:
       dynamodb:
         image: amazon/dynamodb-local
+        ports:
+          - 8000:8000
         credentials:
           username: ${{ secrets.DOCKER_USER }}
           password: ${{ secrets.DOCKER_ACCESS_TOKEN }}
+
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python 3.8.1
         uses: actions/setup-python@v2
         with:
           python-version: 3.8.1
+      - name: Configure AWS Credentials For Terraform
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-west-1
+          role-session-name: GitHubActionsTerraform
       - name: Get API Version
         run: |
           echo API_VERSION=$(ls -d lambda_functions/v*/ | awk -F'/' '{print $2}' | grep '^v[1-9]\+$' | sort -r | head -n1) >> $GITHUB_ENV
@@ -184,7 +194,6 @@ jobs:
       - name: Start Mock API
         run: |
             cd ./lambda_functions/"${API_VERSION}"/functions/lpa_codes/app
-            export PYTHONPATH="${PYTHONPATH}:/home/circleci/project"
             python3 lpa_codes_mock.py &
       - name: Verify Mock API
         run: |
@@ -195,35 +204,26 @@ jobs:
             else
             echo "LPA Codes Rest API Service Not Started"
             fi
+      - name: Setup Pact
+        run: |
+            export PACT_VERSION=$(curl -i -s -X GET https://github.com/pact-foundation/pact-ruby-standalone/releases/latest \
+            | grep "location:" | awk -F'tag' '{print $2}' | awk -F'/v' '{print $2}' | sed 's/.$//')
+            wget https://github.com/pact-foundation/pact-ruby-standalone/releases/download/v${PACT_VERSION}/pact-${PACT_VERSION}-linux-x86_64.tar.gz
+            tar xzf pact-${PACT_VERSION}-linux-x86_64.tar.gz
       - name: Run the create table endpoint
         run: |
-            curl -X POST http://127.0.0.1:4343/setup/dynamodb/create/table
+            curl --fail -v -X POST http://127.0.0.1:4343/setup/dynamodb/create/table
       - name: Set up the data in tables
         run: |
-            curl -X POST -d '{"consumer": "sirius", "state": "generated code exists and active"}' \
+            curl --fail -v -X POST -d '{"consumer": "sirius", "state": "generated code exists and active"}' \
             -H 'Content-Type: application/json' http://localhost:4343/setup/state
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: eu-west-1
-          role-session-name: GitHubActionsTerraform
-      - name: install ci requirements
-        working-directory: ./pact
-        run: pip3 install -r requirements.txt
       - name: Check pacts
         if: github.actor != 'dependabot[bot]'
-        working-directory: ./pact
+        env:
+          PACT_BROKER_PASSWORD: ${{ secrets.PACT_BROKER_PASSWORD }}
+          PACT_VERSION_TAG: ${{ steps.shortsha.outputs.sha7 }}
         run: |
-            echo ${API_VERSION}
-            python check_pact_deployable.py \
-            --provider_base_url="http://localhost:4343/v1" \
-            --pact_broker_url="${PACT_BROKER_URL}" \
-            --broker_user_name="admin" \
-            --broker_secret_name="pactbroker_admin" \
-            --consumer_pacticipant="${PACT_CONSUMER}" \
-            --provider_pacticipant="${PACT_PROVIDER}" \
-            --api_version="${API_VERSION}" \
-            --git_commit_consumer="b8728c3" \
-            --git_commit_provider="${{ steps.shortsha.outputs.sha7 }}"
+          docker-compose --project-name pact-verifier-lpa-codes run --rm -e ${PACT_BROKER_PASSWORD} -e ${PACT_VERSION_TAG} pact-verifier
+
+
+
