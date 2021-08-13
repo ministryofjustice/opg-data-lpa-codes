@@ -115,7 +115,7 @@ jobs:
       - name: Set up the data in tables
         run: |
             curl --fail -v -X POST -d '{"consumer": "sirius", "state": "generated code exists and active"}' \
-            -H 'Content-Type: application/json' http://localhost:4343/setup/state
+            -H 'Content-Type: application/json' http://127.0.0.1:4343/setup/state
       - name: Check pacts
         if: github.actor != 'dependabot[bot]'
         env:

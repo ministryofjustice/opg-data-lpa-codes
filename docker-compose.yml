@@ -72,7 +72,7 @@ services:
         --out /output/junit.xml
         --provider lpa-codes
         --consumer-version-tag v1_production
-        --provider-version-tag latest
+        --provider-version-tag v1
         --provider-app-version ${PACT_VERSION_TAG}
         --provider-base-url http://localhost:4343/v1
         --publish-verification-results
