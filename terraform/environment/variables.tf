@@ -17,7 +17,6 @@ variable "accounts" {
       allowed_roles      = list(string)
       target_environment = string
       pit_recovery_flag  = bool
-      threshold          = number
     })
   )
 }
