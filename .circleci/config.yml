@@ -133,7 +133,7 @@ orbs:
     executors:
       python_with_tfvars:
         docker:
-          - image: circleci/python:3.8.1
+          - image: circleci/python:3.8.10
             auth:
               username: $DOCKER_USER
               password: $DOCKER_ACCESS_TOKEN
@@ -148,7 +148,7 @@ orbs:
           TF_SHA256SUM: 171ef5a4691b6f86eab524feaf9a52d5221c875478bd63dd7e55fef3939f7fd4
       python:
         docker:
-          - image: circleci/python:3.8.1
+          - image: circleci/python:3.8.10
             auth:
               username: $DOCKER_USER
               password: $DOCKER_ACCESS_TOKEN
@@ -433,7 +433,7 @@ jobs:
   pact_verification:
     docker:
       # Primary container image where all the steps run.
-      - image: circleci/python:3.8.1
+      - image: circleci/python:3.8.10
         auth:
           username: $DOCKER_USER
           password: $DOCKER_ACCESS_TOKEN
