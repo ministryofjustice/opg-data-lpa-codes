@@ -5,7 +5,7 @@ parameters:
   run_pull_request:
     type: boolean
     default: true
-  run_commit_to_master:
+  run_commit_to_main:
     type: boolean
     default: true
   run_verify_pact:
@@ -24,35 +24,35 @@ workflows:
     jobs:
       - build_lambda:
           name: build and artifact
-          filters: {branches:{ignore:[master]}}
+          filters: {branches:{ignore:[main]}}
 
       - terraform_pre_checks:
           name: terraform preflight checks
           requires: [build and artifact]
-          filters: {branches:{ignore:[master]}}
+          filters: {branches:{ignore:[main]}}
 
       - terraform_action:
           name: apply branch environment
           requires: [terraform preflight checks]
           tf_command: apply
-          filters: {branches:{ignore:[master]}}
+          filters: {branches:{ignore:[main]}}
 
       - workspace_protection:
           name: protect current workspace
           requires: [terraform preflight checks]
-          filters: {branches:{ignore:[master]}}
+          filters: {branches:{ignore:[main]}}
 
       - workflow_complete:
           name: workflow complete
           requires: [apply branch environment, protect current workspace]
-          filters: {branches:{ignore:[master]}}
+          filters: {branches:{ignore:[main]}}
 
-  commit_to_master:
-    when: << pipeline.parameters.run_commit_to_master >>
+  commit_to_main:
+    when: << pipeline.parameters.run_commit_to_main >>
     jobs:
       - build_lambda:
           name: build and artifact
-          filters: {branches:{only:[master]}}
+          filters: {branches:{only:[main]}}
 
       - terraform_action:
           name: development apply
@@ -60,7 +60,7 @@ workflows:
           tf_command: apply --auto-approve
           tf_workspace: development
           applycheck: true
-          filters: {branches:{only:[master]}}
+          filters: {branches:{only:[main]}}
 
       - terraform_action:
          name: preprod apply
@@ -68,13 +68,13 @@ workflows:
          tf_command: apply --auto-approve
          tf_workspace: preproduction
          applycheck: true
-         filters: {branches:{only:[master]}}
+         filters: {branches:{only:[main]}}
 
       - approve:
          name: approve release to production
          type: approval
          requires: [preprod apply]
-         filters: {branches:{only:[master]}}
+         filters: {branches:{only:[main]}}
 
       - terraform_action:
           name: integration apply
@@ -82,7 +82,7 @@ workflows:
           tf_command: apply --auto-approve
           tf_workspace: integration
           applycheck: true
-          filters: {branches:{only:[master]}}
+          filters: {branches:{only:[main]}}
 
       - terraform_action:
           name: integration apply
@@ -90,7 +90,7 @@ workflows:
           tf_command: apply --auto-approve
           tf_workspace: integration
           applycheck: true
-          filters: {branches:{only:[master]}}
+          filters: {branches:{only:[main]}}
 
       - terraform_action:
          name: production apply
@@ -98,7 +98,7 @@ workflows:
          tf_command: apply --auto-approve
          tf_workspace: production
          applycheck: true
-         filters: {branches:{only:[master]}}
+         filters: {branches:{only:[main]}}
          pact_tag_production: true
 
   verify_pact:
@@ -111,11 +111,11 @@ workflows:
     triggers:
       - schedule:
           cron: "00 00 * * *"
-          filters: {branches:{only:[master]}}
+          filters: {branches:{only:[main]}}
     jobs:
       - destroy_workspaces:
           name: destroy non protected workspaces
-          filters: {branches:{only:[master]}}
+          filters: {branches:{only:[main]}}
 
 orbs:
   slack: circleci/slack@3.4.2
