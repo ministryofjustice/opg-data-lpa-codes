@@ -121,7 +121,7 @@ orbs:
   slack: circleci/slack@3.4.2
   dockerhub_helper:
     orbs:
-      docker: circleci/docker@1.4.0
+      docker: circleci/docker@1.7.0
     commands:
       dockerhub_login:
         steps:
