@@ -17,6 +17,7 @@ resource "aws_api_gateway_method_settings" "global_gateway_settings" {
 resource "aws_api_gateway_domain_name" "lpa_codes" {
   domain_name              = trimsuffix(local.a_record, ".")
   regional_certificate_arn = local.certificate_arn
+  security_policy          = "TLS_1_2"
 
   endpoint_configuration {
     types = ["REGIONAL"]
