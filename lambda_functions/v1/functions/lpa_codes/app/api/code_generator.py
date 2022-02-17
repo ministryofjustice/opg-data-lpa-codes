@@ -20,7 +20,7 @@ def generate_code(database):
     Returns:
         string
     """
-    acceptable_characters = "346789QWERTYUPADFGHJKLXCVBNM"
+    acceptable_characters = "346789BCDFGHJKMPQRTVWXY"
 
     unique = False
     attempts = 0
