@@ -7,7 +7,7 @@ from lambda_functions.v1.functions.lpa_codes.app.api.code_generator import gener
 def test_generate_unique_code(mock_unique_code, caplog):
 
     all_chars = list(string.ascii_letters) + list(string.digits)
-    acceptable_chars = list("346789QWERTYUPADFGHJKLXCVBNM")
+    acceptable_chars = list("346789BCDFGHJKMPQRTVWXY")
 
     unacceptable_characters = [c for c in all_chars if c not in acceptable_chars]
 
