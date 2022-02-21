@@ -410,26 +410,6 @@ jobs:
                   echo "Switching workspace to default so we can remove branch workspace"
                   export TF_WORKSPACE=default
                   terraform workspace delete "${WORKSPACE_TO_DELETE}" || echo "no workspace to remove"
-      - when:
-          condition: << parameters.pact_tag_production >>
-          steps:
-            - lpa-codes/login_codeartifact
-            - run:
-                name: install ci requirements
-                command: pip3 install -r requirements.txt
-                working_directory: ~/project/pact
-            - run:
-                name: tag pact commit with v<x>_production
-                command: |
-                  echo ${API_VERSION}
-                  python tag_pact.py \
-                  --pact_broker_url="${PACT_BROKER_BASE_URL}" \
-                  --broker_user_name="admin" \
-                  --broker_secret_name="pactbroker_admin" \
-                  --pacticipant="${PACT_PROVIDER}" \
-                  --tag="${API_VERSION}_production" \
-                  --git_commit="${GIT_COMMIT_PROVIDER}"
-                working_directory: ~/project/pact
   pact_verification:
     docker:
       # Primary container image where all the steps run.
@@ -445,9 +425,6 @@ jobs:
         entrypoint: ["java", "-Xmx1G", "-jar", "DynamoDBLocal.jar"]
     working_directory: ~/project
     parameters:
-    environment:
-      GIT_CONSUMER: << pipeline.parameters.consumer >>
-      GIT_COMMIT_CONSUMER: << pipeline.parameters.consumerversion >>
     steps:
       - checkout
       - run:
@@ -492,26 +469,22 @@ jobs:
             curl -X POST -d '{"consumer": "sirius", "state": "generated code exists and active"}' \
             -H 'Content-Type: application/json' http://localhost:4343/setup/state
       - lpa-codes/pact_install
-      - lpa-codes/login_codeartifact
-      - run:
-          name: install ci requirements
-          command: pip3 install -r requirements.txt
-          working_directory: ~/project/pact
       - run:
           name: verify pact
           command: |
-            echo ${API_VERSION}
-            python check_pact_deployable.py \
-            --provider_base_url="http://localhost:4343/v1" \
-            --pact_broker_url="${PACT_BROKER_BASE_URL}" \
-            --broker_user_name="admin" \
-            --broker_secret_name="pactbroker_admin" \
-            --consumer_pacticipant="${PACT_CONSUMER}" \
-            --provider_pacticipant="${PACT_PROVIDER}" \
-            --api_version="${API_VERSION}" \
-            --git_commit_consumer="${GIT_COMMIT_CONSUMER}" \
-            --git_commit_provider="${GIT_COMMIT_PROVIDER}"
-          working_directory: ~/project/pact
+            if [ "${CIRCLE_BRANCH}" = "main" ]; then publish_arg="--publish-verification-results"; else publish_arg=""; fi;
+            ./pact/bin/pact-provider-verifier \
+            --broker-username ${PACT_BROKER_USER} \
+            --broker-password ${PACT_BROKER_PASS} \
+            --provider-app-version ${GIT_COMMIT_PROVIDER} \
+            --provider-base-url http://localhost:4343/v1 \
+            --provider-version-tag ${CIRCLE_BRANCH} \
+            --pact-broker-base-url ${PACT_BROKER_BASE_URL} \
+            --provider ${PACT_PROVIDER} \
+            --custom-provider-header "Authorization: asdf1234567890" \
+            --consumer-version-tag master \
+            $publish_arg
+          working_directory: ~/project
   workspace_protection:
     executor: lpa-codes/python_with_tfvars
     resource_class: small
