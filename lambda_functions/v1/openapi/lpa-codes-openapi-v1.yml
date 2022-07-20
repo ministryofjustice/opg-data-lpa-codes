@@ -1,5 +1,5 @@
 ---
-openapi: '3.0.2'
+openapi: '3.1.0'
 info:
   title: lpa-codes-${environment}
   version: '1.0'
@@ -129,10 +129,10 @@ paths:
                     properties:
                       lpa:
                         type: string
-                        pattern: '[0-9]{12}|^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$' #this is an incorrect pattern for Sirius Uids
+                        pattern: '[0-9]{12}|^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$'
                       actor:
                         type: string
-                        pattern: '[0-9]{12}|^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$' #this is an incorrect pattern for Sirius Uids
+                        pattern: '[0-9]{12}|^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$'
                       dob:
                         type: string
                         format: date
@@ -460,7 +460,7 @@ paths:
     post:
       summary: "Returns all data for a code"
       description: "Returns all data for a code"
-      operationId: api.resources.code_data
+      operationId: api.resources.actor_code_details_route
       security:
         - sigv4: []
       x-amazon-apigateway-request-validator: "all"
@@ -612,8 +612,8 @@ components:
         lpa:
           type: string
       example:
-        active: true
-        code: YsSu4iAztUXm
+        active: True
+        code: "YsSu4iAztUXm"
         last_updated_date: "2022-08-20"
         status_details: "Generated"
         expiry_date: "2023-08-20"
