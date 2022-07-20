@@ -539,7 +539,6 @@ paths:
             application/vnd.opg-data.v1+json:
               schema:
                 $ref: '#/components/schemas/Error503'
-
 components:
   securitySchemes:
     sigv4:
