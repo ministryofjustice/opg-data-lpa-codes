@@ -168,3 +168,35 @@ def actor_code_exists_route():
     result, status_code = handle_exists(data=post_data)
 
     return jsonify(result), status_code
+
+
+@api.route("/code", methods=["POST"])
+def actor_code_details_route():
+    """
+    Returns data for an Actor Activation code
+
+    Payload *should* be validated by API-Gateway before it gets here, but as it causes
+    everything to explode if a required field is missing we are checking here also.
+
+    Returns:
+        if payload is valid - dict of matching code with active status, actor Uid,
+        actor dob, code expiry date, code generated date, code last updated date,
+        lpa Uid and status details.
+        if payload is invalid - 400
+    """
+    post_data = request.get_json()
+
+    try:
+        code = post_data["code"]
+    except KeyError as e:
+        logger.debug(f"Missing param from request: {e}")
+        return abort(400)
+
+    if "" in [code]:
+        logger.debug(
+            f"Empty param in request: "
+            f"{[i for i in [code] if i == '']}"
+        )
+        return abort(400)
+
+    raise NotImplementedError

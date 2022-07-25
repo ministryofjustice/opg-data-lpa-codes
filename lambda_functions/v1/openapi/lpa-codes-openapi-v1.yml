@@ -139,13 +139,13 @@ paths:
                         pattern: '[0-9]{4}-[0-9]{2}-[0-9]{2}$'
               additionalProperties: false
               example:
-                 lpas:
-                   - lpa: "eed4f597-fd87-4536-99d0-895778824861"
-                     actor: "12ad81a9-f89d-4804-99f5-7c0c8669ac9b"
-                     dob: "1960-06-05"
-                   - lpa: "eed4f597-fd87-4536-99d0-895778824861"
-                     actor: "9a619d46-8712-4bfb-a49f-c14914ff319d"
-                     dob: "1983-08-20"
+                  lpas:
+                    - lpa: "eed4f597-fd87-4536-99d0-895778824861"
+                      actor: "12ad81a9-f89d-4804-99f5-7c0c8669ac9b"
+                      dob: "1960-06-05"
+                    - lpa: "eed4f597-fd87-4536-99d0-895778824861"
+                      actor: "9a619d46-8712-4bfb-a49f-c14914ff319d"
+                      dob: "1983-08-20"
       responses:
         201:
           description: OK
@@ -370,8 +370,6 @@ paths:
             application/vnd.opg-data.v1+json:
               schema:
                 $ref: '#/components/schemas/Error503'
-
-
   /exists:
     post:
       summary: "Checks if a code exists for a specific actor on an LPA"
@@ -458,6 +456,89 @@ paths:
             application/vnd.opg-data.v1+json:
               schema:
                 $ref: '#/components/schemas/Error503'
+  /code:
+    post:
+      summary: "Returns all details for a code"
+      description: "Returns all details for a code"
+      operationId: api.resources.actor_code_details_route
+      security:
+        - sigv4: []
+      x-amazon-apigateway-request-validator: "all"
+      x-amazon-apigateway-integration:
+        uri: arn:aws:apigateway:${region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${region}:${account_id}:function:$${stageVariables.lpa_codes_function_name}/invocations
+        responses:
+          default:
+            statusCode: "200"
+        passthroughBehavior: "when_no_match"
+        httpMethod: "POST"
+        contentHandling: "CONVERT_TO_TEXT"
+        type: "aws_proxy"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                code:
+                  type: string
+              example:
+                code: "YsSu4iAztUXm"
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CodeDetails'
+        400:
+          description: Generic bad request (generally invalid syntax)
+          content:
+            application/vnd.opg-data.v1+json:
+              schema:
+                $ref: '#/components/schemas/Error400'
+        401:
+          description: Unauthorised (no current user and there should be)
+          content:
+            application/vnd.opg-data.v1+json:
+              schema:
+                $ref: '#/components/schemas/Error401'
+        403:
+          description: Forbidden - The current user is forbidden from accessing this data (in this way)
+          content:
+            application/vnd.opg-data.v1+json:
+              schema:
+                $ref: '#/components/schemas/Error403'
+        404:
+          description: That URL is not a valid route, or the item resource does not exist
+          content:
+            application/vnd.opg-data.v1+json:
+              schema:
+                $ref: '#/components/schemas/Error404'
+        413:
+          description: Payload too large
+          content:
+            application/vnd.opg-data.v1+json:
+              schema:
+                $ref: '#/components/schemas/Error413'
+        415:
+          description: Unsupported media type
+          content:
+            application/vnd.opg-data.v1+json:
+              schema:
+                $ref: '#/components/schemas/Error415'
+        500:
+          description: Something unexpected happened and it is the API"s fault
+          content:
+            application/vnd.opg-data.v1+json:
+              schema:
+                $ref: '#/components/schemas/Error500'
+        503:
+          description: Service Unavailable - please try again later
+          content:
+            application/vnd.opg-data.v1+json:
+              schema:
+                $ref: '#/components/schemas/Error503'
 
 components:
   securitySchemes:
@@ -482,13 +563,13 @@ components:
               code:
                 type: string
       example:
-          codes:
-          - lpa: "eed4f597-fd87-4536-99d0-895778824861"
-            actor: "12ad81a9-f89d-4804-99f5-7c0c8669ac9b"
-            code: "YsSu4iAztUXm"
-          - lpa: "eed4f597-fd87-4536-99d0-895778824861"
-            actor: "9a619d46-8712-4bfb-a49f-c14914ff319d"
-            code: "aEYVS6i9zSwy"
+        codes:
+        - lpa: "eed4f597-fd87-4536-99d0-895778824861"
+          actor: "12ad81a9-f89d-4804-99f5-7c0c8669ac9b"
+          code: "YsSu4iAztUXm"
+        - lpa: "eed4f597-fd87-4536-99d0-895778824861"
+          actor: "9a619d46-8712-4bfb-a49f-c14914ff319d"
+          code: "aEYVS6i9zSwy"
       required:
         - codes
     ValidateCode:
@@ -511,6 +592,51 @@ components:
       required:
         - lpa
         - actor
+    CodeDetails:
+      properties:
+        active:
+          type: boolean
+        actor:
+          type: string
+        code:
+          type: string
+        dob:
+          type: string
+          format: date
+        expiry_date:
+          type: string
+          format: date
+        generated_date:
+          type: string
+          format: date
+        last_updated_date:
+          type: string
+          format: date
+        lpa:
+          type: string
+        status_details:
+          type: string
+      example:
+        active: true
+        code: "YsSu4iAztUXm"
+        last_updated_date: 2022-08-20
+        status_details: "Generated"
+        expiry_date: 2023-08-20
+        dob: 1983-08-20
+        generated_date: 2022-08-20
+        lpa: "eed4f597-fd87-4536-99d0-895778824861"
+        actor: "12ad81a9-f89d-4804-99f5-7c0c8669ac9b"
+      required:
+        - active
+        - actor
+        - code
+        - dob
+        - expiry_date
+        - generated_date
+        - last_updated_date
+        - lpa
+        - status_details
+
     Error400:
       type: object
       required:
@@ -759,4 +885,3 @@ components:
                   x-ray:
                     type: string
                     example: "93c330d4-7d84-4c1b-8fdb-54cec5bfe747"
-
