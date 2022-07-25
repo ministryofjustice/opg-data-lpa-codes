@@ -34,7 +34,6 @@
   hooks:
     - id: black
       language_version: python3.7
-
 -   repo: https://github.com/Yelp/detect-secrets
     rev: v1.2.0
     hooks:
