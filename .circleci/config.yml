@@ -413,7 +413,7 @@ jobs:
   pact_verification:
     docker:
       # Primary container image where all the steps run.
-      - image: circleci/python:3.8.10
+      - image: cimg/python:3.8.10
         auth:
           username: $DOCKER_USER
           password: $DOCKER_ACCESS_TOKEN
