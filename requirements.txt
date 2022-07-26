@@ -2,7 +2,7 @@ attrs==20.3.0
 importlib-metadata==4.6.1
 jsonschema==3.2.0
 openapi-spec-validator==0.3.1
-pyrsistent==0.17.3
+pyrsistent==0.18.0
 PyYAML==5.4.1
 six==1.15.0
 zipp==3.5.0
