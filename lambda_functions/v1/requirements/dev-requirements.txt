@@ -10,7 +10,7 @@ Jinja2==2.11.3
 MarkupSafe==1.1.1
 python-dotenv==0.13.0
 Werkzeug==1.0.1
-openapi-spec-validator==0.3.0
+openapi-spec-validator==0.4.0
 requests
 boto3
 moto

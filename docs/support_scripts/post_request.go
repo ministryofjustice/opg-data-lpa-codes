@@ -2,11 +2,13 @@ package main
 
 import (
 	"bytes"
+	"flag"
 	"fmt"
-	"net/http"
-	"time"
-	"strings"
 	"io/ioutil"
+	"net/http"
+	"strings"
+	"time"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials/stscreds"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -14,25 +16,40 @@ import (
 )
 
 func main() {
+	flag.Usage = func() {
+		fmt.Println("Usage: Send request to API. flags accepted for role, url and payload.")
+		flag.PrintDefaults()
+	}
 
-	roleToAssume := "arn:aws:iam::288342028542:role/operator"
-	url := "https://dev.lpa-codes.api.opg.service.justice.gov.uk/v1/validate" //change this for different endpoints
+	// gather inputs or use defaults
+	var roleToAssume string
+	var url string
+	var inputPayload string
+	flag.StringVar(&roleToAssume, "role", "arn:aws:iam::288342028542:role/operator", "Role to assume when signing requests for API")
+	flag.StringVar(&url, "url", "https://dev.lpa-codes.api.opg.service.justice.gov.uk/v1/validate", "url including version and endpoint of API to send request to")
+	flag.StringVar(&inputPayload, "payload", "../support_files/validate_payload.json", "path to payload for request")
+	flag.Parse()
+	fmt.Println(roleToAssume, url, inputPayload)
+
+	// use credentials to create a signer
 	mySession := session.Must(session.NewSession())
 	creds := stscreds.NewCredentials(mySession, roleToAssume)
-	cfg := aws.Config{Credentials: creds,Region: aws.String("eu-west-1")}
+	cfg := aws.Config{Credentials: creds, Region: aws.String("eu-west-1")}
 	sess := session.Must(session.NewSession(&cfg))
 	signer := v4.NewSigner(sess.Config.Credentials)
 
-	json, err := ioutil.ReadFile("../support_files/validate_payload.json") // just pass the file name
+	// create body for request
+	json, err := ioutil.ReadFile(inputPayload)
 	if err != nil {
-			fmt.Print(err)
+		fmt.Print(err)
 	}
 	str := string(json)
 
-    body := strings.NewReader(str)
+	body := strings.NewReader(str)
 
+	//create a request
 	req, _ := http.NewRequest(http.MethodPost, url, body)
-    req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Content-Type", "application/json")
 
 	_, err = signer.Sign(req, body, "execute-api", *cfg.Region, time.Now())
 	if err != nil {

@@ -17,6 +17,7 @@ resource "aws_api_gateway_method_settings" "global_gateway_settings" {
 resource "aws_api_gateway_domain_name" "lpa_codes" {
   domain_name              = trimsuffix(local.a_record, ".")
   regional_certificate_arn = local.certificate_arn
+  security_policy          = "TLS_1_2"
 
   endpoint_configuration {
     types = ["REGIONAL"]
@@ -26,16 +27,19 @@ resource "aws_api_gateway_domain_name" "lpa_codes" {
 }
 
 module "deploy_v1" {
-  source           = "./modules/stage"
-  environment      = local.environment
-  aws_subnet_ids   = data.aws_subnet_ids.private.ids
-  vpc_id           = local.account.vpc_id
-  tags             = local.default_tags
+  source = "./modules/stage"
+
+  account_name     = local.account.account_mapping
   api_name         = local.api_name
-  openapi_version  = "v1"
-  lpa_codes_lambda = module.lamdba_lpa_codes_v1.lambda
-  rest_api         = aws_api_gateway_rest_api.lpa_codes
+  aws_subnet_ids   = data.aws_subnet_ids.private.ids
   domain_name      = aws_api_gateway_domain_name.lpa_codes
+  environment      = local.environment
+  lpa_codes_lambda = module.lamdba_lpa_codes_v1.lambda
+  openapi_version  = "v1"
+  region_name      = data.aws_region.region.name
+  rest_api         = aws_api_gateway_rest_api.lpa_codes
+  tags             = local.default_tags
+  vpc_id           = local.account.vpc_id
 }
 
 //To Add New Version Copy and Paste Above and Modify Accordingly
@@ -47,3 +51,4 @@ resource "aws_api_gateway_base_path_mapping" "mapping" {
   domain_name = aws_api_gateway_domain_name.lpa_codes.domain_name
   base_path   = module.deploy_v1.deployment.stage_name
 }
+
