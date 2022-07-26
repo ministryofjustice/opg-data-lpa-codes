@@ -21,7 +21,7 @@ func main() {
 		flag.PrintDefaults()
 	}
 
-	// gather imputs or use defaults
+	// gather inputs or use defaults
 	var roleToAssume string
 	var url string
 	var inputPayload string
