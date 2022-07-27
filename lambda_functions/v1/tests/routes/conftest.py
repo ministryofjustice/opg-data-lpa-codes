@@ -105,8 +105,11 @@ def mock_get_codes(monkeypatch):
                 "lpa": "eed4f597-fd87-4536-99d0-895778824861",
                 "actor": "12ad81a9-f89d-4804-99f5-7c0c8669ac9b",
             }
-        if "code" in kwargs:
+        if "code" in kwargs and kwargs["code"] == "NonExistentCode":
+            return []
+        elif "code" in kwargs:
             code = kwargs["code"]
+ 
         else:
             code = "tOhkrldOqewm"
 

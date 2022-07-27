@@ -6,7 +6,7 @@ from flask import request, jsonify
 
 from .errors import error_message
 from .helpers import custom_logger
-from .endpoints import handle_create, handle_validate, handle_revoke, handle_exists
+from .endpoints import handle_code, handle_create, handle_validate, handle_revoke, handle_exists
 
 logger = custom_logger("code generator")
 
@@ -199,4 +199,9 @@ def actor_code_details_route():
         )
         return abort(400)
 
-    raise NotImplementedError
+    result, status_code = handle_code(data=post_data)
+    
+    if status_code != 200:
+        abort(status_code)
+        
+    return jsonify(result), status_code
