@@ -1,7 +1,6 @@
 import copy
-from lambda_functions.v1.tests.api.test_create_handler import test_data
 
-from pytest_cases import CaseData, case_name, cases_generator
+from pytest_cases import CaseData, case_name
 
 from lambda_functions.v1.tests.conftest import test_constants
 
@@ -65,14 +64,15 @@ def case_get_a_code_1() -> CaseData:
     expected_status_code = 200
     return test_data, data, expected_result, expected_status_code
 
+
 @case_name("404 when code not found")
 def case_get_a_code_2() -> CaseData:
     test_data = copy.deepcopy(default_test_data)
-    
+
     data = {
         "code": "abcdefg"
     }
-    
+
     expected_result = None
     expected_status_code = 404
     return test_data, data, expected_result, expected_status_code

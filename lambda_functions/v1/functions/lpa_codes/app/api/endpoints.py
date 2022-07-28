@@ -245,6 +245,7 @@ def handle_exists(data):
     else:
         return {"Created": None}, 200
 
+
 def handle_code(data):
     """
     Args:
@@ -286,5 +287,5 @@ def handle_code(data):
 
     if len(code_details) != 1:
         return None, 404
-    logger.debug("Code Details %", code_details)    
+    logger.debug("Code Details %", code_details)
     return code_details, 200

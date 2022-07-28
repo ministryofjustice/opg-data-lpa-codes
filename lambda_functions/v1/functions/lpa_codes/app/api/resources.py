@@ -6,7 +6,7 @@ from flask import request, jsonify
 
 from .errors import error_message
 from .helpers import custom_logger
-from .endpoints import handle_code, handle_create, handle_validate, handle_revoke, handle_exists
+import endpoints
 
 logger = custom_logger("code generator")
 
@@ -71,7 +71,7 @@ def create_route():
             )
             return abort(400)
 
-    result, status_code = handle_create(data=post_data)
+    result, status_code = endpoints.handle_create(data=post_data)
 
     return jsonify(result), status_code
 
@@ -100,7 +100,7 @@ def revoke_route():
         logger.debug(f"Empty param in request: code")
         return abort(400)
 
-    result, status_code = handle_revoke(data=post_data)
+    result, status_code = endpoints.handle_revoke(data=post_data)
 
     return jsonify(result), status_code
 
@@ -132,7 +132,7 @@ def validate_route():
         )
         return abort(400)
 
-    result, status_code = handle_validate(data=post_data)
+    result, status_code = endpoints.handle_validate(data=post_data)
 
     return jsonify(result), status_code
 
@@ -165,7 +165,7 @@ def actor_code_exists_route():
         )
         return abort(400)
 
-    result, status_code = handle_exists(data=post_data)
+    result, status_code = endpoints.handle_exists(data=post_data)
 
     return jsonify(result), status_code
 
@@ -199,9 +199,9 @@ def actor_code_details_route():
         )
         return abort(400)
 
-    result, status_code = handle_code(data=post_data)
-    
+    result, status_code = endpoints.handle_code(data=post_data)
+
     if status_code != 200:
         abort(status_code)
-        
+
     return jsonify(result), status_code
