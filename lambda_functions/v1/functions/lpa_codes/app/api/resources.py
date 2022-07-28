@@ -5,7 +5,7 @@ from flask import request, jsonify
 
 from .errors import error_message
 from .helpers import custom_logger
-from ..api import endpoints
+from lambda_functions.v1.functions.lpa_codes.app.api import endpoints
 
 logger = custom_logger("code generator")
 
