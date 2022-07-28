@@ -73,9 +73,6 @@ def get_codes(database, key=None, code=None):
 
     table = database.Table(lpa_codes_table())
 
-    return_fields = (
-        "lpa, actor, code, active, last_updated_date, dob, expiry_date, generated_date, status_details"
-    )
     # TTL cutoff is set to midnight this morning - does not need to be the exact time
     ttl_cutoff = int(
         datetime.datetime.combine(
@@ -86,7 +83,7 @@ def get_codes(database, key=None, code=None):
     codes = []
     if code:
         query_result = table.get_item(
-            Key={"code": code}, ProjectionExpression=return_fields
+            Key={"code": code}
         )
 
         try:
@@ -107,7 +104,6 @@ def get_codes(database, key=None, code=None):
                 IndexName="key_index",
                 KeyConditionExpression=Key("lpa").eq(lpa) & Key("actor").eq(actor),
                 FilterExpression=Attr("expiry_date").gt(ttl_cutoff),
-                ProjectionExpression=return_fields
             )
 
             if len(query_result["Items"]) > 0:
