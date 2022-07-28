@@ -109,7 +109,7 @@ def mock_get_codes(monkeypatch):
             return []
         elif "code" in kwargs:
             code = kwargs["code"]
- 
+
         else:
             code = "tOhkrldOqewm"
 
