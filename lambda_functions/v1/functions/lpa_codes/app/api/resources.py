@@ -1,4 +1,3 @@
-import json
 import os
 
 from flask import Blueprint, abort
@@ -6,7 +5,7 @@ from flask import request, jsonify
 
 from .errors import error_message
 from .helpers import custom_logger
-import endpoints
+from ..api import endpoints
 
 logger = custom_logger("code generator")
 

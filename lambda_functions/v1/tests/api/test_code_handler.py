@@ -1,10 +1,3 @@
-import boto3
-import pytest
-from boto3.dynamodb.conditions import Key
-import logging
-import datetime
-from lambda_functions.v1.functions.lpa_codes.app.api import code_generator
-from lambda_functions.v1.functions.lpa_codes.app.api.database import lpa_codes_table
 from lambda_functions.v1.functions.lpa_codes.app.api.endpoints import handle_code
 
 from pytest_cases import CaseDataGetter, cases_data
