@@ -240,10 +240,7 @@ def handle_exists(data):
             if code["active"]:
                 return {"Created": code["generated_date"]}, 200
 
-        return {"Created": None}, 200
-
-    else:
-        return {"Created": None}, 200
+    return {"Created": None}, 200
 
 
 def handle_code(data):
@@ -270,7 +267,8 @@ def handle_code(data):
                 "expiry_date":1690383384.0,
                 "generated_date":"2022-07-26",
                 "last_updated_date":"2022-07-26",
-                "lpa":"eed4f597-fd87-4536-99d0-895778824861"
+                "lpa":"eed4f597-fd87-4536-99d0-895778824861",
+                "status_details":"Generated"
             }
         ],
         200
@@ -285,7 +283,7 @@ def handle_code(data):
         logger.error(f"Error in handle_code > get_codes: {e}")
         return None, 500
 
-    if len(code_details) != 1:
+    if len(code_details) == 0:
         return None, 404
-    logger.debug("Code Details %", code_details)
+
     return code_details, 200
