@@ -5,13 +5,12 @@ from flask import request, jsonify
 
 from .errors import error_message
 from .helpers import custom_logger
-from lambda_functions.v1.functions.lpa_codes.app.api import endpoints
+from . import endpoints
 
 logger = custom_logger("code generator")
 
 version = os.getenv("API_VERSION")
 api = Blueprint("api", __name__, url_prefix=f"/{version}")
-
 
 @api.app_errorhandler(404)
 def handle404(error=None):
