@@ -12,6 +12,7 @@ logger = custom_logger("code generator")
 version = os.getenv("API_VERSION")
 api = Blueprint("api", __name__, url_prefix=f"/{version}")
 
+
 @api.app_errorhandler(404)
 def handle404(error=None):
     return error_message(404, "Not found url {}".format(request.url))

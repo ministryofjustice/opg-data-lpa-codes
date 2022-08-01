@@ -84,7 +84,7 @@ def get_codes(database, key=None, code=None):
         "generated_date",
         "status_details",
     ]
-    
+
     return_fields = " ,".join(return_fields)
 
     # TTL cutoff is set to midnight this morning - does not need to be the exact time
