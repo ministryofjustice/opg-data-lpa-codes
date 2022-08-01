@@ -202,5 +202,7 @@ def actor_code_details_route():
 
     if status_code != 200:
         abort(status_code)
+        
+    print(result)
 
-    return result, status_code
+    return jsonify(result), status_code
