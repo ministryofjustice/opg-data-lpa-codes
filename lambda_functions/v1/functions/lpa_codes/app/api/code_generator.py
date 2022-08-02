@@ -73,9 +73,20 @@ def get_codes(database, key=None, code=None):
 
     table = database.Table(lpa_codes_table())
 
-    return_fields = (
-        "lpa, actor, code, active, last_updated_date, dob, expiry_date, generated_date"
-    )
+    return_fields = [
+        "lpa",
+        "actor",
+        "code",
+        "active",
+        "last_updated_date",
+        "dob",
+        "expiry_date",
+        "generated_date",
+        "status_details",
+    ]
+
+    return_fields = " ,".join(return_fields)
+
     # TTL cutoff is set to midnight this morning - does not need to be the exact time
     ttl_cutoff = int(
         datetime.datetime.combine(
@@ -90,7 +101,10 @@ def get_codes(database, key=None, code=None):
         )
 
         try:
-            if query_result["Item"]["expiry_date"] > ttl_cutoff:
+            expiry_date = query_result["Item"]["expiry_date"]
+
+            if expiry_date > ttl_cutoff:
+                query_result["Item"]["expiry_date"] = int(expiry_date)
                 codes.append(query_result["Item"])
             else:
                 logger.info("Code does not exist in database")

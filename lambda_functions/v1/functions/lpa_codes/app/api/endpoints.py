@@ -240,7 +240,50 @@ def handle_exists(data):
             if code["active"]:
                 return {"Created": code["generated_date"]}, 200
 
-        return {"Created": None}, 200
+    return {"Created": None}, 200
 
-    else:
-        return {"Created": None}, 200
+
+def handle_code(data):
+    """
+    Args:
+        data: dict of payload data
+
+    Example args:
+        {
+          "code": "YsSu4iAztUXm"
+        }
+
+    Returns:
+        tuple: (code data, http status code)
+
+    Example return:
+    (
+        [
+            {
+                "active":true,
+                "actor":"eed4f597-fd87-4536-99d0-895778824861",
+                "code":"PJRDR4XCT3PR",
+                "dob":"1960-06-05",
+                "expiry_date":1690383384.0,
+                "generated_date":"2022-07-26",
+                "last_updated_date":"2022-07-26",
+                "lpa":"eed4f597-fd87-4536-99d0-895778824861",
+                "status_details":"Generated"
+            }
+        ],
+        200
+    )
+    """
+    db = db_connection()
+    code_to_test = data["code"]
+
+    try:
+        code_details = code_generator.get_codes(database=db, code=code_to_test)
+    except Exception as e:
+        logger.error(f"Error in handle_code > get_codes: {e}")
+        return None, 500
+
+    if len(code_details) == 0:
+        return None, 404
+
+    return code_details, 200
