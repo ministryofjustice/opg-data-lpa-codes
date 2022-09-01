@@ -381,6 +381,11 @@ jobs:
           command: |
             eval $(cat $BASH_ENV)
       - run:
+          name: modify openapispec
+          command:
+            sed -i "s/\"\${allowed_roles}\"/\${allowed_roles}/" lpa-codes-openapi-v1.yml
+          working_directory: ~/project/lambda_functions/v1/openapi
+      - run:
           name: initialize terraform - environment
           working_directory: ~/project/terraform/environment
           command: terraform init
@@ -388,18 +393,6 @@ jobs:
           name: terraform << parameters.tf_command >> - environment
           working_directory: ~/project/terraform/environment
           command: terraform << parameters.tf_command >>
-      # https://github.com/terraform-providers/terraform-provider-aws/issues/5364
-      - when:
-          condition: << parameters.applycheck >>
-          steps:
-            - run:
-                name: conditionally reapply if gateway policy is missing
-                working_directory: ~/project/terraform/environment
-                command: |
-                  if [ $(terraform output policy | wc -m) -gt 1 ]
-                  then echo "policy attached, doing nothing"
-                  else terraform << parameters.tf_command >>
-                  fi
       - when:
           condition: << parameters.destroy_workspace >>
           steps:

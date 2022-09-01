@@ -21,19 +21,15 @@ locals {
   api_name = "lpa-codes"
 
   api_template_vars = {
-    region      = "eu-west-1"
-    environment = local.environment
-    account_id  = local.account.account_id
+    region        = "eu-west-1"
+    environment   = local.environment
+    account_id    = local.account.account_id
+    allowed_roles = join(", ", local.account.allowed_roles)
   }
 
   //Modify for new version of API
   latest_openapi_version = "v1"
   openapi_spec           = file("../../lambda_functions/${local.latest_openapi_version}/openapi/${local.api_name}-openapi-${local.latest_openapi_version}.yml")
-}
-
-//https://github.com/terraform-providers/terraform-provider-aws/issues/5364
-output "policy" {
-  value = aws_api_gateway_rest_api.lpa_codes.policy
 }
 
 output "rest_arn" {

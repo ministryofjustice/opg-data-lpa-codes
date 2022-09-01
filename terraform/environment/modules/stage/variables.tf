@@ -14,7 +14,10 @@ variable "environment" {
 
 variable "lpa_codes_lambda" {}
 
-variable "openapi_version" {}
+variable "openapi_version" {
+  type    = string
+  default = "v1"
+}
 
 variable "region_name" {}
 
