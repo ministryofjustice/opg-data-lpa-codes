@@ -42,9 +42,14 @@ workflows:
           requires: [terraform preflight checks]
           filters: {branches:{ignore:[main]}}
 
+      - integration_tests:
+          name: run integration tests
+          requires: [protect current workspace, apply branch environment]
+          filters: {branches:{ignore:[main]}}
+
       - workflow_complete:
           name: workflow complete
-          requires: [apply branch environment, protect current workspace]
+          requires: [run integration tests]
           filters: {branches:{ignore:[main]}}
 
   commit_to_main:
@@ -63,18 +68,24 @@ workflows:
           filters: {branches:{only:[main]}}
 
       - terraform_action:
-         name: preprod apply
-         requires: [development apply]
-         tf_command: apply --auto-approve
-         tf_workspace: preproduction
-         applycheck: true
-         filters: {branches:{only:[main]}}
+          name: preprod apply
+          requires: [development apply]
+          tf_command: apply --auto-approve
+          tf_workspace: preproduction
+          applycheck: true
+          filters: {branches:{only:[main]}}
+
+      - integration_tests:
+          name: run integration tests preprod
+          workspace: preproduction
+          requires: [preprod apply]
+          filters: {branches:{only:[main]}}
 
       - approve:
-         name: approve release to production
-         type: approval
-         requires: [preprod apply]
-         filters: {branches:{only:[main]}}
+          name: approve release to production
+          type: approval
+          requires: [run integration tests preprod]
+          filters: {branches:{only:[main]}}
 
       - terraform_action:
           name: integration apply
@@ -121,7 +132,7 @@ orbs:
   slack: circleci/slack@3.4.2
   dockerhub_helper:
     orbs:
-      docker: circleci/docker@1.7.0
+      docker: circleci/docker@2.1.4
     commands:
       dockerhub_login:
         steps:
@@ -144,11 +155,17 @@ orbs:
           TF_CLI_ARGS_destroy: -input=false -auto-approve
           TF_CLI_ARGS_init: -input=false -upgrade=true -reconfigure
           TF_VAR_default_role: integrations-ci
-          TF_VERSION: 0.14.11
-          TF_SHA256SUM: 171ef5a4691b6f86eab524feaf9a52d5221c875478bd63dd7e55fef3939f7fd4
+          TF_VERSION: 1.2.4
+          TF_SHA256SUM: 705ea62a44a0081594dad6b2b093eefefb12d54fa5a20a66562f9e082b00414c
       python:
         docker:
           - image: cimg/python:3.8.10
+            auth:
+              username: $DOCKER_USER
+              password: $DOCKER_ACCESS_TOKEN
+      go:
+        docker:
+          - image: cimg/go:1.19.3
             auth:
               username: $DOCKER_USER
               password: $DOCKER_ACCESS_TOKEN
@@ -500,6 +517,40 @@ jobs:
       - run:
           name: Add workspace to protected list
           command: terraform-workspace-manager -register-workspace="${TF_WORKSPACE}" -time-to-protect="${PROTECT_TIME}" -aws-account-id=288342028542 -aws-iam-role=integrations-ci
+  integration_tests:
+    executor: lpa-codes/go
+    resource_class: small
+    parameters:
+      workspace:
+        description: terraform workspace
+        type: string
+        default: ""
+      role:
+        description: role
+        type: string
+        default: "integrations-ci"
+    environment:
+      ROLE: << parameters.role >>
+      WORKSPACE: << parameters.workspace >>
+    steps:
+      - checkout:
+          path: ~/project
+      - run:
+          name: Set BASH_ENV
+          command: ~/project/.circleci/set_env.sh >> $BASH_ENV
+      - run:
+          name: run integration scripts
+          command: |
+            if [ "${TF_WORKSPACE}" == "preproduction" ]
+            then
+              export BRANCH="pre"
+              export ACCOUNT="492687888235"
+            else
+              export BRANCH="${TF_WORKSPACE}.dev"
+              export ACCOUNT="288342028542"
+            fi
+            go run load_testing.go
+          working_directory: ~/project/scripts/ci_pipeline/load_testing
   workflow_complete:
     executor: lpa-codes/python_with_tfvars
     resource_class: small
