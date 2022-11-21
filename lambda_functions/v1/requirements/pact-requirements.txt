@@ -1,4 +1,5 @@
 connexion==2.7.0
 swagger-ui-bundle==0.0.8
+openapi-spec-validator==0.4.0
 requests
 boto3

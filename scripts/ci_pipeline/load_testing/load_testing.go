@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"os"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials/stscreds"
@@ -105,11 +106,22 @@ func makeRequests (baseUrl string, endpoint string, codesToAction []*strings.Rea
 	return listOfAction
 }
 
-func main() {
+func getEnv(key, fallback string) string {
+    if value, ok := os.LookupEnv(key); ok {
+        return value
+    }
+    return fallback
+}
 
-	roleToAssume := "arn:aws:iam::288342028542:role/operator"
-	baseUrl := "https://in673.dev.lpa-codes.api.opg.service.justice.gov.uk/v1"
-	
+func main() {
+	role := getEnv("ROLE", "operator")
+	branch := getEnv("BRANCH", "dev")
+	account := getEnv("ACCOUNT", "492687888235")
+	roleToAssume := fmt.Sprintf("arn:aws:iam::%s:role/%s", account, role)
+	baseUrl := fmt.Sprintf("https://%s.lpa-codes.api.opg.service.justice.gov.uk/v1", branch)
+
+    fmt.Print(baseUrl)
+
 	mySession := session.Must(session.NewSession())
 	creds := stscreds.NewCredentials(mySession, roleToAssume)
 	cfg := aws.Config{Credentials: creds,Region: aws.String("eu-west-1")}

@@ -40,6 +40,7 @@ module "deploy_v1" {
   rest_api         = aws_api_gateway_rest_api.lpa_codes
   tags             = local.default_tags
   vpc_id           = local.account.vpc_id
+  content_api_sha  = local.open_api_sha
 }
 
 //To Add New Version Copy and Paste Above and Modify Accordingly
