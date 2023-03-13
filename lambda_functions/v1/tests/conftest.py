@@ -1,5 +1,7 @@
 import os
+import calendar
 from decimal import Decimal
+
 
 import boto3
 import pytest
@@ -13,9 +15,21 @@ from lambda_functions.v1.functions.lpa_codes.app.api import (
 
 today = datetime.date.today()
 
+
+def one_year_from_now():
+    today = datetime.datetime.now().date()
+    one_year_from_now = datetime.datetime.combine(
+        today.replace(year=today.year + 1), datetime.time.min
+    )
+
+    one_year_from_now_decimal = Decimal(one_year_from_now.strftime("%s"))
+
+    return one_year_from_now_decimal
+
+
 test_constants = {
     "TABLE_NAME": "lpa-codes-mock",
-    "EXPIRY_DATE": Decimal((today + datetime.timedelta(days=365)).strftime("%s")),
+    "EXPIRY_DATE": one_year_from_now(),
     "EXPIRY_DATE_PAST": Decimal(1577865600),  # 01/01/2020 @ 8:00am (UTC)
     "TODAY": today,
     "TODAY_ISO": today.strftime("%Y-%m-%d"),
@@ -41,7 +55,6 @@ def mock_unique_code(monkeypatch, request):
 @pytest.fixture()
 def mock_generate_code(monkeypatch):
     def generate_predictable_code(*args, **kwargs):
-
         return test_constants["DEFAULT_CODE"]
 
     monkeypatch.setattr(code_generator, "generate_code", generate_predictable_code)
