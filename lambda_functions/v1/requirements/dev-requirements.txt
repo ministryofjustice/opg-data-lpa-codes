@@ -7,7 +7,7 @@ flask-lambda==0.0.4
 flask-lambda-python36==0.1.0
 itsdangerous==1.1.0
 Jinja2==2.11.3
-MarkupSafe==1.1.1
+MarkupSafe==2.1.1
 python-dotenv==0.13.0
 Werkzeug==2.2.3
 openapi-spec-validator==0.4.0
