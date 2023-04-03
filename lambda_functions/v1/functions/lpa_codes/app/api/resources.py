@@ -1,7 +1,6 @@
 import os
 
-from flask import Blueprint, abort
-from flask import request, jsonify
+from flask import Blueprint, abort, request, jsonify
 
 from .errors import error_message
 from .helpers import custom_logger
@@ -11,6 +10,8 @@ logger = custom_logger("code generator")
 
 version = os.getenv("API_VERSION")
 api = Blueprint("api", __name__, url_prefix=f"/{version}")
+
+print("some junk")
 
 
 @api.app_errorhandler(404)
@@ -51,9 +52,9 @@ def create_route():
     Returns:
         tuple: (json result of handle_create method, status code)
     """
-
+    print("gets here...")
     post_data = request.get_json()
-
+    print("but not here")
     for entry in post_data["lpas"]:
         try:
             lpa = entry["lpa"]

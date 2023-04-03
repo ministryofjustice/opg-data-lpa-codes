@@ -27,6 +27,20 @@ You can use this thin wrapper around dynamodb that allows us to do various CRUD 
 There is no efficient way of doing a table truncate in dynamodb so the best option is
 to destroy and recreate the table.
 
+**Code generator new**
+```
+curl -XPOST "http://localhost:4343/2015-03-31/functions/function/invocations" -d '@./docs/support_files/lambda_request.json' | jq
+```
+
+Bear in mind that your json needs to be valid against the openapi spec and that you
+may need to restart the container for your changes ot take effect. Also bear in mind
+you will need to create the default table first (command below)!!
+
+You can use this thin wrapper around dynamodb that allows us to do various CRUD operations.
+There is no efficient way of doing a table truncate in dynamodb so the best option is
+to destroy and recreate the table. We spin up a separate container to manage the dynamo operations
+called table-helper.
+
 **Create default dynamodb table**
 ```
 curl -X POST http://127.0.0.1:4343/setup/dynamodb/create/table

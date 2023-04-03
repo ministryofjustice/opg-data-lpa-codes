@@ -9,6 +9,13 @@ module "lamdba_lpa_codes_v1" {
   rest_api        = aws_api_gateway_rest_api.lpa_codes
   account         = local.account
   dynamodb_table  = aws_dynamodb_table.lpa_codes
+  image_uri       = "${data.aws_ecr_repository.lpa_codes.repository_url}:${var.image_tag}"
+  ecr_arn         = data.aws_ecr_repository.lpa_codes.arn
+}
+
+data "aws_ecr_repository" "lpa_codes" {
+  provider = aws.management
+  name     = "integrations/lpa-codes-lambda"
 }
 
 //To Add New Version Copy and Paste Above and Modify Accordingly

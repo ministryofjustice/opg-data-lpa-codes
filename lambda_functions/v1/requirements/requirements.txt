@@ -7,3 +7,6 @@ Jinja2==3.1.2
 MarkupSafe==2.1.1
 python-dotenv==0.13.0
 Werkzeug==2.2.3
+awslambdaric
+python-dateutil
+boto3

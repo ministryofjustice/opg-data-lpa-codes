@@ -14,15 +14,13 @@ resource "aws_cloudwatch_log_group" "lambda_dbstream" {
 }
 
 resource "aws_lambda_function" "lambda_function" {
-  filename         = data.archive_file.lambda_archive.output_path
-  source_code_hash = data.archive_file.lambda_archive.output_base64sha256
-  function_name    = local.lambda
-  role             = aws_iam_role.lambda_role.arn
-  handler          = "app.${local.lambda_underscore}.lambda_handler"
-  runtime          = "python3.7"
-  timeout          = 20
-  depends_on       = [aws_cloudwatch_log_group.lambda]
-  layers           = [aws_lambda_layer_version.lambda_layer.arn]
+  function_name = local.lambda
+  image_uri     = var.image_uri
+  package_type  = var.package_type
+  role          = aws_iam_role.lambda_role.arn
+  timeout       = var.timeout
+  depends_on    = [aws_cloudwatch_log_group.lambda]
+
   vpc_config {
     subnet_ids         = var.aws_subnet_ids
     security_group_ids = [data.aws_security_group.lambda_api_ingress.id]
@@ -77,20 +75,6 @@ resource "aws_lambda_event_source_mapping" "dynamodb_stream_map" {
   event_source_arn  = var.dynamodb_table.stream_arn
   function_name     = aws_lambda_function.lambda_dbstream_function.arn
   starting_position = "LATEST"
-}
-
-resource "aws_lambda_layer_version" "lambda_layer" {
-  filename         = data.archive_file.lambda_layer_archive.output_path
-  source_code_hash = data.archive_file.lambda_layer_archive.output_base64sha256
-  layer_name       = "requirement_${var.account.account_mapping}"
-
-  compatible_runtimes = ["python3.7"]
-
-  lifecycle {
-    ignore_changes = [
-      source_code_hash
-    ]
-  }
 }
 
 data "local_file" "requirements" {
