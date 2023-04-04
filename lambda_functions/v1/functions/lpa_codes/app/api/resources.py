@@ -11,8 +11,6 @@ logger = custom_logger("code generator")
 version = os.getenv("API_VERSION")
 api = Blueprint("api", __name__, url_prefix=f"/{version}")
 
-print("some junk")
-
 
 @api.app_errorhandler(404)
 def handle404(error=None):
@@ -52,9 +50,7 @@ def create_route():
     Returns:
         tuple: (json result of handle_create method, status code)
     """
-    print("gets here...")
     post_data = request.get_json()
-    print("but not here")
     for entry in post_data["lpas"]:
         try:
             lpa = entry["lpa"]

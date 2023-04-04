@@ -15,7 +15,7 @@ resource "aws_cloudwatch_log_group" "lambda_dbstream" {
 
 resource "aws_lambda_function" "lambda_function" {
   function_name = local.lambda
-  image_uri     = var.image_uri
+  image_uri     = var.main_image_uri
   package_type  = var.package_type
   role          = aws_iam_role.lambda_role.arn
   timeout       = var.timeout

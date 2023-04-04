@@ -26,15 +26,13 @@ workflows:
           name: build and artifact
           filters: {branches:{ignore:[main]}}
 
-      - terraform_pre_checks:
-          name: terraform preflight checks
-          requires: [build and artifact]
+      - test_lambda:
+          name: run unit tests
           filters: {branches:{ignore:[main]}}
 
-      - terraform_action:
-          name: apply branch environment
-          requires: [terraform preflight checks]
-          tf_command: apply
+      - terraform_pre_checks:
+          name: terraform preflight checks
+          requires: [build and artifact, run unit tests]
           filters: {branches:{ignore:[main]}}
 
       - workspace_protection:
@@ -42,9 +40,15 @@ workflows:
           requires: [terraform preflight checks]
           filters: {branches:{ignore:[main]}}
 
+      - terraform_action:
+          name: apply branch environment
+          requires: [protect current workspace]
+          tf_command: apply
+          filters: {branches:{ignore:[main]}}
+
       - integration_tests:
           name: run integration tests
-          requires: [protect current workspace, apply branch environment]
+          requires: [apply branch environment]
           filters: {branches:{ignore:[main]}}
 
       - workflow_complete:
@@ -62,7 +66,7 @@ workflows:
       - terraform_action:
           name: development apply
           requires: [build and artifact]
-          tf_command: apply --auto-approve
+          tf_command: apply
           tf_workspace: development
           applycheck: true
           filters: {branches:{only:[main]}}
@@ -70,7 +74,7 @@ workflows:
       - terraform_action:
           name: preprod apply
           requires: [development apply]
-          tf_command: apply --auto-approve
+          tf_command: apply
           tf_workspace: preproduction
           applycheck: true
           filters: {branches:{only:[main]}}
@@ -90,7 +94,7 @@ workflows:
       - terraform_action:
           name: integration apply
           requires: [approve release to production]
-          tf_command: apply --auto-approve
+          tf_command: apply
           tf_workspace: integration
           applycheck: true
           filters: {branches:{only:[main]}}
@@ -98,7 +102,7 @@ workflows:
       - terraform_action:
           name: integration apply
           requires: [approve release to production]
-          tf_command: apply --auto-approve
+          tf_command: apply
           tf_workspace: integration
           applycheck: true
           filters: {branches:{only:[main]}}
@@ -106,7 +110,7 @@ workflows:
       - terraform_action:
          name: production apply
          requires: [approve release to production]
-         tf_command: apply --auto-approve
+         tf_command: apply
          tf_workspace: production
          applycheck: true
          filters: {branches:{only:[main]}}
@@ -224,6 +228,33 @@ orbs:
                 sudo chmod +x /usr/local/bin/terraform-workspace-manager
 
 jobs:
+  test_lambda:
+    executor: lpa-codes/python
+    resource_class: small
+    steps:
+      - checkout
+      - lpa-codes/login_codeartifact
+      - lpa-codes/cancel_redundant_builds
+      - run:
+          name: install all requirements locally
+          command: |
+            for i in $(ls -d lambda_functions/*/ | awk -F'/' '{print $2}')
+            do
+              pip3 install -r ./lambda_functions/"${i}"/requirements/dev-requirements.txt
+            done
+      - run:
+          name: run flake8 - python PEP8 linter, complexity checker
+          command: |
+            flake8 --ignore Q000 lambda_functions
+      - run:
+          name: get test coverage (fails below 90%)
+          command: |
+            python -m pytest --cov=lambda_functions/v1/functions/lpa_codes/app/api/ --cov-fail-under=90
+      - run:
+          name: run unit tests (with pytest)
+          command: |
+            python -m pytest
+
   build_lambda:
     executor: lpa-codes/python
     resource_class: small
@@ -236,11 +267,6 @@ jobs:
       - setup_remote_docker
       - lpa-codes/login_codeartifact
       - lpa-codes/cancel_redundant_builds
-      - run:
-          name: run flake8 - python PEP8 linter, complexity checker
-          command: |
-            pip install flake8
-            flake8 --ignore Q000 lambda_functions
       - run:
           name: build lpa codes image
           command: docker build --file ./Dockerfile --tag lpa-codes:latest .
@@ -280,12 +306,8 @@ jobs:
         default: ""
     working_directory: ~/project
     steps:
-      - attach_workspace:
-          at: ~/project
+      - checkout
       - lpa-codes/terraform_install
-      - run:
-          name: unzip artifact
-          command: unzip ./opg-data-lpa-codes.zip -d .
       - run:
           name: initialize terraform - environment
           working_directory: ~/project/terraform/environment
@@ -366,12 +388,8 @@ jobs:
       WORKSPACE: << parameters.tf_workspace >>
     working_directory: ~/project
     steps:
-      - attach_workspace:
-          at: ~/project
+      - checkout
       - lpa-codes/terraform_install
-      - run:
-          name: unzip artifact
-          command: unzip ./opg-data-lpa-codes.zip -d .
       - run:
           name: Set BASH_ENV
           command: ~/project/.circleci/set_env.sh >> $BASH_ENV

@@ -133,7 +133,7 @@ func main() {
 	var ref int
 	var countCodesToUse int
 
-	countCodesToUse = 1
+	countCodesToUse = 10
 	ref = 700000000000
 
 	fmt.Printf("\n===== Starting Load Test With %v Codes To Create, Validate and Revoke =====\n\n", countCodesToUse)

@@ -26,7 +26,7 @@ func main() {
 	var url string
 	var inputPayload string
 	flag.StringVar(&roleToAssume, "role", "arn:aws:iam::288342028542:role/operator", "Role to assume when signing requests for API")
-	flag.StringVar(&url, "url", "https://dependabotpipl.dev.lpa-codes.api.opg.service.justice.gov.uk/v1", "url including version and endpoint of API to send request to")
+	flag.StringVar(&url, "url", "https://dev.lpa-codes.api.opg.service.justice.gov.uk/v1/validate", "url including version and endpoint of API to send request to")
 	flag.StringVar(&inputPayload, "payload", "../support_files/validate_payload.json", "path to payload for request")
 	flag.Parse()
 	fmt.Println(roleToAssume, url, inputPayload)
