@@ -287,10 +287,10 @@ jobs:
             docker tag lpa-codes:latest $AWS_REGISTRY/integrations/lpa-codes-lambda:$TF_WORKSPACE-$GIT_COMMIT_PROVIDER
             docker tag lpa-codes-dynamo:latest $AWS_REGISTRY/integrations/lpa-codes-dynamo-lambda:$TF_WORKSPACE-$GIT_COMMIT_PROVIDER
             if [ $CIRCLE_BRANCH == "main" ]; then
-              docker tag lpa-code:latest $AWS_REGISTRY/integrations/lpa-codes-lambda:latest
-              docker tag lpa-code:latest $AWS_REGISTRY/integrations/lpa-codes-lambda:main-$GIT_COMMIT_PROVIDER
-              docker tag lpa-code:latest $AWS_REGISTRY/integrations/lpa-codes-dynamo-lambda:latest
-              docker tag lpa-code:latest $AWS_REGISTRY/integrations/lpa-codes-dynamo-lambda:main-$GIT_COMMIT_PROVIDER
+              docker tag lpa-codes:latest $AWS_REGISTRY/integrations/lpa-codes-lambda:latest
+              docker tag lpa-codes:latest $AWS_REGISTRY/integrations/lpa-codes-lambda:main-$GIT_COMMIT_PROVIDER
+              docker tag lpa-codes-dynamo:latest $AWS_REGISTRY/integrations/lpa-codes-dynamo-lambda:latest
+              docker tag lpa-codes-dynamo:latest $AWS_REGISTRY/integrations/lpa-codes-dynamo-lambda:main-$GIT_COMMIT_PROVIDER
             fi
               docker push --all-tags $AWS_REGISTRY/integrations/lpa-codes-dynamo-lambda
               docker push --all-tags $AWS_REGISTRY/integrations/lpa-codes-lambda
