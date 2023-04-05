@@ -1,3 +1,5 @@
+import json
+
 import requests
 
 import pytest
@@ -23,8 +25,19 @@ def test_405(server):
 
 @pytest.mark.run(order=1)
 def test_500(server, mock_broken_method):
-    r = requests.post(server.url + "/validate")
-    assert r.status_code == 500
-    data = r.json()
-    assert "error" in data["body"]
-    assert "Something went wrong" in data["body"]["error"]["message"]
+    with server.app_context():
+        test_data = {
+            "code": "hdgeytkvnshd",
+            "lpa": "eed4f597-fd87-4536-99d0-895778824861",
+            "dob": "1960-06-05",
+        }
+
+        test_headers = {"Content-Type": "application/json"}
+
+        r = requests.post(
+            server.url + "/validate", headers=test_headers, data=json.dumps(test_data)
+        )
+        assert r.status_code == 500
+        data = r.json()
+        assert "error" in data["body"]
+        assert "Something went wrong" in data["body"]["error"]["message"]

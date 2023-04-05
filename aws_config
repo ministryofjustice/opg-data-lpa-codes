@@ -1,0 +1,4 @@
+[profile integrations-ci]
+region=eu-west-1
+role_arn=arn:aws:iam::311462405659:role/integrations-ci
+credential_source=Environment
