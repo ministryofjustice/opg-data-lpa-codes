@@ -137,14 +137,7 @@ Then assuming the relative path is right to pact-provider-verifier, you can veri
 contract against our mock as below.
 
 ```
-../pact/bin/pact-provider-verifier --provider-base-url=http://localhost:4343/v1 \
---custom-provider-header 'Authorization: asdf1234567890' \
---pact-broker-base-url="http://localhost:9292" \
---provider="lpa-codes" \
---consumer-version-tag=v1 \
---provider-version-tag=v1 \
---publish-verification-results \
---provider-app-version=1.2.3
+docker-compose run --rm pact-verifier
 ```
 
 You can then see the verified results in the pact broker through your web browser. Go to:

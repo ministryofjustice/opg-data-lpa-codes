@@ -57,3 +57,14 @@ services:
       default:
         aliases:
           - lpa-codes.local
+
+  pact-verifier:
+    image: pactfoundation/pact-ref-verifier
+    entrypoint:
+      - pact_verifier_cli
+      - --hostname=table-helper
+      - --port=4343
+      - --base-path=/v1/
+      - "--header=Authorization=asdf1234567890"
+      - --broker-url=https://pact-broker.api.opg.service.justice.gov.uk/
+      - --provider-name=lpa-codes

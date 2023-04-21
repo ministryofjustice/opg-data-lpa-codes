@@ -1,0 +1,47 @@
+name: Pact Provider Verification
+
+on:
+  repository_dispatch:
+    types: [provider-verification]
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+jobs:
+  test:
+    name: Provider verification
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: docker-compose up -d
+      - name: Setup tables
+        run: curl -X POST http://127.0.0.1:4343/setup/dynamodb/create/table
+      - name: Verify specified Pact
+        if: ${{ github.event_name == "repository_dispatch" }}
+        run: |
+          docker-compose run --rm pact-verifier \
+            --provider-version=$(git rev-parse HEAD) \
+            --provider-branch=main \
+            --publish \
+            --user=admin \
+            --password=${{ secrets.PACT_BROKER_PASSWORD }} \
+            --url=${{ github.event.client_payload.pact_url }}
+      - name: Verify pacts, including pending
+        if: ${{ github.event_name == "push" }}
+        run: |
+          docker-compose run --rm pact-verifier \
+            --provider-version=$(git rev-parse HEAD) \
+            --provider-branch=main \
+            --publish \
+            --user=admin \
+            --password=${{ secrets.PACT_BROKER_PASSWORD }} \
+            --enable-pending
+      - name: Verify pacts are still upheld
+        if: ${{ github.event_name == "pull_request" }}
+        run: |
+          docker-compose run --rm pact-verifier \
+            --provider-version=$(git rev-parse HEAD) \
+            --provider-branch=${{ github.ref_name }}

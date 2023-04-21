@@ -10,7 +10,7 @@ parameters:
     default: true
   run_verify_pact:
     type: boolean
-    default: true
+    default: false
   consumerversion:
     type: string
     default: ""

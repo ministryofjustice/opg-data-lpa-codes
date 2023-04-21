@@ -2,7 +2,7 @@
 set -e
 PACT_BROKER_USER="admin"
 PACT_BROKER_BASE_URL="https://pact-broker.api.opg.service.justice.gov.uk"
-PACT_PROVIDER="lpa-codes"
+PACT_PROVIDER="data-lpa-codes"
 PACT_CONSUMER="sirius"
 SIRIUS_GITHUB_URL="api.github.com/repos/ministryofjustice/opg-sirius"
 ACCOUNT="997462338508"
