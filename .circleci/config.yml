@@ -8,9 +8,6 @@ parameters:
   run_commit_to_main:
     type: boolean
     default: true
-  run_verify_pact:
-    type: boolean
-    default: false
   consumerversion:
     type: string
     default: ""
@@ -400,75 +397,6 @@ jobs:
                   echo "Switching workspace to default so we can remove branch workspace"
                   export TF_WORKSPACE=default
                   terraform workspace delete "${WORKSPACE_TO_DELETE}" || echo "no workspace to remove"
-  pact_verification:
-    docker:
-      # Primary container image where all the steps run.
-      - image: cimg/python:3.8.10
-      # Service container image made available to the primary container at `host: localhost`
-      - image: amazon/dynamodb-local:latest
-        entrypoint: ["java", "-Xmx1G", "-jar", "DynamoDBLocal.jar"]
-    working_directory: ~/project
-    parameters:
-    steps:
-      - checkout
-      - run:
-          name: Set BASH_ENV
-          command: ~/project/.circleci/set_env.sh >> $BASH_ENV
-      - run:
-          name: install requirements mock rest api
-          command: |
-            cd ~/project/lambda_functions/${API_VERSION}/requirements
-            pip3 install -r pact-requirements.txt
-      - run:
-          name: spin up mock rest api
-          command: |
-            cd ~/project/lambda_functions/"${API_VERSION}"/functions/lpa_codes/app
-            export PYTHONPATH="${PYTHONPATH}:/home/circleci/project"
-            python3 lpa_codes_mock.py
-          background: true
-      - run:
-          name: check mock rest api started
-          command: |
-            sleep 3
-            if [ `netstat -tulpn | grep 4343 | wc -l` -gt 0 ]
-            then
-            echo "LPA Codes Rest API Service Started Correctly"
-            else
-            echo "LPA Codes Rest API Service Not Started"
-            fi
-      - run:
-          name: Set up ready for pact tests
-          command: |
-            export PACT_VERSION=$(curl -i -s -X GET https://github.com/pact-foundation/pact-ruby-standalone/releases/latest \
-            | grep "location:" | awk -F'tag' '{print $2}' | awk -F'/v' '{print $2}' | sed 's/.$//')
-            wget https://github.com/pact-foundation/pact-ruby-standalone/releases/download/v${PACT_VERSION}/pact-${PACT_VERSION}-linux-x86_64.tar.gz
-            tar xzf pact-${PACT_VERSION}-linux-x86_64.tar.gz
-      - run:
-          name: Run the create table endpoint
-          command: |
-            curl -X POST http://127.0.0.1:4343/setup/dynamodb/create/table
-      - run:
-          name: Set up the data in tables
-          command: |
-            curl -X POST -d '{"consumer": "sirius", "state": "generated code exists and active"}' \
-            -H 'Content-Type: application/json' http://localhost:4343/setup/state
-      - lpa-codes/pact_install
-      - run:
-          name: verify pact
-          command: |
-            if [ "${CIRCLE_BRANCH}" = "main" ]; then publish_arg="--publish-verification-results"; else publish_arg=""; fi;
-            ./pact/bin/pact-provider-verifier \
-            --broker-username ${PACT_BROKER_USER} \
-            --broker-password ${PACT_BROKER_PASS} \
-            --provider-app-version ${GIT_COMMIT_PROVIDER} \
-            --provider-base-url http://localhost:4343/v1 \
-            --provider-version-tag ${CIRCLE_BRANCH} \
-            --pact-broker-base-url ${PACT_BROKER_BASE_URL} \
-            --provider ${PACT_PROVIDER} \
-            --custom-provider-header "Authorization: asdf1234567890" \
-            --consumer-version-tag master \
-            $publish_arg
-          working_directory: ~/project
   workspace_protection:
     executor: lpa-codes/python_with_tfvars
     resource_class: small
