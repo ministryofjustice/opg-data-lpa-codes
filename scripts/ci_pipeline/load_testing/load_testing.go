@@ -116,7 +116,7 @@ func getEnv(key, fallback string) string {
 func main() {
 	role := getEnv("ROLE", "operator")
 	branch := getEnv("BRANCH", "dev")
-	account := getEnv("ACCOUNT", "288342028542")
+	account := getEnv("ACCOUNT", "492687888235")
 	roleToAssume := fmt.Sprintf("arn:aws:iam::%s:role/%s", account, role)
 	baseUrl := fmt.Sprintf("https://%s.lpa-codes.api.opg.service.justice.gov.uk/v1", branch)
 
