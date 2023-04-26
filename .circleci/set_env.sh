@@ -14,11 +14,6 @@ WORKSPACE=${WORKSPACE,,}
 WORKSPACE=${WORKSPACE:0:14}
 API_VERSION=$(ls -d lambda_functions/v*/ | awk -F'/' '{print $2}' | grep '^v[1-9]\+$' | sort -r | head -n1)
 GIT_COMMIT_PROVIDER=${CIRCLE_SHA1:0:7}
-if [ $CIRCLE_BRANCH == "main" ]; then
-  IMAGE_TAG="main-${GIT_COMMIT_PROVIDER}"
-else
-  IMAGE_TAG="${WORKSPACE}-${GIT_COMMIT_PROVIDER}"
-fi
 
 echo "export GIT_COMMIT_PROVIDER=${GIT_COMMIT_PROVIDER}"
 echo "export TF_WORKSPACE=${WORKSPACE}"
@@ -30,4 +25,4 @@ echo "export PACT_BROKER_BASE_URL=${PACT_BROKER_BASE_URL}"
 echo "export PACT_BROKER_USER=${PACT_BROKER_USER}"
 echo "export SIRIUS_GITHUB_URL=${SIRIUS_GITHUB_URL}"
 echo "export ENVIRONMENT=${ENVIRONMENT}"
-echo "export TF_VAR_image_tag=${IMAGE_TAG}"
+echo "export TF_VAR_image_tag=${WORKSPACE}-${GIT_COMMIT_PROVIDER}"

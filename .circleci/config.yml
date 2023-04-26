@@ -283,7 +283,12 @@ jobs:
           command: aws ecr get-login-password --region $AWS_REGION --profile integrations-ci | docker login --username AWS --password-stdin $AWS_REGISTRY
       - run:
           name: show version
-          command: echo ${TF_VAR_image_tag}
+          command: |
+            if [ $CIRCLE_BRANCH == "main" ]; then
+              echo main-$GIT_COMMIT_PROVIDER
+            else
+              echo $TF_WORKSPACE-$GIT_COMMIT_PROVIDER
+            fi
       - run:
           name: push to ECR
           command: |
