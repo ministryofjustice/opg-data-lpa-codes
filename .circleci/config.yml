@@ -94,29 +94,29 @@ workflows:
           tf_workspace: integration
           applycheck: true
           filters: {branches:{only:[main]}}
+# Currently we do not want to touch production until we are sure env is stable
+#      - terraform_action:
+#          name: integration apply
+#          requires: [approve release to production]
+#          tf_command: apply --auto-approve
+#          tf_workspace: integration
+#          applycheck: true
+#          filters: {branches:{only:[main]}}
+#
+#      - terraform_action:
+#         name: production apply
+#         requires: [approve release to production]
+#         tf_command: apply --auto-approve
+#         tf_workspace: production
+#         applycheck: true
+#         filters: {branches:{only:[main]}}
+#         pact_tag_production: true
 
-      - terraform_action:
-          name: integration apply
-          requires: [approve release to production]
-          tf_command: apply --auto-approve
-          tf_workspace: integration
-          applycheck: true
-          filters: {branches:{only:[main]}}
-
-      - terraform_action:
-         name: production apply
-         requires: [approve release to production]
-         tf_command: apply --auto-approve
-         tf_workspace: production
-         applycheck: true
-         filters: {branches:{only:[main]}}
-         pact_tag_production: true
-
-  verify_pact:
-    when: << pipeline.parameters.run_verify_pact >>
-    jobs:
-      - pact_verification:
-          name: verify the latest pact
+#  verify_pact:
+#    when: << pipeline.parameters.run_verify_pact >>
+#    jobs:
+#      - pact_verification:
+#          name: verify the latest pact
 
   nightly_workspace_deletion:
     triggers:
