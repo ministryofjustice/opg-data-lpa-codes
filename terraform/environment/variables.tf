@@ -6,11 +6,6 @@ variable "management_role" {
   default = "integrations-ci"
 }
 
-variable "image_tag" {
-  default     = "latest"
-  description = "image tag to use for the deployment"
-}
-
 variable "accounts" {
   type = map(
     object({

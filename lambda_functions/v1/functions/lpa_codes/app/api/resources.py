@@ -1,6 +1,7 @@
 import os
 
-from flask import Blueprint, abort, request, jsonify
+from flask import Blueprint, abort
+from flask import request, jsonify
 
 from .errors import error_message
 from .helpers import custom_logger
@@ -50,7 +51,9 @@ def create_route():
     Returns:
         tuple: (json result of handle_create method, status code)
     """
+
     post_data = request.get_json()
+
     for entry in post_data["lpas"]:
         try:
             lpa = entry["lpa"]
@@ -129,8 +132,6 @@ def validate_route():
         return abort(400)
 
     result, status_code = endpoints.handle_validate(data=post_data)
-    if status_code == 500:
-        return abort(500)
 
     return jsonify(result), status_code
 
@@ -158,7 +159,8 @@ def actor_code_exists_route():
 
     if "" in [lpa, actor]:
         logger.debug(
-            f"Empty param in request: " f"{[i for i in [lpa, actor] if i == '']}"
+            f"Empty param in request: "
+            f"{[i for i in [lpa, actor] if i == '']}"
         )
         return abort(400)
 
@@ -190,7 +192,10 @@ def actor_code_details_route():
         return abort(400)
 
     if "" in [code]:
-        logger.debug(f"Empty param in request: " f"{[i for i in [code] if i == '']}")
+        logger.debug(
+            f"Empty param in request: "
+            f"{[i for i in [code] if i == '']}"
+        )
         return abort(400)
 
     result, status_code = endpoints.handle_code(data=post_data)

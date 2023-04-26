@@ -26,13 +26,15 @@ workflows:
           name: build and artifact
           filters: {branches:{ignore:[main]}}
 
-      - test_lambda:
-          name: run unit tests
-          filters: {branches:{ignore:[main]}}
-
       - terraform_pre_checks:
           name: terraform preflight checks
-          requires: [build and artifact, run unit tests]
+          requires: [build and artifact]
+          filters: {branches:{ignore:[main]}}
+
+      - terraform_action:
+          name: apply branch environment
+          requires: [terraform preflight checks]
+          tf_command: apply
           filters: {branches:{ignore:[main]}}
 
       - workspace_protection:
@@ -40,15 +42,9 @@ workflows:
           requires: [terraform preflight checks]
           filters: {branches:{ignore:[main]}}
 
-      - terraform_action:
-          name: apply branch environment
-          requires: [protect current workspace]
-          tf_command: apply
-          filters: {branches:{ignore:[main]}}
-
       - integration_tests:
           name: run integration tests
-          requires: [apply branch environment]
+          requires: [protect current workspace, apply branch environment]
           filters: {branches:{ignore:[main]}}
 
       - workflow_complete:
@@ -66,7 +62,7 @@ workflows:
       - terraform_action:
           name: development apply
           requires: [build and artifact]
-          tf_command: apply
+          tf_command: apply --auto-approve
           tf_workspace: development
           applycheck: true
           filters: {branches:{only:[main]}}
@@ -74,7 +70,7 @@ workflows:
       - terraform_action:
           name: preprod apply
           requires: [development apply]
-          tf_command: apply
+          tf_command: apply --auto-approve
           tf_workspace: preproduction
           applycheck: true
           filters: {branches:{only:[main]}}
@@ -94,33 +90,33 @@ workflows:
       - terraform_action:
           name: integration apply
           requires: [approve release to production]
-          tf_command: apply
+          tf_command: apply --auto-approve
           tf_workspace: integration
           applycheck: true
           filters: {branches:{only:[main]}}
+# Currently we do not want to touch production until we are sure env is stable
+#      - terraform_action:
+#          name: integration apply
+#          requires: [approve release to production]
+#          tf_command: apply --auto-approve
+#          tf_workspace: integration
+#          applycheck: true
+#          filters: {branches:{only:[main]}}
+#
+#      - terraform_action:
+#         name: production apply
+#         requires: [approve release to production]
+#         tf_command: apply --auto-approve
+#         tf_workspace: production
+#         applycheck: true
+#         filters: {branches:{only:[main]}}
+#         pact_tag_production: true
 
-      - terraform_action:
-          name: integration apply
-          requires: [approve release to production]
-          tf_command: apply
-          tf_workspace: integration
-          applycheck: true
-          filters: {branches:{only:[main]}}
-
-      - terraform_action:
-         name: production apply
-         requires: [approve release to production]
-         tf_command: apply
-         tf_workspace: production
-         applycheck: true
-         filters: {branches:{only:[main]}}
-         pact_tag_production: true
-
-  verify_pact:
-    when: << pipeline.parameters.run_verify_pact >>
-    jobs:
-      - pact_verification:
-          name: verify the latest pact
+#  verify_pact:
+#    when: << pipeline.parameters.run_verify_pact >>
+#    jobs:
+#      - pact_verification:
+#          name: verify the latest pact
 
   nightly_workspace_deletion:
     triggers:
@@ -228,7 +224,7 @@ orbs:
                 sudo chmod +x /usr/local/bin/terraform-workspace-manager
 
 jobs:
-  test_lambda:
+  build_lambda:
     executor: lpa-codes/python
     resource_class: small
     steps:
@@ -254,50 +250,23 @@ jobs:
           name: run unit tests (with pytest)
           command: |
             python -m pytest
-
-  build_lambda:
-    executor: lpa-codes/python
-    resource_class: small
-    environment:
-      AWS_REGION: eu-west-1
-      AWS_CONFIG_FILE: ~/project/aws_config
-      AWS_REGISTRY: 311462405659.dkr.ecr.eu-west-1.amazonaws.com
-    steps:
-      - checkout
-      - setup_remote_docker
-      - lpa-codes/login_codeartifact
-      - lpa-codes/cancel_redundant_builds
       - run:
-          name: build lpa codes image
-          command: docker build --file ./Dockerfile --tag lpa-codes:latest .
-          working_directory: ~/project/lambda_functions/v1
-      - run:
-          name: build lpa codes dynamodb streams image
-          command: docker build --file ./Dockerfile-dynamo --tag lpa-codes-dynamo:latest .
-          working_directory: ~/project/lambda_functions/v1
-      - run:
-          name: Set BASH_ENV
-          command: ~/project/.circleci/set_env.sh >> $BASH_ENV
-      - run:
-          name: ECR login
-          command: aws ecr get-login-password --region $AWS_REGION --profile integrations-ci | docker login --username AWS --password-stdin $AWS_REGISTRY
-      - run:
-          name: show version
-          command: echo ${TF_VAR_image_tag}
-      - run:
-          name: push to ECR
+          name: install requirements for all lambda layers
           command: |
-            docker tag lpa-codes:latest $AWS_REGISTRY/integrations/lpa-codes-lambda:$TF_WORKSPACE-$GIT_COMMIT_PROVIDER
-            docker tag lpa-codes-dynamo:latest $AWS_REGISTRY/integrations/lpa-codes-dynamo-lambda:$TF_WORKSPACE-$GIT_COMMIT_PROVIDER
-            if [ $CIRCLE_BRANCH == "main" ]; then
-              docker tag lpa-codes:latest $AWS_REGISTRY/integrations/lpa-codes-lambda:latest
-              docker tag lpa-codes:latest $AWS_REGISTRY/integrations/lpa-codes-lambda:main-$GIT_COMMIT_PROVIDER
-              docker tag lpa-codes-dynamo:latest $AWS_REGISTRY/integrations/lpa-codes-dynamo-lambda:latest
-              docker tag lpa-codes-dynamo:latest $AWS_REGISTRY/integrations/lpa-codes-dynamo-lambda:main-$GIT_COMMIT_PROVIDER
-            fi
-              docker push --all-tags $AWS_REGISTRY/integrations/lpa-codes-dynamo-lambda
-              docker push --all-tags $AWS_REGISTRY/integrations/lpa-codes-lambda
-
+            for i in $(ls -d lambda_functions/*/ | awk -F'/' '{print $2}' | grep '^v[1-9]\+')
+            do
+              export LAYER_PATH=lambda_functions/"${i}"/lambda_layers/python/lib/python3.7/site-packages
+              pip3 install -r lambda_functions/"${i}"/requirements/requirements.txt --target ./$LAYER_PATH/
+            done
+      - run:
+          name: create artifact for future stages
+          command: |
+            chmod -R 755 ./lambda_functions
+            zip -r9 /tmp/opg-data-lpa-codes.zip .
+      - persist_to_workspace:
+          root: /tmp
+          paths:
+            - opg-data-lpa-codes.zip
 
   terraform_pre_checks:
     executor: lpa-codes/python_with_tfvars
@@ -309,8 +278,12 @@ jobs:
         default: ""
     working_directory: ~/project
     steps:
-      - checkout
+      - attach_workspace:
+          at: ~/project
       - lpa-codes/terraform_install
+      - run:
+          name: unzip artifact
+          command: unzip ./opg-data-lpa-codes.zip -d .
       - run:
           name: initialize terraform - environment
           working_directory: ~/project/terraform/environment
@@ -391,8 +364,12 @@ jobs:
       WORKSPACE: << parameters.tf_workspace >>
     working_directory: ~/project
     steps:
-      - checkout
+      - attach_workspace:
+          at: ~/project
       - lpa-codes/terraform_install
+      - run:
+          name: unzip artifact
+          command: unzip ./opg-data-lpa-codes.zip -d .
       - run:
           name: Set BASH_ENV
           command: ~/project/.circleci/set_env.sh >> $BASH_ENV
