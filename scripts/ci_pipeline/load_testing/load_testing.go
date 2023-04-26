@@ -21,7 +21,7 @@ type Lpa struct{
 	Lpa   string `json:"lpa"`
 	Actor string `json:"actor"`
 	Dob   string `json:"dob"`
-}
+} 
 
 type CodeCreate struct {
 	Lpas []Lpa `json:"lpas"`
@@ -60,25 +60,25 @@ func makeRequest(url string, ch chan<-string, chCode chan<-string, chStatus chan
 	if err != nil {
 		fmt.Printf("failed to sign request: (%v)\n", err)
 	}
-
+	
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
 		fmt.Printf("failed to call remote service: (%v)\n", err)
 	}
 
 	defer res.Body.Close()
-
+	
 	secs := time.Since(start).Seconds()
-
+	
 	respbody, _ := ioutil.ReadAll(res.Body)
-
+	
 	ch <- fmt.Sprintf("%.2f elapsed with response length: %d Status: %d StartTime: %v", secs, len(respbody), res.StatusCode, time.Time(start))
 	chCode <- string(respbody)
 	chStatus <- res.StatusCode
-
+	
 }
 
-func makeRequests (baseUrl string, endpoint string, codesToAction []*strings.Reader,
+func makeRequests (baseUrl string, endpoint string, codesToAction []*strings.Reader, 
 	ch chan string, chCode chan string, chStatus chan int, signer *v4.Signer, cfg aws.Config) []string {
 	url := baseUrl + "/" + endpoint
 	start := time.Now()
@@ -98,11 +98,11 @@ func makeRequests (baseUrl string, endpoint string, codesToAction []*strings.Rea
 		} else {
 			failCount++
 		}
-	}
+	}	
 	fmt.Printf("Running %v requests\n", endpoint)
 	fmt.Printf("Run finished in %.2fs\n", time.Since(start).Seconds())
 	fmt.Printf("%v requests successful, %v requests failed.\n\n\n", okCount, failCount)
-
+	
 	return listOfAction
 }
 
@@ -135,39 +135,35 @@ func main() {
 
 	countCodesToUse = 10
 	ref = 700000000000
-
+	
 	fmt.Printf("\n===== Starting Load Test With %v Codes To Create, Validate and Revoke =====\n\n", countCodesToUse)
 
 	for i := 0; i < countCodesToUse; i++ {
-
+		
 		ref++
 		reference := strconv.FormatInt(int64(ref), 10)
-
+		
 		lpa := Lpa{
 			Lpa: reference,
-			Actor: reference,
-			Dob: "1960-06-05",
+			Actor: reference, 
+			Dob: "1960-06-05", 
 		}
-
+	
 		postanlpa := CodeCreate{
 			[]Lpa{
 				lpa,
 			},
 		}
-
+	
 		var jsonData []byte
 		jsonData, err := js.Marshal(postanlpa)
-
 		if err != nil {
 			fmt.Print(err)
 		}
 		strJsonData := string(jsonData)
-
-		fmt.Print(strJsonData)
-
 		body := strings.NewReader(strJsonData)
-
-		listOfCreate=append(listOfCreate, body)
+		
+		listOfCreate=append(listOfCreate, body)	
 
 	}
 
@@ -188,10 +184,10 @@ func main() {
 
 		lpaValidate := CodeValidate{
 			Lpa: code.Codes[0].Lpa,
-			Dob: "1960-06-05",
-			Code: code.Codes[0].Code,
+			Dob: "1960-06-05", 
+			Code: code.Codes[0].Code, 
 		}
-
+	
 		var jsonData []byte
 		jsonData, err = js.Marshal(lpaValidate)
 		if err != nil {
@@ -201,7 +197,7 @@ func main() {
 		body := strings.NewReader(strJsonData)
 
 		codesToValidate = append(codesToValidate, body)
-
+	
 	}
 
 	makeRequests (baseUrl, "validate", codesToValidate, ch, chCode, chStatus, signer, cfg)
@@ -217,9 +213,9 @@ func main() {
 		}
 
 		lpaRevoke := CodeRevoke{
-			Code: code.Codes[0].Code,
+			Code: code.Codes[0].Code, 
 		}
-
+	
 		var jsonData []byte
 		jsonData, err = js.Marshal(lpaRevoke)
 		if err != nil {
@@ -232,5 +228,5 @@ func main() {
 	}
 
 	makeRequests (baseUrl, "revoke", codesToRevoke, ch, chCode, chStatus, signer, cfg)
-
+	
 }

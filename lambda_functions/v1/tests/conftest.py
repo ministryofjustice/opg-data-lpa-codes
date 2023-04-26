@@ -5,7 +5,6 @@ from decimal import Decimal
 
 import boto3
 import pytest
-import pytz
 from flask import request
 from moto import mock_dynamodb
 import datetime
@@ -18,10 +17,9 @@ today = datetime.date.today()
 
 
 def one_year_from_now():
-    tz = pytz.utc
-    today = datetime.datetime.now(tz=tz).date()
+    today = datetime.datetime.now().date()
     one_year_from_now = datetime.datetime.combine(
-        today.replace(year=today.year + 1), datetime.time.min, tzinfo=tz
+        today.replace(year=today.year + 1), datetime.time.min
     )
 
     one_year_from_now_decimal = Decimal(one_year_from_now.strftime("%s"))

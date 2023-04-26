@@ -7,7 +7,7 @@ services:
       - "5433:5432"
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password #pragma: allowlist secret
+      POSTGRES_PASSWORD: password
       POSTGRES_DB: postgres
   broker_app:
     image: pactfoundation/pact-broker
@@ -20,64 +20,21 @@ services:
       - postgres
     environment:
       PACT_BROKER_DATABASE_USERNAME: postgres
-      PACT_BROKER_DATABASE_PASSWORD: password #pragma: allowlist secret
+      PACT_BROKER_DATABASE_PASSWORD: password
       PACT_BROKER_DATABASE_HOST: postgres
       PACT_BROKER_DATABASE_NAME: postgres
       #Uncomment these two options for debugging purposes:
       # PACT_BROKER_WEBHOOK_HOST_WHITELIST: circleci.com
       # PACT_BROKER_LOG_LEVEL: DEBUG
-  lpa-codes:
-    image: lpa-codes:latest
+  api_gateway:
     build:
       context: ./lambda_functions/v1
-    ports:
-      - "9009:8080"
-    volumes:
-      - ./lambda_functions/.aws-lambda-rie:/aws-lambda
-      - ./lambda_functions/v1/functions/lpa_codes/app:/function/app
-    depends_on:
-      - dynamodb
-      - table-helper
-    environment:
-      LOCAL_URL: host.docker.internal
-      ENVIRONMENT: local
-      API_VERSION: v1
-      AWS_ACCESS_KEY_ID: testing
-      AWS_SECRET_ACCESS_KEY: testing
-      AWS_SECURITY_TOKEN: testing
-      AWS_SESSION_TOKEN: testing
-      AWS_DEFAULT_REGION: eu-west-1
-    entrypoint: /aws-lambda/aws-lambda-rie /usr/local/bin/python -m awslambdaric app.lpa_codes.lambda_handler
-
-  lpa-codes-dynamodb:
-    image: lpa-codes-dynamodb:latest
-    build:
-      context: ./lambda_functions/v1
-      dockerfile: Dockerfile-dynamo
-    ports:
-      - "9010:8080"
-    volumes:
-      - ./lambda_functions/.aws-lambda-rie:/aws-lambda
-      - ./lambda_functions/v1/functions/lpa_codes_dynamodb_streams/app:/function/app
-    depends_on:
-      - dynamodb
-      - table-helper
-    environment:
-      LOCAL_URL: host.docker.internal
-      ENVIRONMENT: local
-      API_VERSION: v1
-    entrypoint: /aws-lambda/aws-lambda-rie /usr/local/bin/python -m awslambdaric app.dynamodb_stream.lambda_handler
-
-  table-helper:
-    build:
-      context: ./lambda_functions/v1
-      dockerfile: Dockerfile-local-helper
     ports:
       - "4343:4343"
-    depends_on:
-      - dynamodb
     volumes:
       - ./lambda_functions/v1/:/var/www/lambda_functions/v1/
+    depends_on:
+      - dynamodb
     environment:
       LOCAL_URL: host.docker.internal
       ENVIRONMENT: local
@@ -86,10 +43,17 @@ services:
       AWS_SECURITY_TOKEN: testing
       AWS_SESSION_TOKEN: testing
       AWS_DEFAULT_REGION: eu-west-1
-
+    networks:
+      default:
+        aliases:
+          - lpa-codes.local
   dynamodb:
     image: amazon/dynamodb-local:latest
     entrypoint: java
     command: "-jar DynamoDBLocal.jar -sharedDb"
     ports:
       - "8000:8000"
+    networks:
+      default:
+        aliases:
+          - lpa-codes.local
