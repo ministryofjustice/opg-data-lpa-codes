@@ -1,6 +1,5 @@
 locals {
   lambda            = "${var.lambda_prefix}-${var.environment}-${var.openapi_version}"
-  lambda_dbstream   = "${var.lambda_prefix}-dbstream-${var.environment}-${var.openapi_version}"
   lambda_underscore = replace(var.lambda_prefix, "-", "_")
 }
 
@@ -10,7 +9,7 @@ resource "aws_cloudwatch_log_group" "lambda" {
 }
 
 resource "aws_cloudwatch_log_group" "lambda_dbstream" {
-  name = "/aws/lambda/${local.lambda_dbstream}"
+  name = "/aws/lambda/${local.lambda}_dbstream"
   tags = var.tags
 }
 
@@ -49,7 +48,7 @@ resource "aws_lambda_permission" "lambda_permission" {
 }
 
 resource "aws_lambda_function" "lambda_dbstream_function" {
-  function_name = local.lambda_dbstream
+  function_name = "lpa-codes-dbstream-${var.environment}-${var.openapi_version}"
   role          = aws_iam_role.lambda_role.arn
   image_uri     = var.dbstream_image_uri
   package_type  = var.package_type
