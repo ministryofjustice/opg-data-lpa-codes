@@ -9,17 +9,19 @@ LPA Integration with microservice for the generation of registration codes: Mana
 To spin up the local environment run `docker-compose up -d`. From here you can either run
 queries directly against the endpoint such as:
 
+**Check healthcheck**
+```
+curl -X GET http://127.0.0.1:4343/v1/healthcheck
+```
+
 **Code generator operation (create example below)**
 ```
-curl -XPOST "http://localhost:9010/2015-03-31/functions/function/invocations" -d '@./docs/support_files/lambda_request.json' | jq
+curl -X POST -H 'Content-Type: application/json' -H 'Authorization: asdf1234567890' -d '@./docs/support_files/create_payload.json' http://localhost:4343/v1/create
 ```
 
 Bear in mind that your json needs to be valid against the openapi spec and that you
 may need to restart the container for your changes ot take effect. Also bear in mind
 you will need to create the default table first (command below)!!
-
-This directly invokes the lambda with a payload that resembles what is sent from API gateway.
-Currently we don't have local API gateway in front of this. Full setup coming soon.
 
 You can use this thin wrapper around dynamodb that allows us to do various CRUD operations.
 There is no efficient way of doing a table truncate in dynamodb so the best option is
@@ -82,7 +84,7 @@ so you don't need docker to be spun up to run them. You should use a virtualenv.
 Check you're in root of this repo then:
 
 ```
-virtualenv venv --python=python3.8
+virtualenv venv
 source venv/bin/activate
 pip install -r ./lambda_functions/v1/requirements/dev-requirements.txt
 python -m pytest

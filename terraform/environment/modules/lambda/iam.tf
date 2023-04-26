@@ -46,28 +46,6 @@ data "aws_iam_policy_document" "lambda" {
   }
 
   statement {
-    sid       = "AllowECRAccess"
-    effect    = "Allow"
-    resources = [var.ecr_arn]
-    actions = [
-      "ecr:SetRepositoryPolicy",
-      "ecr:GetRepositoryPolicy",
-      "ecr:GetDownloadUrlForLayer",
-      "ecr:BatchGetImage",
-      "ecr:BatchCheckLayerAvailability",
-      "ecr:GetAuthorizationToken",
-      "ecr:BatchGetImage",
-      "ecr:DescribeImages",
-      "ecr:DescribeRepositories",
-      "ecr:ListImages",
-      "ecr:PutImage",
-      "ecr:InitiateLayerUpload",
-      "ecr:UploadLayerPart",
-      "ecr:CompleteLayerUpload",
-    ]
-  }
-
-  statement {
     sid = "DynamoDBAccess"
 
     effect = "Allow"
