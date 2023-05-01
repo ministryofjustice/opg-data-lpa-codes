@@ -1,5 +1,5 @@
 #Update this date to trigger update of layers: 290416
-Flask==1.1.2
+Flask==2.3.2
 flask-lambda==0.0.4
 flask-lambda-python36==0.1.0
 itsdangerous==1.1.0

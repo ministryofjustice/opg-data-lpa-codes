@@ -2,7 +2,7 @@ pytest==5.4.2
 flake8==3.8.2
 flake8-quotes==3.2.0
 click==7.1.2
-Flask==1.1.2
+Flask==2.3.2
 flask-lambda==0.0.4
 flask-lambda-python36==0.1.0
 itsdangerous==1.1.0
