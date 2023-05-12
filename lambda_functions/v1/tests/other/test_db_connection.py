@@ -32,7 +32,7 @@ def test_db_connection(monkeypatch, caplog):
         assert "localhost" in caplog.text
 
     monkeypatch.setenv("ENVIRONMENT", "local")
-    monkeypatch.setenv("LOCAL_URL", "local_url")
+    monkeypatch.setenv("LOCAL_URL", "host.docker.internal")
 
     db_connection()
 
@@ -50,7 +50,7 @@ def test_db_connection(monkeypatch, caplog):
         assert "localhost" in caplog.text
 
     monkeypatch.setenv("ENVIRONMENT", "ci")
-    monkeypatch.setenv("LOCAL_URL", "local_url")
+    monkeypatch.setenv("LOCAL_URL", "host.docker.internal")
 
     db_connection()
 

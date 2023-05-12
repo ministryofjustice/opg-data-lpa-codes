@@ -19,7 +19,7 @@ def db_connection():
 
     if os.environ.get("ENVIRONMENT") in ["ci", "local"]:
         if os.environ.get("LOCAL_URL"):
-            url = "host.docker.internal"
+            url = os.environ.get("LOCAL_URL")
         else:
             url = "localhost"
         conn = boto3.resource(
