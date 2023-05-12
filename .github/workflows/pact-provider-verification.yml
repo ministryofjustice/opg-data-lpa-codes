@@ -16,11 +16,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - run: docker-compose up -d
-      - name: Setup tables
-        run: curl -X POST http://127.0.0.1:4343/setup/dynamodb/create/table
+      - run: docker-compose up -d api_gateway
+      - name: Wait for container
+        run: timeout 60s sh -c 'until curl -q -X POST localhost:4343/v1/create | grep 401; do echo "Waiting for table-helper to be healthy..."; sleep 2; done'
+      - name: Wait for container
+        run: timeout 60s sh -c 'until curl -q localhost:8000; do echo "Waiting for dynamodb to be healthy..."; sleep 2; done'
+      - name: Create table
+        run: curl -q -X POST http://localhost:4343/setup/dynamodb/create/table
       - name: Verify specified Pact
-        if: ${{ github.event_name == "repository_dispatch" }}
+        if: ${{ github.event_name == 'repository_dispatch' }}
         run: |
           docker-compose run --rm pact-verifier \
             --provider-version=$(git rev-parse HEAD) \
@@ -30,7 +34,7 @@ jobs:
             --password=${{ secrets.PACT_BROKER_PASSWORD }} \
             --url=${{ github.event.client_payload.pact_url }}
       - name: Verify pacts, including pending
-        if: ${{ github.event_name == "push" }}
+        if: ${{ github.event_name == 'push' }}
         run: |
           docker-compose run --rm pact-verifier \
             --provider-version=$(git rev-parse HEAD) \
@@ -38,10 +42,14 @@ jobs:
             --publish \
             --user=admin \
             --password=${{ secrets.PACT_BROKER_PASSWORD }} \
+            --consumer-version-tags=main \
             --enable-pending
       - name: Verify pacts are still upheld
-        if: ${{ github.event_name == "pull_request" }}
+        if: ${{ github.event_name == 'pull_request' }}
         run: |
           docker-compose run --rm pact-verifier \
             --provider-version=$(git rev-parse HEAD) \
-            --provider-branch=${{ github.ref_name }}
+            --provider-branch=${{ github.head_ref }} \
+            --consumer-version-tags=main
+      - if: always()
+        run: docker-compose logs

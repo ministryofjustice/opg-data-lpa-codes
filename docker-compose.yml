@@ -36,7 +36,7 @@ services:
     depends_on:
       - dynamodb
     environment:
-      LOCAL_URL: host.docker.internal
+      LOCAL_URL: dynamodb
       ENVIRONMENT: local
       AWS_ACCESS_KEY_ID: testing
       AWS_SECRET_ACCESS_KEY: testing
@@ -62,7 +62,7 @@ services:
     image: pactfoundation/pact-ref-verifier
     entrypoint:
       - pact_verifier_cli
-      - --hostname=table-helper
+      - --hostname=api_gateway
       - --port=4343
       - --base-path=/v1/
       - "--header=Authorization=asdf1234567890"
