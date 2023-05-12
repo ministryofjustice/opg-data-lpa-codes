@@ -51,5 +51,3 @@ jobs:
             --provider-version=$(git rev-parse HEAD) \
             --provider-branch=${{ github.head_ref }} \
             --consumer-version-tags=main
-      - if: always()
-        run: docker-compose logs
