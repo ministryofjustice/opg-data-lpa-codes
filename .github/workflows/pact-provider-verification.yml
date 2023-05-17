@@ -15,7 +15,7 @@ jobs:
     name: Provider verification
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - run: docker-compose up -d api_gateway
       - name: Wait for container
         run: timeout 60s sh -c 'until curl -q -X POST localhost:4343/v1/create | grep 401; do echo "Waiting for table-helper to be healthy..."; sleep 2; done'
@@ -42,7 +42,7 @@ jobs:
             --publish \
             --user=admin \
             --password=${{ secrets.PACT_BROKER_PASSWORD }} \
-            --consumer-version-tags=main \
+            --consumer-version-selectors='{"mainBranch": true}' \
             --enable-pending
       - name: Verify pacts are still upheld
         if: ${{ github.event_name == 'pull_request' }}
@@ -50,4 +50,4 @@ jobs:
           docker-compose run --rm pact-verifier \
             --provider-version=$(git rev-parse HEAD) \
             --provider-branch=${{ github.head_ref }} \
-            --consumer-version-tags=main
+            --consumer-version-selectors='{"mainBranch": true}'
