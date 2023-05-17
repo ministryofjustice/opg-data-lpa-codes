@@ -3,7 +3,7 @@
     "name": "sirius"
   },
   "provider": {
-    "name": "lpa-codes"
+    "name": "data-lpa-codes"
   },
   "interactions": [
     {
