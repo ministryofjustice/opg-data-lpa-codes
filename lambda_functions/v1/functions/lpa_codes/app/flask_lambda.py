@@ -31,7 +31,7 @@ except ImportError:
     except ImportError:
         from io import BytesIO
 
-from werkzeug.wrappers import BaseRequest
+from werkzeug.wrappers import Request
 
 
 __version__ = "0.0.4"
@@ -77,7 +77,7 @@ def make_environ(event):
     environ["wsgi.run_once"] = True
     environ["wsgi.multiprocess"] = False
 
-    BaseRequest(environ)
+    Request(environ)
 
     return environ
 
