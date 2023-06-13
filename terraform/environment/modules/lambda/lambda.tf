@@ -19,7 +19,7 @@ resource "aws_lambda_function" "lambda_function" {
   function_name    = local.lambda
   role             = aws_iam_role.lambda_role.arn
   handler          = "app.${local.lambda_underscore}.lambda_handler"
-  runtime          = "python3.7"
+  runtime          = "python3.8"
   timeout          = 20
   depends_on       = [aws_cloudwatch_log_group.lambda]
   layers           = [aws_lambda_layer_version.lambda_layer.arn]
@@ -55,7 +55,7 @@ resource "aws_lambda_function" "lambda_dbstream_function" {
   function_name    = "lpa-codes-dbstream-${var.environment}-${var.openapi_version}"
   role             = aws_iam_role.lambda_role.arn
   handler          = "dynamodb_stream.lambda_handler"
-  runtime          = "python3.7"
+  runtime          = "python3.8"
   timeout          = 5
   depends_on       = [aws_cloudwatch_log_group.lambda_dbstream]
   vpc_config {
@@ -84,7 +84,7 @@ resource "aws_lambda_layer_version" "lambda_layer" {
   source_code_hash = data.archive_file.lambda_layer_archive.output_base64sha256
   layer_name       = "requirement_${var.account.account_mapping}"
 
-  compatible_runtimes = ["python3.7"]
+  compatible_runtimes = ["python3.8"]
 
   lifecycle {
     ignore_changes = [

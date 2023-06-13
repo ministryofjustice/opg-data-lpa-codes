@@ -255,7 +255,7 @@ jobs:
           command: |
             for i in $(ls -d lambda_functions/*/ | awk -F'/' '{print $2}' | grep '^v[1-9]\+')
             do
-              export LAYER_PATH=lambda_functions/"${i}"/lambda_layers/python/lib/python3.7/site-packages
+              export LAYER_PATH=lambda_functions/"${i}"/lambda_layers/python/lib/python3.8/site-packages
               pip3 install -r lambda_functions/"${i}"/requirements/requirements.txt --target ./$LAYER_PATH/
             done
       - run:
