@@ -1,12 +1,12 @@
 #Update this date to trigger update of layers: 290416
-Flask==2.2.3
-flask-lambda==0.0.4
+awslambdaric==2.0.4
+boto3~=1.26
 flask-lambda-python36==0.1.0
+flask-lambda==0.0.4
+Flask==2.2.3
 itsdangerous==2.1.2
 Jinja2==3.1.2
 MarkupSafe==2.1.1
+python-dateutil==2.8.2
 python-dotenv==0.13.0
 Werkzeug==2.2.3
-awslambdaric==2.0.4
-python-dateutil==2.8.2
-boto3~=1.26
