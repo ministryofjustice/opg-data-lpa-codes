@@ -118,15 +118,6 @@ workflows:
 #      - pact_verification:
 #          name: verify the latest pact
 
-  nightly_workspace_deletion:
-    triggers:
-      - schedule:
-          cron: "00 00 * * *"
-          filters: {branches:{only:[main]}}
-    jobs:
-      - destroy_workspaces:
-          name: destroy non protected workspaces
-          filters: {branches:{only:[main]}}
 
 orbs:
   slack: circleci/slack@3.4.2
@@ -534,25 +525,3 @@ jobs:
           channel: opg-integrations
           failure_message: Failure of LPA Codes Workflow for Branch - ${CIRCLE_BRANCH}
           success_message: Success of LPA Codes Workflow for Branch - ${CIRCLE_BRANCH}. Ready to Merge!
-  destroy_workspaces:
-    executor: lpa-codes/python_with_tfvars
-    resource_class: small
-    working_directory: ~/project/terraform/environment
-    steps:
-      - checkout:
-          path: ~/project
-      - lpa-codes/terraform_install
-      - lpa-codes/install_workspace_manager
-      - attach_workspace: {at: ~/project}
-      - run:
-          name: initialise terraform
-          command: terraform init
-      - run:
-          name: destroy unprotected workspaces
-          command: |
-            unset TF_WORKSPACE
-            ./scripts/workspace_cleanup.sh $(terraform-workspace-manager -protected-workspaces=true -aws-account-id=288342028542 -aws-iam-role=integrations-ci)
-      - slack/status:
-          channel: opg-integrations
-          failure_message: nightly destroy of lpa codes workspaces has failed.
-          success_message: nightly destroy of lpa codes workspaces has succeeded.
