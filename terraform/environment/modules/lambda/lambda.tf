@@ -109,13 +109,15 @@ data "local_file" "requirements" {
 }
 
 data "archive_file" "lambda_archive" {
-  type        = "zip"
-  source_dir  = "../../lambda_functions/${var.openapi_version}/functions/${local.lambda_underscore}"
+  type = "zip"
+  #  source_dir  = "../../lambda_functions/${var.openapi_version}/functions/${local.lambda_underscore}"
+  source_dir  = "../../lambda_functions/${var.openapi_version}/functions/lpa_codes"
   output_path = "./lambda_${local.lambda_underscore}.zip"
 }
 
 data "archive_file" "lambda_dynamodb_stream_archive" {
-  type        = "zip"
+  type = "zip"
+  #  source_dir  = "../../lambda_functions/${var.openapi_version}/functions/${local.lambda_underscore}_dynamodb_streams"
   source_dir  = "../../lambda_functions/${var.openapi_version}/functions/lpa_codes_dynamodb_streams"
   output_path = "./lambda_lpa_dynamodb_streams_${var.openapi_version}.zip"
 }

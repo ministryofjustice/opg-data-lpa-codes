@@ -31,7 +31,8 @@ services:
   lpa-codes:
     image: lpa-codes:latest
     build:
-      context: ./lambda_functions/v1
+      context: ./lambda_functions/v1_images
+      dockerfile: Dockerfile-Function
     ports:
       - "9009:8080"
     volumes:
@@ -45,7 +46,7 @@ services:
       ENVIRONMENT: local
       API_VERSION: v1
       AWS_ACCESS_KEY_ID: testing
-      AWS_SECRET_ACCESS_KEY: testing
+      AWS_SECRET_ACCESS_KEY: testing #pragma: allowlist secret
       AWS_SECURITY_TOKEN: testing
       AWS_SESSION_TOKEN: testing
       AWS_DEFAULT_REGION: eu-west-1
@@ -54,8 +55,8 @@ services:
   lpa-codes-dynamodb:
     image: lpa-codes-dynamodb:latest
     build:
-      context: ./lambda_functions/v1
-      dockerfile: Dockerfile-dynamo
+      context: ./lambda_functions/v1_images
+      dockerfile: Dockerfile-Dynamo
     ports:
       - "9010:8080"
     volumes:
@@ -72,8 +73,8 @@ services:
 
   table-helper:
     build:
-      context: ./lambda_functions/v1
-      dockerfile: Dockerfile-local-helper
+      context: ./lambda_functions/v1_images
+      dockerfile: Dockerfile-Local-Helper
     ports:
       - "4343:4343"
     depends_on:
@@ -84,7 +85,7 @@ services:
       LOCAL_URL: host.docker.internal
       ENVIRONMENT: local
       AWS_ACCESS_KEY_ID: testing
-      AWS_SECRET_ACCESS_KEY: testing
+      AWS_SECRET_ACCESS_KEY: testing #pragma: allowlist secret
       AWS_SECURITY_TOKEN: testing
       AWS_SESSION_TOKEN: testing
       AWS_DEFAULT_REGION: eu-west-1

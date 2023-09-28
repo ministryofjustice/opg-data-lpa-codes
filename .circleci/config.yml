@@ -249,11 +249,11 @@ jobs:
       - run:
           name: get test coverage (fails below 90%)
           command: |
-            python -m pytest --cov=lambda_functions/v1/functions/lpa_codes/app/api/ --cov-fail-under=90
+            python -m pytest lambda_functions/v1/ --cov=lambda_functions/v1/functions/lpa_codes/app/api/ --cov-fail-under=90
       - run:
           name: run unit tests (with pytest)
           command: |
-            python -m pytest
+            python -m pytest lambda_functions/v1/
       - run:
           name: install requirements for all lambda layers
           command: |
@@ -286,11 +286,11 @@ jobs:
       - lpa-codes/cancel_redundant_builds
       - run:
           name: build lpa codes image
-          command: docker build --file ./Dockerfile --tag lpa-codes:latest .
+          command: docker build --file ./Dockerfile-Function --tag lpa-codes:latest .
           working_directory: ~/project/lambda_functions/v1_images
       - run:
           name: build lpa codes dynamodb streams image
-          command: docker build --file ./Dockerfile-dynamo --tag lpa-codes-dynamo:latest .
+          command: docker build --file ./Dockerfile-Dynamo --tag lpa-codes-dynamo:latest .
           working_directory: ~/project/lambda_functions/v1_images
       - run:
           name: Set BASH_ENV
