@@ -19,6 +19,10 @@ curl -X GET http://127.0.0.1:4343/v1/healthcheck
 curl -X POST -H 'Content-Type: application/json' -H 'Authorization: asdf1234567890' -d '@./docs/support_files/create_payload.json' http://localhost:4343/v1/create
 ```
 
+New image based way
+```
+curl -XPOST "http://localhost:9010/2015-03-31/functions/function/invocations" -d '@./docs/support_files/lambda_request.json' | jq
+```
 Bear in mind that your json needs to be valid against the openapi spec and that you
 may need to restart the container for your changes ot take effect. Also bear in mind
 you will need to create the default table first (command below)!!
@@ -84,7 +88,7 @@ so you don't need docker to be spun up to run them. You should use a virtualenv.
 Check you're in root of this repo then:
 
 ```
-virtualenv venv
+virtualenv venv --python=python3.8
 source venv/bin/activate
 pip install -r ./lambda_functions/v1/requirements/dev-requirements.txt
 python -m pytest

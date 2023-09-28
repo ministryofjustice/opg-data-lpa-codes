@@ -1,5 +1,6 @@
 locals {
   lambda            = "${var.lambda_prefix}-${var.environment}-${var.openapi_version}"
+  lambda_dbstream   = "${var.lambda_prefix}-dbstream-${var.environment}-${var.openapi_version}"
   lambda_underscore = replace(var.lambda_prefix, "-", "_")
 }
 
@@ -9,20 +10,24 @@ resource "aws_cloudwatch_log_group" "lambda" {
 }
 
 resource "aws_cloudwatch_log_group" "lambda_dbstream" {
-  name = "/aws/lambda/${local.lambda}_dbstream"
+  name = "/aws/lambda/${local.lambda_dbstream}"
   tags = var.tags
 }
 
 resource "aws_lambda_function" "lambda_function" {
-  filename         = data.archive_file.lambda_archive.output_path
-  source_code_hash = data.archive_file.lambda_archive.output_base64sha256
-  function_name    = local.lambda
-  role             = aws_iam_role.lambda_role.arn
-  handler          = "app.${local.lambda_underscore}.lambda_handler"
-  runtime          = "python3.8"
-  timeout          = 20
-  depends_on       = [aws_cloudwatch_log_group.lambda]
-  layers           = [aws_lambda_layer_version.lambda_layer.arn]
+  function_name = local.lambda
+  package_type  = var.package_type
+  role          = aws_iam_role.lambda_role.arn
+  timeout       = var.timeout
+  depends_on    = [aws_cloudwatch_log_group.lambda]
+
+  image_uri = var.package_type != "Image" ? null : var.image_uri
+
+  filename         = var.package_type != "Zip" ? null : data.archive_file.lambda_archive.output_path
+  source_code_hash = var.package_type != "Zip" ? null : data.archive_file.lambda_archive.output_base64sha256
+  handler          = var.package_type != "Zip" ? null : var.handler
+  runtime          = var.package_type != "Zip" ? null : var.runtime
+  layers           = var.package_type != "Zip" ? null : [aws_lambda_layer_version.lambda_layer.arn]
   vpc_config {
     subnet_ids         = var.aws_subnet_ids
     security_group_ids = [data.aws_security_group.lambda_api_ingress.id]
@@ -40,24 +45,21 @@ resource "aws_lambda_function" "lambda_function" {
   tags = var.tags
 }
 
-resource "aws_lambda_permission" "lambda_permission" {
-  statement_id  = "AllowApiLPACodesGatewayInvoke-${var.environment}-${var.openapi_version}-${var.lambda_prefix}"
-  action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.lambda_function.function_name
-  principal     = "apigateway.amazonaws.com"
-
-  source_arn = "${var.rest_api.execution_arn}/*/*/*"
-}
 
 resource "aws_lambda_function" "lambda_dbstream_function" {
-  filename         = data.archive_file.lambda_dynamodb_stream_archive.output_path
-  source_code_hash = data.archive_file.lambda_dynamodb_stream_archive.output_base64sha256
-  function_name    = "lpa-codes-dbstream-${var.environment}-${var.openapi_version}"
-  role             = aws_iam_role.lambda_role.arn
-  handler          = "dynamodb_stream.lambda_handler"
-  runtime          = "python3.8"
-  timeout          = 5
-  depends_on       = [aws_cloudwatch_log_group.lambda_dbstream]
+  function_name = local.lambda_dbstream
+  role          = aws_iam_role.lambda_role.arn
+  package_type  = var.package_type
+  timeout       = 5
+  depends_on    = [aws_cloudwatch_log_group.lambda_dbstream]
+
+  image_uri = var.package_type != "Image" ? null : var.dbstream_image_uri
+
+  filename         = var.package_type != "Zip" ? null : data.archive_file.lambda_dynamodb_stream_archive.output_path
+  source_code_hash = var.package_type != "Zip" ? null : data.archive_file.lambda_dynamodb_stream_archive.output_base64sha256
+  handler          = var.package_type != "Zip" ? null : var.dbstream_handler
+  runtime          = var.package_type != "Zip" ? null : var.runtime
+
   vpc_config {
     subnet_ids         = var.aws_subnet_ids
     security_group_ids = [data.aws_security_group.lambda_api_ingress.id]
@@ -71,6 +73,15 @@ resource "aws_lambda_function" "lambda_dbstream_function" {
     mode = "Active"
   }
   tags = var.tags
+}
+
+resource "aws_lambda_permission" "lambda_permission" {
+  statement_id  = "AllowApiLPACodesGatewayInvoke-${var.environment}-${var.openapi_version}-${var.lambda_prefix}"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.lambda_function.function_name
+  principal     = "apigateway.amazonaws.com"
+
+  source_arn = "${var.rest_api.execution_arn}/*/*/*"
 }
 
 resource "aws_lambda_event_source_mapping" "dynamodb_stream_map" {
