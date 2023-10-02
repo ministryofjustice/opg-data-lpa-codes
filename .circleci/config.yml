@@ -63,9 +63,13 @@ workflows:
           name: build and artifact
           filters: {branches:{only:[main]}}
 
+      - build_lambda_as_image:
+          name: build and push
+          filters: {branches:{only:[main]}}
+
       - terraform_action:
           name: development apply
-          requires: [build and artifact]
+          requires: [build and artifact, build and push]
           tf_command: apply --auto-approve
           tf_workspace: development
           applycheck: true
