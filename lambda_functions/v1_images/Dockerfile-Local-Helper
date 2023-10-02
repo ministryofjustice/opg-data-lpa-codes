@@ -1,0 +1,12 @@
+FROM python:3.8-slim-buster
+WORKDIR /var/www/lambda_functions/v1
+
+# Install Python Dependencies
+COPY requirements/requirements.txt requirements/requirements.txt
+COPY requirements/mock-requirements.txt requirements/mock-requirements.txt
+RUN pip install -r ./requirements/requirements.txt
+RUN pip install -r ./requirements/mock-requirements.txt
+
+EXPOSE 4343
+
+ENTRYPOINT ["python", "/var/www/lambda_functions/v1/functions/lpa_codes/app/lpa_codes_mock.py"]

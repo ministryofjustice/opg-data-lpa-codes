@@ -1,0 +1,4 @@
+#Update this date to trigger update of layers: 290416
+awslambdaric==2.0.7
+flask==2.2.5
+boto3~=1.28
