@@ -1,33 +1,6 @@
 version: '3'
 
 services:
-  postgres:
-    image: postgres
-    ports:
-      - "5433:5432"
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password #pragma: allowlist secret
-      POSTGRES_DB: postgres
-
-  broker_app:
-    image: pactfoundation/pact-broker
-    ports:
-      - "9293:80"
-      - "9292:9292"
-    links:
-      - postgres
-    depends_on:
-      - postgres
-    environment:
-      PACT_BROKER_DATABASE_USERNAME: postgres
-      PACT_BROKER_DATABASE_PASSWORD: password #pragma: allowlist secret
-      PACT_BROKER_DATABASE_HOST: postgres
-      PACT_BROKER_DATABASE_NAME: postgres
-      #Uncomment these two options for debugging purposes:
-      # PACT_BROKER_WEBHOOK_HOST_WHITELIST: circleci.com
-      # PACT_BROKER_LOG_LEVEL: DEBUG
-
   lpa-codes:
     image: lpa-codes:latest
     build:
