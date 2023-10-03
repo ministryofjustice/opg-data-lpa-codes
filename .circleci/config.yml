@@ -22,17 +22,17 @@ workflows:
   pull_request:
     when: << pipeline.parameters.run_pull_request >>
     jobs:
-      - build_lambda:
-          name: build and artifact
-          filters: {branches:{ignore:[main]}}
-
       - build_lambda_as_image:
           name: build and push
           filters: {branches:{ignore:[main]}}
 
+      - run_unit_tests:
+          name: run unit tests
+          filters: {branches:{ignore:[main]}}
+
       - terraform_pre_checks:
           name: terraform preflight checks
-          requires: [build and artifact, build and push]
+          requires: [build and push, run unit tests]
           filters: {branches:{ignore:[main]}}
 
       - terraform_action:
@@ -59,17 +59,13 @@ workflows:
   commit_to_main:
     when: << pipeline.parameters.run_commit_to_main >>
     jobs:
-      - build_lambda:
-          name: build and artifact
-          filters: {branches:{only:[main]}}
-
       - build_lambda_as_image:
           name: build and push
           filters: {branches:{only:[main]}}
 
       - terraform_action:
           name: development apply
-          requires: [build and artifact, build and push]
+          requires: [build and push]
           tf_command: apply --auto-approve
           tf_workspace: development
           applycheck: true
@@ -232,7 +228,7 @@ orbs:
                 sudo chmod +x /usr/local/bin/terraform-workspace-manager
 
 jobs:
-  build_lambda:
+  run_unit_tests:
     executor: lpa-codes/python
     resource_class: small
     steps:
@@ -242,39 +238,12 @@ jobs:
       - run:
           name: install all requirements locally
           command: |
-            for i in $(ls -d lambda_functions/*/ | awk -F'/' '{print $2}')
-            do
-              pip3 install -r ./lambda_functions/"${i}"/requirements/dev-requirements.txt
-            done
+            pip3 install -r ./lambda_functions/v1/requirements/requirements.txt
+            pip3 install -r ./lambda_functions/v1/requirements/dev-requirements.txt
       - run:
-          name: run flake8 - python PEP8 linter, complexity checker
-          command: |
-            flake8 --ignore Q000 lambda_functions
-      - run:
-          name: get test coverage (fails below 90%)
+          name: run unit tests (test coverage fails below 90%)
           command: |
             python -m pytest lambda_functions/v1/ --cov=lambda_functions/v1/functions/lpa_codes/app/api/ --cov-fail-under=90
-      - run:
-          name: run unit tests (with pytest)
-          command: |
-            python -m pytest lambda_functions/v1/
-      - run:
-          name: install requirements for all lambda layers
-          command: |
-            for i in $(ls -d lambda_functions/*/ | awk -F'/' '{print $2}' | grep '^v[1-9]\+')
-            do
-              export LAYER_PATH=lambda_functions/"${i}"/lambda_layers/python/lib/python3.8/site-packages
-              pip3 install -r lambda_functions/"${i}"/requirements/requirements.txt --target ./$LAYER_PATH/
-            done
-      - run:
-          name: create artifact for future stages
-          command: |
-            chmod -R 755 ./lambda_functions
-            zip -r9 /tmp/opg-data-lpa-codes.zip .
-      - persist_to_workspace:
-          root: /tmp
-          paths:
-            - opg-data-lpa-codes.zip
 
   build_lambda_as_image:
     executor: lpa-codes/python
@@ -284,18 +253,19 @@ jobs:
       AWS_CONFIG_FILE: ~/project/aws_config
       AWS_REGISTRY: 311462405659.dkr.ecr.eu-west-1.amazonaws.com
     steps:
-      - checkout
+      - checkout:
+          path: ~/project
       - setup_remote_docker
       - lpa-codes/login_codeartifact
       - lpa-codes/cancel_redundant_builds
       - run:
           name: build lpa codes image
           command: docker build --file ./Dockerfile-Function --tag lpa-codes:latest .
-          working_directory: ~/project/lambda_functions/v1_images
+          working_directory: ~/project/lambda_functions/v1
       - run:
           name: build lpa codes dynamodb streams image
           command: docker build --file ./Dockerfile-Dynamo --tag lpa-codes-dynamo:latest .
-          working_directory: ~/project/lambda_functions/v1_images
+          working_directory: ~/project/lambda_functions/v1
       - run:
           name: Set BASH_ENV
           command: ~/project/.circleci/set_env.sh >> $BASH_ENV
@@ -329,12 +299,9 @@ jobs:
         default: ""
     working_directory: ~/project
     steps:
-      - attach_workspace:
-          at: ~/project
+      - checkout:
+          path: ~/project
       - lpa-codes/terraform_install
-      - run:
-          name: unzip artifact
-          command: unzip ./opg-data-lpa-codes.zip -d .
       - run:
           name: initialize terraform - environment
           working_directory: ~/project/terraform/environment
@@ -415,12 +382,9 @@ jobs:
       WORKSPACE: << parameters.tf_workspace >>
     working_directory: ~/project
     steps:
-      - attach_workspace:
-          at: ~/project
+      - checkout:
+          path: ~/project
       - lpa-codes/terraform_install
-      - run:
-          name: unzip artifact
-          command: unzip ./opg-data-lpa-codes.zip -d .
       - run:
           name: Set BASH_ENV
           command: ~/project/.circleci/set_env.sh >> $BASH_ENV
@@ -461,7 +425,8 @@ jobs:
     working_directory: ~/project
     parameters:
     steps:
-      - checkout
+      - checkout:
+          path: ~/project
       - run:
           name: Set BASH_ENV
           command: ~/project/.circleci/set_env.sh >> $BASH_ENV

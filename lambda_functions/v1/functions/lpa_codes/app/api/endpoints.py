@@ -1,5 +1,3 @@
-from werkzeug.exceptions import abort
-
 from . import code_generator
 from .database import db_connection
 from .helpers import custom_logger
