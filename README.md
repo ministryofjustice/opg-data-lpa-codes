@@ -14,27 +14,25 @@ queries directly against the endpoint such as:
 curl -X GET http://127.0.0.1:4343/v1/healthcheck
 ```
 
-**Code generator operation (create example below)**
+**Create default dynamodb table**
+
+You must do this to be able to run the curl that calls the lambda function.
+
 ```
-curl -X POST -H 'Content-Type: application/json' -H 'Authorization: asdf1234567890' -d '@./docs/support_files/create_payload.json' http://localhost:4343/v1/create
+curl -X POST http://127.0.0.1:4343/setup/dynamodb/create/table
 ```
 
-New image based way
+**Code generator lambda call (create example below)**
 ```
 curl -XPOST "http://localhost:9010/2015-03-31/functions/function/invocations" -d '@./docs/support_files/lambda_request.json' | jq
 ```
 Bear in mind that your json needs to be valid against the openapi spec and that you
 may need to restart the container for your changes ot take effect. Also bear in mind
-you will need to create the default table first (command below)!!
+you will need to create the default table first!
 
 You can use this thin wrapper around dynamodb that allows us to do various CRUD operations.
 There is no efficient way of doing a table truncate in dynamodb so the best option is
 to destroy and recreate the table.
-
-**Create default dynamodb table**
-```
-curl -X POST http://127.0.0.1:4343/setup/dynamodb/create/table
-```
 
 **List all tables**
 ```
