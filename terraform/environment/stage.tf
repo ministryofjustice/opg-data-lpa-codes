@@ -34,7 +34,7 @@ module "deploy_v1" {
   aws_subnet_ids   = data.aws_subnet.private.*.id
   domain_name      = aws_api_gateway_domain_name.lpa_codes
   environment      = local.environment
-  lpa_codes_lambda = module.lpa_codes_lambda_v1.lambda
+  lpa_codes_lambda = module.lamdba_lpa_codes_v1.lambda
   openapi_version  = "v1"
   region_name      = data.aws_region.region.name
   rest_api         = aws_api_gateway_rest_api.lpa_codes
