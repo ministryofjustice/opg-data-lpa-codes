@@ -19,102 +19,102 @@ parameters:
     default: ""
 
 workflows:
-  pull_request:
-    when: << pipeline.parameters.run_pull_request >>
-    jobs:
-      - build_lambda_as_image:
-          name: build and push
-          filters: {branches:{ignore:[main]}}
-
-      - run_unit_tests:
-          name: run unit tests
-          filters: {branches:{ignore:[main]}}
-
-      - terraform_pre_checks:
-          name: terraform preflight checks
-          requires: [build and push, run unit tests]
-          filters: {branches:{ignore:[main]}}
-
-      - terraform_action:
-          name: apply branch environment
-          requires: [terraform preflight checks]
-          tf_command: apply
-          filters: {branches:{ignore:[main]}}
-
-      - workspace_protection:
-          name: protect current workspace
-          requires: [terraform preflight checks]
-          filters: {branches:{ignore:[main]}}
-
-      - integration_tests:
-          name: run integration tests
-          requires: [protect current workspace, apply branch environment]
-          filters: {branches:{ignore:[main]}}
-
-      - workflow_complete:
-          name: workflow complete
-          requires: [run integration tests]
-          filters: {branches:{ignore:[main]}}
-
-  commit_to_main:
-    when: << pipeline.parameters.run_commit_to_main >>
-    jobs:
-      - build_lambda_as_image:
-          name: build and push
-          filters: {branches:{only:[main]}}
-
-      - terraform_action:
-          name: development apply
-          requires: [build and push]
-          tf_command: apply --auto-approve
-          tf_workspace: development
-          applycheck: true
-          filters: {branches:{only:[main]}}
-
-      - terraform_action:
-          name: preprod apply
-          requires: [development apply]
-          tf_command: apply --auto-approve
-          tf_workspace: preproduction
-          applycheck: true
-          filters: {branches:{only:[main]}}
-
-      - integration_tests:
-          name: run integration tests preprod
-          workspace: preproduction
-          requires: [preprod apply]
-          filters: {branches:{only:[main]}}
-
-      - approve:
-          name: approve release to production
-          type: approval
-          requires: [run integration tests preprod]
-          filters: {branches:{only:[main]}}
-
-      - terraform_action:
-          name: integration apply
-          requires: [approve release to production]
-          tf_command: apply --auto-approve
-          tf_workspace: integration
-          applycheck: true
-          filters: {branches:{only:[main]}}
-
-      - terraform_action:
-          name: integration apply
-          requires: [approve release to production]
-          tf_command: apply --auto-approve
-          tf_workspace: integration
-          applycheck: true
-          filters: {branches:{only:[main]}}
-
-      - terraform_action:
-         name: production apply
-         requires: [approve release to production]
-         tf_command: apply --auto-approve
-         tf_workspace: production
-         applycheck: true
-         filters: {branches:{only:[main]}}
-         pact_tag_production: true
+#  pull_request:
+#    when: << pipeline.parameters.run_pull_request >>
+#    jobs:
+#      - build_lambda_as_image:
+#          name: build and push
+#          filters: {branches:{ignore:[main]}}
+#
+#      - run_unit_tests:
+#          name: run unit tests
+#          filters: {branches:{ignore:[main]}}
+#
+#      - terraform_pre_checks:
+#          name: terraform preflight checks
+#          requires: [build and push, run unit tests]
+#          filters: {branches:{ignore:[main]}}
+#
+#      - terraform_action:
+#          name: apply branch environment
+#          requires: [terraform preflight checks]
+#          tf_command: apply
+#          filters: {branches:{ignore:[main]}}
+#
+#      - workspace_protection:
+#          name: protect current workspace
+#          requires: [terraform preflight checks]
+#          filters: {branches:{ignore:[main]}}
+#
+#      - integration_tests:
+#          name: run integration tests
+#          requires: [protect current workspace, apply branch environment]
+#          filters: {branches:{ignore:[main]}}
+#
+#      - workflow_complete:
+#          name: workflow complete
+#          requires: [run integration tests]
+#          filters: {branches:{ignore:[main]}}
+#
+#  commit_to_main:
+#    when: << pipeline.parameters.run_commit_to_main >>
+#    jobs:
+#      - build_lambda_as_image:
+#          name: build and push
+#          filters: {branches:{only:[main]}}
+#
+#      - terraform_action:
+#          name: development apply
+#          requires: [build and push]
+#          tf_command: apply --auto-approve
+#          tf_workspace: development
+#          applycheck: true
+#          filters: {branches:{only:[main]}}
+#
+#      - terraform_action:
+#          name: preprod apply
+#          requires: [development apply]
+#          tf_command: apply --auto-approve
+#          tf_workspace: preproduction
+#          applycheck: true
+#          filters: {branches:{only:[main]}}
+#
+#      - integration_tests:
+#          name: run integration tests preprod
+#          workspace: preproduction
+#          requires: [preprod apply]
+#          filters: {branches:{only:[main]}}
+#
+#      - approve:
+#          name: approve release to production
+#          type: approval
+#          requires: [run integration tests preprod]
+#          filters: {branches:{only:[main]}}
+#
+#      - terraform_action:
+#          name: integration apply
+#          requires: [approve release to production]
+#          tf_command: apply --auto-approve
+#          tf_workspace: integration
+#          applycheck: true
+#          filters: {branches:{only:[main]}}
+#
+#      - terraform_action:
+#          name: integration apply
+#          requires: [approve release to production]
+#          tf_command: apply --auto-approve
+#          tf_workspace: integration
+#          applycheck: true
+#          filters: {branches:{only:[main]}}
+#
+#      - terraform_action:
+#         name: production apply
+#         requires: [approve release to production]
+#         tf_command: apply --auto-approve
+#         tf_workspace: production
+#         applycheck: true
+#         filters: {branches:{only:[main]}}
+#         pact_tag_production: true
 
 #  verify_pact:
 #    when: << pipeline.parameters.run_verify_pact >>
@@ -122,15 +122,15 @@ workflows:
 #      - pact_verification:
 #          name: verify the latest pact
 
-  nightly_workspace_deletion:
-    triggers:
-      - schedule:
-          cron: "00 00 * * *"
-          filters: {branches:{only:[main]}}
-    jobs:
-      - destroy_workspaces:
-          name: destroy non protected workspaces
-          filters: {branches:{only:[main]}}
+#  nightly_workspace_deletion:
+#    triggers:
+#      - schedule:
+#          cron: "00 00 * * *"
+#          filters: {branches:{only:[main]}}
+#    jobs:
+#      - destroy_workspaces:
+#          name: destroy non protected workspaces
+#          filters: {branches:{only:[main]}}
 
 orbs:
   slack: circleci/slack@3.4.2
