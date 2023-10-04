@@ -1,0 +1,100 @@
+permissions:
+  actions: read
+  checks: read
+  contents: read
+  deployments: none
+  issues: none
+  packages: none
+  pull-requests: none
+  repository-projects: none
+  security-events: write
+  statuses: none
+
+on:
+  workflow_call:
+    inputs:
+      tag:
+        description: 'Tag for docker image'
+        required: true
+        type: string
+      branch_name:
+        description: 'Branch we are on'
+        required: true
+        type: string
+    secrets:
+      aws_access_key_id_actions:
+        required: true
+      aws_secret_access_key_actions:
+        required: true
+
+jobs:
+  docker_build_scan_push:
+    name: Build, Scan and Push Lambdas
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - name: 'lpa-codes'
+            path: 'lambda_functions/v1'
+            dockerfile: "Function"
+          - name: 'lpa-codes-dynamo'
+            path: 'lambda_functions/v1'
+            dockerfile: "Dynamo"
+    steps:
+      - name: Check out code
+        id: checkout_code
+        uses: actions/checkout@v3.0.2
+
+      - name: Build Container
+        id: build_container
+        run: docker build --file ${{ matrix.path }}/Dockerfile-${{ matrix.dockerfile }} --tag ${{ matrix.name }}:latest ${{ matrix.path }}
+
+      - name: Trivy Image Vulnerability Scanner
+        id: trivy_scan
+        uses: aquasecurity/trivy-action@9ab158e8597f3b310480b9a69402b419bc03dbd5
+        with:
+          image-ref: ${{ matrix.name }}:latest
+          severity: 'HIGH,CRITICAL'
+          format: 'sarif'
+          security-checks: "vuln"
+          ignore-unfixed: true
+          output: 'trivy-results.sarif'
+
+      - name: Upload Trivy scan results to GitHub Security tab
+        id: trivy_upload_sarif
+        uses: github/codeql-action/upload-sarif@v2
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+      - name: Install AWS Cli
+        uses: unfor19/install-aws-cli-action@35a9630be0168293ad2afccbe06e8e9f47678d2c
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@67fbcbb121271f7775d2e7715933280b06314838
+        with:
+          aws-access-key-id: ${{ secrets.aws_access_key_id_actions }}
+          aws-secret-access-key: ${{ secrets.aws_secret_access_key_actions }}
+          aws-region: eu-west-1
+          role-to-assume: arn:aws:iam::311462405659:role/integrations-ci
+          role-duration-seconds: 900
+          role-session-name: OPGLPACodesGithubAction
+
+      - name: Login to ECR
+        id: login_ecr
+        uses: aws-actions/amazon-ecr-login@261a7de32bda11ba01f4d75c4ed6caf3739e54be
+        with:
+          registries: 311462405659
+
+      - name: Push to ECR
+        env:
+          ECR_REGISTRY: ${{ steps.login_ecr.outputs.registry }}
+          ECR_REPOSITORY: integrations/${{ matrix.name }}-lambda
+          BRANCH_NAME: ${{ inputs.branch_name }}
+        run: |
+          docker tag ${{ matrix.name }}:latest $ECR_REGISTRY/$ECR_REPOSITORY:${{ inputs.tag }}
+          if [ $BRANCH_NAME == "main" ]; then
+            docker tag ${{ matrix.name }}:latest $ECR_REGISTRY/$ECR_REPOSITORY:latest
+          fi
+            echo "skipping push for now..."
+            docker push --all-tags $ECR_REGISTRY/$ECR_REPOSITORY
