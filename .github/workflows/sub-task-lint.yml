@@ -1,0 +1,62 @@
+name: "[Terraform] Validate terraform"
+
+defaults:
+  run:
+    shell: bash
+
+on:
+  workflow_call:
+    inputs:
+      workspace:
+        description: 'Terraform workspace'
+        required: true
+        type: string
+    secrets:
+      aws_access_key_id_actions:
+        required: true
+      aws_secret_access_key_actions:
+        required: true
+      source_github_token:
+        required: true
+jobs:
+  lint-terraform:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - folder: 'environment'
+    steps:
+      - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # pin@v3
+
+      - uses: hashicorp/setup-terraform@17d4c9b8043b238f6f35641cdd8433da1e6f3867 # pin@v2.0.0
+        with:
+          terraform_version: 1.2.4
+
+      - name: configure AWS credentials for terraform
+        uses: aws-actions/configure-aws-credentials@67fbcbb121271f7775d2e7715933280b06314838 # pin@v1.7.0
+        with:
+          aws-access-key-id: ${{ secrets.aws_access_key_id_actions }}
+          aws-secret-access-key: ${{ secrets.aws_secret_access_key_actions }}
+          aws-region: eu-west-1
+          role-duration-seconds: 1800
+          role-session-name: OPGLPACodesECRGithubAction
+
+      - name: terraform fmt ${{ matrix.folder }} check
+        run: terraform fmt -check -recursive
+        working-directory: ./terraform/${{ matrix.folder }}
+
+      - name: terraform validate ${{ inputs.workspace }}
+        env:
+          TF_WORKSPACE: default
+        run: |
+          terraform --version
+          terraform init
+          echo $TF_WORKSPACE
+          terraform validate
+        working-directory: ./terraform/${{ matrix.folder }}
+
+      - name: tfsec with pr comments
+        uses: tfsec/tfsec-pr-commenter-action@v1.3.1
+        with:
+          working_directory: ./terraform/${{ matrix.folder }}
+          github_token: ${{secrets.source_github_token}}

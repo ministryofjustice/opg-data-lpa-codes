@@ -46,8 +46,10 @@ jobs:
             --enable-pending
       - name: Verify pacts are still upheld
         if: ${{ github.event_name == 'pull_request' }}
+        env:
+          HEADREF: ${{ github.head_ref }}
         run: |
           docker-compose -f docker-compose-pact.yml run --rm pact-verifier \
             --provider-version=$(git rev-parse HEAD) \
-            --provider-branch=${{ github.head_ref }} \
+            --provider-branch=${HEADREF} \
             --consumer-version-selectors='{"mainBranch": true}'
