@@ -1,0 +1,20 @@
+repo:
+  - any: ["./*"]
+
+actions:
+  - any: [".github/**"]
+
+docs:
+  - any: ["docs/**/*"]
+
+lambda:
+  - any: ["lambda_functions/**/*"]
+
+infrastructure:
+  - any: ["terraform/**/*"]
+
+scripts:
+  - any: ["scripts/**/*"]
+
+pact:
+  - any: ["pact/**/*"]
