@@ -60,7 +60,7 @@ jobs:
       aws_secret_access_key_actions: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
   development_environment_apply:
-    name: Development Environment Terraform Plan and Apply Mock Sirius
+    name: Development Environment Terraform Plan
     needs: [
       'create_tags',
       'docker_build_scan_push'
@@ -90,7 +90,7 @@ jobs:
       aws_secret_access_key_actions: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
   preproduction_integration_tests:
-    name: Development Run integration tests
+    name: Integration tests against preproduction
     needs: [
       'preproduction_environment_apply'
     ]
