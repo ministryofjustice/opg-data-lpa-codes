@@ -22,114 +22,15 @@ workflows:
   pull_request:
     when: << pipeline.parameters.run_pull_request >>
     jobs:
-      - build_lambda_as_image:
-          name: build and push
-          filters: {branches:{ignore:[main]}}
-
-      - run_unit_tests:
-          name: run unit tests
-          filters: {branches:{ignore:[main]}}
-
-      - terraform_pre_checks:
-          name: terraform preflight checks
-          requires: [build and push, run unit tests]
-          filters: {branches:{ignore:[main]}}
-
-      - terraform_action:
-          name: apply branch environment
-          requires: [terraform preflight checks]
-          tf_command: apply
-          filters: {branches:{ignore:[main]}}
-
-      - workspace_protection:
-          name: protect current workspace
-          requires: [terraform preflight checks]
-          filters: {branches:{ignore:[main]}}
-
-      - integration_tests:
-          name: run integration tests
-          requires: [protect current workspace, apply branch environment]
-          filters: {branches:{ignore:[main]}}
-
       - workflow_complete:
           name: workflow complete
-          requires: [run integration tests]
           filters: {branches:{ignore:[main]}}
 
   commit_to_main:
     when: << pipeline.parameters.run_commit_to_main >>
     jobs:
-      - build_lambda_as_image:
-          name: build and push
-          filters: {branches:{only:[main]}}
-
-      - terraform_action:
-          name: development apply
-          requires: [build and push]
-          tf_command: apply --auto-approve
-          tf_workspace: development
-          applycheck: true
-          filters: {branches:{only:[main]}}
-
-      - terraform_action:
-          name: preprod apply
-          requires: [development apply]
-          tf_command: apply --auto-approve
-          tf_workspace: preproduction
-          applycheck: true
-          filters: {branches:{only:[main]}}
-
-      - integration_tests:
-          name: run integration tests preprod
-          workspace: preproduction
-          requires: [preprod apply]
-          filters: {branches:{only:[main]}}
-
-      - approve:
-          name: approve release to production
-          type: approval
-          requires: [run integration tests preprod]
-          filters: {branches:{only:[main]}}
-
-      - terraform_action:
-          name: integration apply
-          requires: [approve release to production]
-          tf_command: apply --auto-approve
-          tf_workspace: integration
-          applycheck: true
-          filters: {branches:{only:[main]}}
-
-      - terraform_action:
-          name: integration apply
-          requires: [approve release to production]
-          tf_command: apply --auto-approve
-          tf_workspace: integration
-          applycheck: true
-          filters: {branches:{only:[main]}}
-
-      - terraform_action:
-         name: production apply
-         requires: [approve release to production]
-         tf_command: apply --auto-approve
-         tf_workspace: production
-         applycheck: true
-         filters: {branches:{only:[main]}}
-         pact_tag_production: true
-
-#  verify_pact:
-#    when: << pipeline.parameters.run_verify_pact >>
-#    jobs:
-#      - pact_verification:
-#          name: verify the latest pact
-
-  nightly_workspace_deletion:
-    triggers:
-      - schedule:
-          cron: "00 00 * * *"
-          filters: {branches:{only:[main]}}
-    jobs:
-      - destroy_workspaces:
-          name: destroy non protected workspaces
+      - workflow_complete:
+          name: workflow complete
           filters: {branches:{only:[main]}}
 
 orbs:
@@ -169,20 +70,6 @@ orbs:
           - run:
               name: Install Terraform
               command: sudo unzip terraform_${TF_VERSION}_linux_amd64.zip -d /bin
-# PINNING FOR NOW AS MAJOR VERSION BREAKS CODE
-#          - run:
-#              name: Get latest terraform version
-#              command: |
-#                export TERRAFORM_LATEST_VERSION=$(curl -X GET -s https://releases.hashicorp.com/terraform/ \
-#                | grep "<a href=\"/terraform/" \
-#                | awk -F'/' '{print $3}' | head -1)
-#                export TERRAFORM_SHA256SUM=$(curl -X GET -s \
-#                https://releases.hashicorp.com/terraform/"${TERRAFORM_LATEST_VERSION}"/terraform_"${TERRAFORM_LATEST_VERSION}"_SHA256SUMS \
-#                | grep "_linux_amd64.zip" \
-#                | head -1 \
-#                | awk '{print $1}')
-#                echo "export TF_VERSION=${TERRAFORM_LATEST_VERSION}" >> $BASH_ENV
-#                echo "export TF_SHA256SUM=${TERRAFORM_SHA256SUM}" >> $BASH_ENV
       pact_install:
         steps:
           - run:
@@ -546,10 +433,9 @@ jobs:
     resource_class: small
     working_directory: ~/project
     steps:
-      - slack/status:
-          channel: opg-integrations
-          failure_message: Failure of LPA Codes Workflow for Branch - ${CIRCLE_BRANCH}
-          success_message: Success of LPA Codes Workflow for Branch - ${CIRCLE_BRANCH}. Ready to Merge!
+      - run:
+          name: complete
+          command: echo "workflow complete"
   destroy_workspaces:
     executor: lpa-codes/python_with_tfvars
     resource_class: small

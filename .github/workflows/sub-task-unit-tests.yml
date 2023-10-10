@@ -1,0 +1,39 @@
+permissions:
+  actions: read
+  checks: read
+  contents: read
+  deployments: none
+  issues: none
+  packages: none
+  pull-requests: none
+  repository-projects: none
+  security-events: write
+  statuses: none
+
+on:
+  workflow_call:
+
+jobs:
+  unit_tests:
+    name: Run unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        id: checkout_code
+        uses: actions/checkout@v3.0.2
+
+      - name: Setup Python
+        uses: actions/setup-python@65d7f2d534ac1bc67fcd62888c5f4f3d2cb2b236
+        with:
+          python-version: '3.8'
+
+      - name: Install requirements
+        id: requirements
+        run: |
+          pip install -r ./lambda_functions/v1/requirements/requirements.txt
+          pip install -r ./lambda_functions/v1/requirements/dev-requirements.txt
+
+      - name: Run Unit Tests
+        id: unit_tests
+        run: |
+          python -m pytest lambda_functions/v1/ --cov=lambda_functions/v1/functions/lpa_codes/app/api/ --cov-fail-under=90
