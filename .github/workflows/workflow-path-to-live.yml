@@ -1,0 +1,125 @@
+name: "[Workflow] Path to Live"
+
+concurrency:
+  group: ${{ github.ref }}-${{ github.workflow }}
+
+defaults:
+  run:
+    shell: bash
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  actions: read
+  checks: read
+  contents: write
+  deployments: none
+  issues: none
+  packages: none
+  pull-requests: write
+  repository-projects: none
+  security-events: write
+  statuses: none
+
+jobs:
+  branch_name:
+    runs-on: ubuntu-latest
+    name: Extract branch name
+    outputs:
+      raw_branch: ${{ steps.extract_branch.outputs.branch_raw }}
+      formatted_branch: ${{ steps.extract_branch.outputs.branch_formatted }}
+    steps:
+      - name: extract branch
+        shell: bash
+        run: |
+          echo "branch_raw=main" >> $GITHUB_OUTPUT
+          echo "branch_formatted=main" >> $GITHUB_OUTPUT
+        id: extract_branch
+
+  create_tags:
+    name: Create Tags
+    needs: ['branch_name']
+    uses: ./.github/workflows/sub-task-tags.yml
+    with:
+      branch_name: ${{ needs.branch_name.outputs.formatted_branch }}
+    secrets:
+      source_github_token: ${{ secrets.GITHUB_TOKEN }}
+
+  docker_build_scan_push:
+    name: Build, Scan and Push
+    needs: [ 'create_tags', 'branch_name' ]
+    uses: ./.github/workflows/sub-task-docker-build.yml
+    with:
+      tag: ${{ needs.create_tags.outputs.version_tag }}
+      branch_name: ${{ needs.branch_name.outputs.formatted_branch }}
+    secrets:
+      aws_access_key_id_actions: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      aws_secret_access_key_actions: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+  development_environment_apply:
+    name: Development Environment Terraform Plan
+    needs: [
+      'create_tags',
+      'docker_build_scan_push'
+    ]
+    uses: ./.github/workflows/sub-task-terraform.yml
+    with:
+      terraform_path: 'terraform/environment'
+      image_tag: ${{ needs.create_tags.outputs.version_tag }}
+      workspace: development
+    secrets:
+      aws_access_key_id_actions: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      aws_secret_access_key_actions: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+  preproduction_environment_apply:
+    name: Preproduction Environment Terraform Plan and Apply
+    needs: [
+      'development_environment_apply',
+      'create_tags'
+    ]
+    uses: ./.github/workflows/sub-task-terraform.yml
+    with:
+      terraform_path: 'terraform/environment'
+      image_tag: ${{ needs.create_tags.outputs.version_tag }}
+      workspace: preproduction
+    secrets:
+      aws_access_key_id_actions: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      aws_secret_access_key_actions: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+  preproduction_integration_tests:
+    name: Integration tests against preproduction
+    needs: [
+      'preproduction_environment_apply'
+    ]
+    uses: ./.github/workflows/sub-task-integration-tests.yml
+    with:
+      workspace: 'preproduction'
+    secrets:
+      aws_access_key_id_actions: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      aws_secret_access_key_actions: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+  production_environment_apply:
+    name: Production Environment Terraform Plan and Apply
+    needs: [
+      'preproduction_integration_tests',
+      'create_tags'
+    ]
+    uses: ./.github/workflows/sub-task-terraform.yml
+    with:
+      terraform_path: 'terraform/environment'
+      image_tag: ${{ needs.create_tags.outputs.version_tag }}
+      workspace: production
+    secrets:
+      aws_access_key_id_actions: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      aws_secret_access_key_actions: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+  workflow_complete:
+    name: Workflow Complete
+    needs: ['production_environment_apply']
+    runs-on: ubuntu-latest
+    steps:
+      - name: Completion message
+        run: echo "Workflow Complete - Released to Live"
