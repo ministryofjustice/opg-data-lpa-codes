@@ -100,7 +100,7 @@ jobs:
       aws_secret_access_key_actions: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
   integration_tests:
-    name: Run integration tests
+    name: Integration tests against branch environment
     needs: [
       'terraform_apply',
       'create_tags',
