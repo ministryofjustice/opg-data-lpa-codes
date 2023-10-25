@@ -53,7 +53,7 @@ jobs:
     needs: [ 'create_tags', 'branch_name' ]
     uses: ./.github/workflows/sub-task-docker-build.yml
     with:
-      tag: ${{ needs.create_tags.outputs.version_tag }}
+      tag: main-${{ needs.create_tags.outputs.version_tag }}
       branch_name: ${{ needs.branch_name.outputs.formatted_branch }}
     secrets:
       aws_access_key_id_actions: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -68,7 +68,7 @@ jobs:
     uses: ./.github/workflows/sub-task-terraform.yml
     with:
       terraform_path: 'terraform/environment'
-      image_tag: ${{ needs.create_tags.outputs.version_tag }}
+      image_tag: main-${{ needs.create_tags.outputs.version_tag }}
       workspace: development
     secrets:
       aws_access_key_id_actions: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -83,7 +83,7 @@ jobs:
     uses: ./.github/workflows/sub-task-terraform.yml
     with:
       terraform_path: 'terraform/environment'
-      image_tag: ${{ needs.create_tags.outputs.version_tag }}
+      image_tag: main-${{ needs.create_tags.outputs.version_tag }}
       workspace: preproduction
     secrets:
       aws_access_key_id_actions: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -110,7 +110,7 @@ jobs:
     uses: ./.github/workflows/sub-task-terraform.yml
     with:
       terraform_path: 'terraform/environment'
-      image_tag: ${{ needs.create_tags.outputs.version_tag }}
+      image_tag: main-${{ needs.create_tags.outputs.version_tag }}
       workspace: production
     secrets:
       aws_access_key_id_actions: ${{ secrets.AWS_ACCESS_KEY_ID }}
