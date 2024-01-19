@@ -68,7 +68,7 @@ jobs:
           sarif_file: 'trivy-results.sarif'
 
       - name: Install AWS Cli
-        uses: unfor19/install-aws-cli-action@35a9630be0168293ad2afccbe06e8e9f47678d2c
+        uses: unfor19/install-aws-cli-action@e8b481e524a99f37fbd39fdc1dcb3341ab091367
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@67fbcbb121271f7775d2e7715933280b06314838
