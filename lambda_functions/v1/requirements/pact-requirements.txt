@@ -1,4 +1,4 @@
-connexion==2.7.0
+connexion==3.0.5
 swagger-ui-bundle==0.0.8
 openapi-spec-validator==0.4.0
 requests==2.31.0
