@@ -214,6 +214,19 @@ def insert_new_code(database, key, dob, code):
         }
     )
 
+
     inserted_item = get_codes(database, code=code)
+    attempts = 0
+
+    # Ensure that the newly inserted code is returned. If it is not, retry up to 5 times.
+    # We could use the ConsistentRead parameter in the get_item method, but that would add additional latency 
+    # to all requests and we only need to retry in the rare case that the newly inserted code is not returned immediately.
+    while len(inserted_item) == 0:
+        inserted_item = get_codes(database, code=code)
+        attempts += 1
+        if attempts == 5:
+            logger.error("Unable to retrieve newly inserted code after 5 attempts")
+            inserted_item = None
+            break    
 
     return inserted_item
