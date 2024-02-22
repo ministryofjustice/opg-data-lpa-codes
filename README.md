@@ -94,9 +94,9 @@ python -m pytest
 
 ## CI Pipeline
 
-When working on a ticket you should name your branch as the jira identifier of the ticket you are working on.
+When working on a ticket you should name your branch with the jira identifier of the ticket you are working on.
 
-When you push your changes to your branch and create a PR then the CircleCi workflow will run and create a branch
+When you push your changes to your branch and create a PR then the Github action will run and create a branch
 based environment in aws. This includes an api gateway instance, the lambda function and all the relevant DNS to access
 the environment.
 
