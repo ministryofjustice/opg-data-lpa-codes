@@ -69,3 +69,13 @@ services:
     command: "-jar DynamoDBLocal.jar -sharedDb"
     ports:
       - "8000:8000"
+
+  unit-tests:
+    image: unit-tests:latest
+    build:
+      context: lambda_functions/v1
+      dockerfile: Dockerfile-Tests
+    environment:
+      AWS_ACCESS_KEY_ID: testing
+      AWS_SECRET_ACCESS_KEY: testing
+      ENVIRONMENT: local
