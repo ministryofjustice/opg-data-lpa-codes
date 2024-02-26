@@ -101,7 +101,7 @@ def aws_credentials():
 @mock_aws
 @pytest.fixture(scope="function", autouse=False)
 def mock_database(aws_credentials):
-    with mock_dynamodb():
+    with mock_aws():
         print("db setup")
         mock_db = boto3.resource("dynamodb")
         table_name = test_constants["TABLE_NAME"]
