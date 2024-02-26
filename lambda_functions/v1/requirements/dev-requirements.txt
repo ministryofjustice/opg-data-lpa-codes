@@ -6,4 +6,4 @@ pytest-ordering==0.6
 requests==2.31.0
 pytz==2024.1
 moto==4.2.3
-freezegun==0.3.15
+freezegun==1.4.0
