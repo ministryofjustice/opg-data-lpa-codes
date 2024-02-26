@@ -1,7 +1,5 @@
 # opg-data-lpa-codes
 
-[![CircleCI](https://circleci.com/gh/ministryofjustice/opg-data-lpa-codes/tree/main.svg?style=svg)](https://circleci.com/gh/ministryofjustice/opg-data-lpa-codes/tree/main)
-
 LPA Integration with microservice for the generation of registration codes: Managed by opg-org-infra &amp; Terraform
 
 ## Local Environment
