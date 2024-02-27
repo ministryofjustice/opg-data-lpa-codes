@@ -1,11 +1,11 @@
 import copy
 
-from pytest_cases import CaseData, case_name, case_tags, cases_generator
+from pytest_cases import case, cases_generator
 from lambda_functions.v1.tests.conftest import test_constants
 
 
-@case_name("Set multiple existing codes to inactive")
-def case_update_multiple_codes_to_inactive() -> CaseData:
+@case(id="Set multiple existing codes to inactive")
+def case_update_multiple_codes_to_inactive():
 
     test_data = [
         {
@@ -53,8 +53,8 @@ def case_update_multiple_codes_to_inactive() -> CaseData:
     return test_data, key, code, status, expected_result
 
 
-@case_name("Set multiple existing codes to active")
-def case_update_multiple_codes_to_active() -> CaseData:
+@case(id="Set multiple existing codes to active")
+def case_update_multiple_codes_to_active():
 
     test_data = [
         {
@@ -112,8 +112,8 @@ def case_update_multiple_codes_to_active() -> CaseData:
     return test_data, key, code, status, expected_result
 
 
-@case_name("Set single existing code to inactive")
-def case_update_single_codes_to_inactive() -> CaseData:
+@case(id="Set single existing code to inactive")
+def case_update_single_codes_to_inactive():
 
     test_data = [
         {
@@ -138,8 +138,8 @@ def case_update_single_codes_to_inactive() -> CaseData:
     return test_data, key, code, status, expected_result
 
 
-@case_name("Set single existing code to active")
-def case_update_single_codes_to_active() -> CaseData:
+@case("Set single existing code to active")
+def case_update_single_codes_to_active():
 
     test_data = [
         {
@@ -164,8 +164,8 @@ def case_update_single_codes_to_active() -> CaseData:
     return test_data, key, code, status, expected_result
 
 
-@case_name("Set single existing code to active, but it's already active")
-def case_update_single_active_codes_to_active() -> CaseData:
+@case(id="Set single existing code to active, but it's already active")
+def case_update_single_active_codes_to_active():
 
     test_data = [
         {
@@ -190,8 +190,8 @@ def case_update_single_active_codes_to_active() -> CaseData:
     return test_data, key, code, status, expected_result
 
 
-@case_name("Set single existing code to inactive, but it's already inactive")
-def case_update_single_active_codes_to_active_in233() -> CaseData:
+@case(id="Set single existing code to inactive, but it's already inactive")
+def case_update_single_active_codes_to_active_in233():
 
     test_data = [
         {
@@ -216,8 +216,8 @@ def case_update_single_active_codes_to_active_in233() -> CaseData:
     return test_data, key, code, status, expected_result
 
 
-@case_name("Try to update entries but key doesn't exist")
-def case_update_nonexistant_codes_to_active() -> CaseData:
+@case(id="Try to update entries but key doesn't exist")
+def case_update_nonexistant_codes_to_active():
 
     test_data = [
         {
@@ -245,8 +245,8 @@ def case_update_nonexistant_codes_to_active() -> CaseData:
     return test_data, key, code, status, expected_result
 
 
-@case_name("Try to update entries but lpa doesn't exist")
-def case_update_nonexistant_codes_to_active_in233_1() -> CaseData:
+@case(id="Try to update entries but lpa doesn't exist")
+def case_update_nonexistant_codes_to_active_in233_1():
 
     test_data = [
         {
@@ -274,8 +274,8 @@ def case_update_nonexistant_codes_to_active_in233_1() -> CaseData:
     return test_data, key, code, status, expected_result
 
 
-@case_name("Try to update entries but actor doesn't exist")
-def case_update_nonexistant_codes_to_active_in233_2() -> CaseData:
+@case(id="Try to update entries but actor doesn't exist")
+def case_update_nonexistant_codes_to_active_in233_2():
 
     test_data = [
         {
@@ -303,8 +303,8 @@ def case_update_nonexistant_codes_to_active_in233_2() -> CaseData:
     return test_data, key, code, status, expected_result
 
 
-@case_name("Try to update code but code doesn't exist")
-def case_update_single_codes_1() -> CaseData:
+@case(id="Try to update code but code doesn't exist")
+def case_update_single_codes_1():
 
     test_data = [
         {
@@ -332,7 +332,7 @@ def case_update_single_codes_1() -> CaseData:
 @cases_generator(
     "Try and update Entries when actor and LPA is blank - {item}", item=["actor", "lpa"]
 )
-def case_update_multiple_codes_to_inactive_in233(item) -> CaseData:
+def case_update_multiple_codes_to_inactive_in233(item):
 
     test_data = [
         {
@@ -368,7 +368,7 @@ def case_update_multiple_codes_to_inactive_in233(item) -> CaseData:
     "Try and update Entries when actor and LPA is missing - {item}",
     item=["actor", "lpa"],
 )
-def case_update_multiple_codes_to_inactive_in233_1(item) -> CaseData:
+def case_update_multiple_codes_to_inactive_in233_1(item):
 
     test_data = [
         {
