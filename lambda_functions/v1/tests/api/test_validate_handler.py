@@ -1,6 +1,6 @@
 import logging
 
-from pytest_cases import cases_data, CaseDataGetter
+from pytest_cases import parametrize_with_cases
 from lambda_functions.v1.functions.lpa_codes.app.api.endpoints import handle_validate
 from lambda_functions.v1.tests.api import cases_handle_validate
 from lambda_functions.v1.tests.conftest import (
@@ -9,9 +9,8 @@ from lambda_functions.v1.tests.conftest import (
 )
 
 
-@cases_data(module=cases_handle_validate)
-def test_post(mock_database, case_data: CaseDataGetter):
-    test_data, data, expected_result, expected_status_code = case_data.get()
+@parametrize_with_cases(test_data, data, expected_result, expected_status_code)
+def test_post(mock_database, test_data, data, expected_result, expected_status_code):
     # Set up test data
     insert_test_data(test_data=test_data)
 
@@ -23,15 +22,17 @@ def test_post(mock_database, case_data: CaseDataGetter):
     remove_test_data(test_data)
 
 
-@cases_data(module=cases_handle_validate)
+@parametrize_with_cases(test_data, data, expected_result, expected_status_code)
 def test_get_codes_broken(
     mock_database,
     mock_generate_code,
     broken_get_code,
     caplog,
-    case_data: CaseDataGetter,
+    test_data, 
+    data, 
+    expected_result, 
+    expected_status_code 
 ):
-    test_data, data, expected_result, expected_status_code = case_data.get()
 
     result, status_code = handle_validate(data=data)
 
