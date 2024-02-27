@@ -1,8 +1,7 @@
 import copy
 
-from pytest_cases import CaseData, case_name, cases_generator
-
 from lambda_functions.v1.tests.conftest import test_constants
+from pytest_cases import parametrize_with_cases
 
 default_test_data = [
     {
@@ -52,8 +51,8 @@ default_test_data = [
 ]
 
 
-@case_name("Create a single code")
-def case_create_a_code_1() -> CaseData:
+@case(id="Create a single code")
+def case_create_a_code_1():
     test_data = copy.deepcopy(default_test_data)
 
     data = {
@@ -81,8 +80,8 @@ def case_create_a_code_1() -> CaseData:
     return test_data, data, expected_result, expected_status_code
 
 
-@case_name("Create multiple codes")
-def case_create_a_code_2() -> CaseData:
+@case(id="Create multiple codes")
+def case_create_a_code_2():
     test_data = copy.deepcopy(default_test_data)
 
     data = {
