@@ -11,7 +11,7 @@ from lambda_functions.v1.tests.conftest import (
 )
 
 
-@parametrize_with_cases(test_data, data, expected_result, expected_status_code)
+@parametrize_with_cases("test_data, data, expected_result, expected_status_code")
 def test_post(mock_database, mock_generate_code, test_data, data, expected_result, expected_status_code):
 
     insert_test_data(test_data)
@@ -24,7 +24,7 @@ def test_post(mock_database, mock_generate_code, test_data, data, expected_resul
     remove_test_data(test_data)
 
 
-@parametrize_with_cases(test_data, data, expected_result, expected_status_code)
+@parametrize_with_cases("test_data, data, expected_result, expected_status_code")
 def test_get_codes_broken(
     mock_database,
     mock_generate_code,
