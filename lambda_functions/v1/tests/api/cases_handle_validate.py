@@ -1,8 +1,6 @@
 from lambda_functions.v1.tests.conftest import test_constants
-from pytest_cases import case_name
 
-
-@case_name("Try to validate a code that is valid and active")
+@case(id="Try to validate a code that is valid and active")
 def case_validate_valid_code_1():
     test_data = [
         {
@@ -28,7 +26,7 @@ def case_validate_valid_code_1():
     return test_data, data, expected_result, expected_status_code
 
 
-@case_name("Try to validate a code that is valid but not active")
+@case(id="Try to validate a code that is valid but not active")
 def case_validate_valid_code_2():
     test_data = [
         {
@@ -54,7 +52,7 @@ def case_validate_valid_code_2():
     return test_data, data, expected_result, expected_status_code
 
 
-@case_name("Try to validate a code that doesn't exist")
+@case(id="Try to validate a code that doesn't exist")
 def case_validate_non_existent_code():
     test_data = [
         {
@@ -80,7 +78,7 @@ def case_validate_non_existent_code():
     return test_data, data, expected_result, expected_status_code
 
 
-@case_name("Try to validate a code with incorrect dob")
+@case(id="Try to validate a code with incorrect dob")
 def case_validate_invalid_code_1():
     test_data = [
         {
@@ -106,7 +104,7 @@ def case_validate_invalid_code_1():
     return test_data, data, expected_result, expected_status_code
 
 
-@case_name("Try to validate a code with incorrect lpa")
+@case(id="Try to validate a code with incorrect lpa")
 def case_validate_invalid_code_2():
     test_data = [
         {
@@ -128,7 +126,7 @@ def case_validate_invalid_code_2():
     return test_data, data, expected_result, expected_status_code
 
 
-@case_name("Try to validate a code that is valid and active but past its TTL")
+@case(id="Try to validate a code that is valid and active but past its TTL")
 def case_validate_valid_code_3():
     test_data = [
         {

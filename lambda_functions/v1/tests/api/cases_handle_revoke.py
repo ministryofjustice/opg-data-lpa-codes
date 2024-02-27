@@ -1,13 +1,10 @@
 import datetime
 
-
-from pytest_cases import case_name
-
 from lambda_functions.v1.functions.lpa_codes.app.api.helpers import date_formatter
 from lambda_functions.v1.tests.conftest import test_constants
 
 
-@case_name("Revoke an active code")
+@case(id="Revoke an active code")
 def case_revoke_a_code_1():
     test_data = [
         {
@@ -39,7 +36,7 @@ def case_revoke_a_code_1():
     )
 
 
-@case_name("Revoke an inactive code")
+@case(id="Revoke an inactive code")
 def case_revoke_a_code_2():
     test_data = [
         {
@@ -71,7 +68,7 @@ def case_revoke_a_code_2():
     )
 
 
-@case_name("Try to revoke a code but it doesn't exist")
+@case(id="Try to revoke a code but it doesn't exist")
 def case_revoke_a_code_3():
     test_data = [
         {
