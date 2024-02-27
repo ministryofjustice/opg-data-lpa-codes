@@ -1,5 +1,5 @@
 import boto3
-from pytest_cases import cases_data, CaseDataGetter
+from pytest_cases import parametrize_with_cases
 
 from lambda_functions.v1.functions.lpa_codes.app.api import code_generator
 from lambda_functions.v1.tests.code_generator import cases_get_codes
@@ -10,16 +10,15 @@ from lambda_functions.v1.tests.conftest import (
 import logging
 
 
-@cases_data(module=cases_get_codes)
-def test_get_codes(mock_database, caplog, case_data: CaseDataGetter):
-    (
-        test_data,
-        code,
-        key,
-        expected_result,
-        expected_result_count,
-        expected_logger_message,
-    ) = case_data.get()
+@parametrize_with_cases(test_data, code, key, expected_result, expected_result_count, expected_logger_message)
+def test_get_codes(mock_database, caplog, 
+    test_data,
+    code,
+    key,
+    expected_result,
+    expected_result_count,
+    expected_logger_message,
+):
     # Set up test data
     insert_test_data(test_data=test_data)
 
