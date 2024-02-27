@@ -7,7 +7,7 @@ from lambda_functions.v1.functions.lpa_codes.app.api import code_generator
 from lambda_functions.v1.functions.lpa_codes.app.api.database import lpa_codes_table
 from lambda_functions.v1.functions.lpa_codes.app.api.endpoints import handle_create
 
-from pytest_cases import CaseDataGetter, cases_data
+from pytest_cases import parametrize_with_cases
 
 from lambda_functions.v1.tests.api import cases_handle_create
 from lambda_functions.v1.tests.conftest import (
@@ -18,9 +18,8 @@ from lambda_functions.v1.tests.conftest import (
 from freezegun import freeze_time
 
 
-@cases_data(module=cases_handle_create)
-def test_post(mock_database, mock_generate_code, case_data: CaseDataGetter):
-    test_data, data, expected_result, expected_status_code = case_data.get()
+@parametrize_with_cases(test_data, data, expected_result, expected_status_code)
+def test_post(mock_database, mock_generate_code, test_data, data, expected_result, expected_status_code):
 
     result, status_code = handle_create(data=data)
 
@@ -31,10 +30,9 @@ def test_post(mock_database, mock_generate_code, case_data: CaseDataGetter):
         remove_test_data(expected_result["codes"])
 
 
-@cases_data(module=cases_handle_create)
+@parametrize_with_cases(test_data, data, expected_result, expected_status_code)
 @freeze_time(datetime.date.today())
-def test_data(mock_database, mock_generate_code, case_data: CaseDataGetter):
-    test_data, data, expected_result, expected_status_code = case_data.get()
+def test_data(mock_database, mock_generate_code, test_data, data, expected_result, expected_status_code):
 
     insert_test_data(test_data=test_data)
 
@@ -87,15 +85,17 @@ def test_data(mock_database, mock_generate_code, case_data: CaseDataGetter):
         remove_test_data(test_data)
 
 
-@cases_data(module=cases_handle_create)
+@parametrize_with_cases(test_data, data, expected_result, expected_status_code)
 def test_get_codes_broken(
     mock_database,
     mock_generate_code,
     broken_get_code,
     caplog,
-    case_data: CaseDataGetter,
+    test_data, 
+    data, 
+    expected_result, 
+    expected_status_code 
 ):
-    test_data, data, expected_result, expected_status_code = case_data.get()
 
     result, status_code = handle_create(data=data)
 
@@ -104,15 +104,17 @@ def test_get_codes_broken(
         assert "get_codes" in caplog.text
 
 
-@cases_data(module=cases_handle_create)
+@parametrize_with_cases(test_data, data, expected_result, expected_status_code)
 def test_generate_code_broken(
     mock_database,
     mock_generate_code,
     broken_generate_code,
     caplog,
-    case_data: CaseDataGetter,
+    test_data, 
+    data, 
+    expected_result, 
+    expected_status_code 
 ):
-    test_data, data, expected_result, expected_status_code = case_data.get()
 
     result, status_code = handle_create(data=data)
 
@@ -121,15 +123,17 @@ def test_generate_code_broken(
         assert "generate_code" in caplog.text
 
 
-@cases_data(module=cases_handle_create)
+@parametrize_with_cases(test_data, data, expected_result, expected_status_code)
 def test_insert_new_code_broken(
     mock_database,
     mock_generate_code,
     broken_insert_new_code,
     caplog,
-    case_data: CaseDataGetter,
+    test_data, 
+    data, 
+    expected_result, 
+    expected_status_code 
 ):
-    test_data, data, expected_result, expected_status_code = case_data.get()
 
     result, status_code = handle_create(data=data)
 
