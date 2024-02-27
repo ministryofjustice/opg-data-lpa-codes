@@ -2,7 +2,7 @@ import datetime
 
 from lambda_functions.v1.functions.lpa_codes.app.api.helpers import date_formatter
 from lambda_functions.v1.tests.conftest import test_constants
-from pytest_cases import parametrize_with_cases
+from pytest_cases import case
 
 
 @case(id="Revoke an active code")

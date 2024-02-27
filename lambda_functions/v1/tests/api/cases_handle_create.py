@@ -1,7 +1,7 @@
 import copy
 
 from lambda_functions.v1.tests.conftest import test_constants
-from pytest_cases import parametrize_with_cases
+from pytest_cases import case
 
 default_test_data = [
     {

@@ -1,5 +1,5 @@
 from lambda_functions.v1.tests.conftest import test_constants
-from pytest_cases import parametrize_with_cases
+from pytest_cases import case
 
 @case(id="Try to validate a code that is valid and active")
 def case_validate_valid_code_1():
