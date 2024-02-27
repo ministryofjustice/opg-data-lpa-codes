@@ -1,4 +1,4 @@
-from pytest_cases import CaseData, case_name
+from pytest_cases import parametrize_with_cases
 from lambda_functions.v1.tests.conftest import test_constants
 
 default_test_data = [
@@ -45,8 +45,8 @@ default_test_data = [
 ]
 
 
-@case_name("Code is unique")
-def case_code_is_unique() -> CaseData:
+@case(id="Code is unique")
+def case_code_is_unique():
 
     test_data = default_test_data
 
@@ -57,8 +57,8 @@ def case_code_is_unique() -> CaseData:
     return test_data, code, logger_message, expected_result
 
 
-@case_name("Code is not unique")
-def case_code_is_not_unique() -> CaseData:
+@case(id="Code is not unique")
+def case_code_is_not_unique():
 
     test_data = default_test_data
 

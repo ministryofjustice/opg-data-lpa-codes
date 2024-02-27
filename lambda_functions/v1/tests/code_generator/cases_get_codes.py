@@ -1,6 +1,6 @@
 from copy import deepcopy
 
-from pytest_cases import CaseData, case_name
+from pytest_cases import parametrize_with_cases
 
 from lambda_functions.v1.tests.conftest import test_constants
 
@@ -78,8 +78,8 @@ default_test_data = [
 ]
 
 
-@case_name("Get codes by key")
-def case_get_codes_1() -> CaseData:
+@case(id="Get codes by key")
+def case_get_codes_1():
     test_data = deepcopy(default_test_data)
     code = None
     key = {
@@ -100,8 +100,8 @@ def case_get_codes_1() -> CaseData:
     )
 
 
-@case_name("Get codes by key that doesn't exist")
-def case_get_codes_11() -> CaseData:
+@case(id="Get codes by key that doesn't exist")
+def case_get_codes_11():
     test_data = deepcopy(default_test_data)
     code = None
     key = {
@@ -122,8 +122,8 @@ def case_get_codes_11() -> CaseData:
     )
 
 
-@case_name("Get codes by lpa that doesn't exist")
-def case_get_codes_11_in233() -> CaseData:
+@case(id="Get codes by lpa that doesn't exist")
+def case_get_codes_11_in233():
     test_data = deepcopy(default_test_data)
     code = None
     key = {
@@ -144,8 +144,8 @@ def case_get_codes_11_in233() -> CaseData:
     )
 
 
-@case_name("Get codes by actor that doesn't exist")
-def case_get_codes_11_in233_1() -> CaseData:
+@case(id="Get codes by actor that doesn't exist")
+def case_get_codes_11_in233_1():
     test_data = deepcopy(default_test_data)
     code = None
     key = {
@@ -166,8 +166,8 @@ def case_get_codes_11_in233_1() -> CaseData:
     )
 
 
-@case_name("Get codes by code")
-def case_get_codes_2() -> CaseData:
+@case(id="Get codes by code")
+def case_get_codes_2():
     test_data = deepcopy(default_test_data)
     code = "ZY577rXcRVLY"
     key = None
@@ -186,7 +186,7 @@ def case_get_codes_2() -> CaseData:
     )
 
 
-@case_name("Get codes by code that doesn't exist")
+@case(id="Get codes by code that doesn't exist")
 def case_get_codes_21() -> CaseData:
     test_data = deepcopy(default_test_data)
     code = "fake_code"
@@ -205,7 +205,7 @@ def case_get_codes_21() -> CaseData:
     )
 
 
-@case_name("Get codes by both code and key")
+@case(id="Get codes by both code and key")
 def case_get_codes_3() -> CaseData:
     """
     If both key and code are supplied, code should be preferred as it is guaranteed
@@ -233,7 +233,7 @@ def case_get_codes_3() -> CaseData:
     )
 
 
-@case_name("Get codes by key that is past TTL")
+@case(id="Get codes by key that is past TTL")
 def case_get_codes_13() -> CaseData:
     """
     TTL rows are not removed immediately, to be sure you are not returning any expired
@@ -272,8 +272,8 @@ def case_get_codes_13() -> CaseData:
     )
 
 
-@case_name("Get codes by code that is past TTL")
-def case_get_codes_12() -> CaseData:
+@case(id="Get codes by code that is past TTL")
+def case_get_codes_12():
     """
     TTL rows are not removed immediately, to be sure you are not returning any expired
     rows in a query you should exclude items past their TTL time manually
