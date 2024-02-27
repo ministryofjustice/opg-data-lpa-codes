@@ -2,7 +2,7 @@ import datetime
 
 import boto3
 
-from pytest_cases import cases_data, CaseDataGetter
+from pytest_cases import parametrize_with_cases
 
 from lambda_functions.v1.functions.lpa_codes.app.api.code_generator import (
     update_codes,
@@ -17,9 +17,8 @@ from lambda_functions.v1.tests.conftest import (
 )
 
 
-@cases_data(module=cases_update_codes)
-def test_update_codes_by_key(mock_database, case_data: CaseDataGetter):
-    test_data, key, code, status, expected_result = case_data.get()
+@parametrize_with_cases(test_data, key, code, status, expected_result)
+def test_update_codes_by_key(mock_database, test_data, key, code, status, expected_result):
 
     before_test_data = insert_test_data(test_data=test_data)
 
