@@ -1,6 +1,6 @@
 import copy
 
-from pytest_cases import parametrize_with_cases
+from pytest_cases import case, cases_generator
 from lambda_functions.v1.tests.conftest import test_constants
 
 
