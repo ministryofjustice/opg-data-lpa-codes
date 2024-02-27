@@ -13,7 +13,7 @@ from lambda_functions.v1.tests.conftest import insert_test_data, remove_test_dat
 from freezegun import freeze_time
 
 
-@parametrize_with_cases(test_data, data, expected_result, expected_status_code)
+@parametrize_with_cases(test_data, data, expected_result, expected_last_updated_date, expected_status_code)
 @freeze_time(datetime.date.today())
 def test_post(mock_database, 
     test_data,
