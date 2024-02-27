@@ -12,7 +12,7 @@ from lambda_functions.v1.tests.conftest import (
 
 
 @parametrize_with_cases(test_data, data, expected_result, expected_status_code)
-def test_post(mock_database, mock_generate_code, test_data, data, expected_result, expected_status_code ):
+def test_post(mock_database, mock_generate_code, test_data, data, expected_result, expected_status_code):
 
     insert_test_data(test_data)
 
