@@ -8,12 +8,11 @@ from lambda_functions.v1.functions.lpa_codes.app.api.code_generator import (
     insert_new_code,
 )
 from lambda_functions.v1.functions.lpa_codes.app.api.helpers import date_formatter
-from lambda_functions.v1.tests.code_generator import cases_insert_new_code
 from lambda_functions.v1.tests.conftest import test_constants
 from freezegun import freeze_time
 
 
-@parametrize_with_cases(key, code, dob, expected_result, expected_status_row)
+@parametrize_with_cases("key, code, dob, expected_result, expected_row")
 @freeze_time(datetime.date.today())
 def test_insert_new_code(mock_database, key, code, dob, expected_result, expected_row):
     db = boto3.resource("dynamodb")
