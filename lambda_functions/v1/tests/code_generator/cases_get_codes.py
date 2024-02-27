@@ -187,7 +187,7 @@ def case_get_codes_2():
 
 
 @case(id="Get codes by code that doesn't exist")
-def case_get_codes_21() -> CaseData:
+def case_get_codes_21():
     test_data = deepcopy(default_test_data)
     code = "fake_code"
     key = None
@@ -206,7 +206,7 @@ def case_get_codes_21() -> CaseData:
 
 
 @case(id="Get codes by both code and key")
-def case_get_codes_3() -> CaseData:
+def case_get_codes_3():
     """
     If both key and code are supplied, code should be preferred as it is guaranteed
     to be unique
@@ -234,7 +234,7 @@ def case_get_codes_3() -> CaseData:
 
 
 @case(id="Get codes by key that is past TTL")
-def case_get_codes_13() -> CaseData:
+def case_get_codes_13():
     """
     TTL rows are not removed immediately, to be sure you are not returning any expired
     rows in a query you should exclude items past their TTL time manually
