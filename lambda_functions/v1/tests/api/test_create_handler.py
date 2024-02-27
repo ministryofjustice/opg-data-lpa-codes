@@ -9,7 +9,6 @@ from lambda_functions.v1.functions.lpa_codes.app.api.endpoints import handle_cre
 
 from pytest_cases import parametrize_with_cases
 
-from lambda_functions.v1.tests.api import cases_handle_create
 from lambda_functions.v1.tests.conftest import (
     remove_test_data,
     test_constants,
@@ -18,7 +17,7 @@ from lambda_functions.v1.tests.conftest import (
 from freezegun import freeze_time
 
 
-@parametrize_with_cases(test_data, data, expected_result, expected_status_code)
+@parametrize_with_cases("test_data, data, expected_result, expected_status_code")
 def test_post(mock_database, mock_generate_code, test_data, data, expected_result, expected_status_code):
 
     result, status_code = handle_create(data=data)
@@ -30,7 +29,7 @@ def test_post(mock_database, mock_generate_code, test_data, data, expected_resul
         remove_test_data(expected_result["codes"])
 
 
-@parametrize_with_cases(test_data, data, expected_result, expected_status_code)
+@parametrize_with_cases("test_data, data, expected_result, expected_status_code")
 @freeze_time(datetime.date.today())
 def test_data(mock_database, mock_generate_code, test_data, data, expected_result, expected_status_code):
 
@@ -85,7 +84,7 @@ def test_data(mock_database, mock_generate_code, test_data, data, expected_resul
         remove_test_data(test_data)
 
 
-@parametrize_with_cases(test_data, data, expected_result, expected_status_code)
+@parametrize_with_cases("test_data, data, expected_result, expected_status_code")
 def test_get_codes_broken(
     mock_database,
     mock_generate_code,
@@ -104,7 +103,7 @@ def test_get_codes_broken(
         assert "get_codes" in caplog.text
 
 
-@parametrize_with_cases(test_data, data, expected_result, expected_status_code)
+@parametrize_with_cases("test_data, data, expected_result, expected_status_code")
 def test_generate_code_broken(
     mock_database,
     mock_generate_code,
@@ -123,7 +122,7 @@ def test_generate_code_broken(
         assert "generate_code" in caplog.text
 
 
-@parametrize_with_cases(test_data, data, expected_result, expected_status_code)
+@parametrize_with_cases("test_data, data, expected_result, expected_status_code")
 def test_insert_new_code_broken(
     mock_database,
     mock_generate_code,

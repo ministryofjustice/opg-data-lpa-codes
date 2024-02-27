@@ -2,14 +2,13 @@ import logging
 
 from pytest_cases import parametrize_with_cases
 from lambda_functions.v1.functions.lpa_codes.app.api.endpoints import handle_validate
-from lambda_functions.v1.tests.api import cases_handle_validate
 from lambda_functions.v1.tests.conftest import (
     insert_test_data,
     remove_test_data,
 )
 
 
-@parametrize_with_cases(test_data, data, expected_result, expected_status_code)
+@parametrize_with_cases("test_data, data, expected_result, expected_status_code")
 def test_post(mock_database, test_data, data, expected_result, expected_status_code):
     # Set up test data
     insert_test_data(test_data=test_data)
@@ -22,7 +21,7 @@ def test_post(mock_database, test_data, data, expected_result, expected_status_c
     remove_test_data(test_data)
 
 
-@parametrize_with_cases(test_data, data, expected_result, expected_status_code)
+@parametrize_with_cases("test_data, data, expected_result, expected_status_code")
 def test_get_codes_broken(
     mock_database,
     mock_generate_code,

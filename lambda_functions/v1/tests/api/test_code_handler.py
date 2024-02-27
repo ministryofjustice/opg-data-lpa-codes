@@ -3,7 +3,6 @@ from lambda_functions.v1.functions.lpa_codes.app.api.endpoints import handle_cod
 
 from pytest_cases import parametrize_with_cases
 
-from lambda_functions.v1.tests.api import cases_handle_code
 from lambda_functions.v1.tests.conftest import (
     remove_test_data,
     test_constants,
