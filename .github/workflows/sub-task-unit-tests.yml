@@ -25,7 +25,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@2f078955e4d0f34cc7a8b0108b2eb7bbe154438e
         with:
-          python-version: '3.8'
+          python-version: '3.11'
 
       - name: Install requirements
         id: requirements

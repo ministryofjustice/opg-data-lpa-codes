@@ -86,6 +86,7 @@ Check you're in root of this repo then:
 ```
 virtualenv venv --python=python3.8
 source venv/bin/activate
+pip install -r ./lambda_functions/v1/requirements/requirements.txt
 pip install -r ./lambda_functions/v1/requirements/dev-requirements.txt
 python -m pytest
 ```
