@@ -1,21 +1,18 @@
 import logging
 
 import boto3
-from pytest_cases import cases_data, CaseDataGetter
+from pytest_cases import parametrize_with_cases
 
 from lambda_functions.v1.functions.lpa_codes.app.api.code_generator import (
     check_code_unique,
 )
-from lambda_functions.v1.tests.code_generator import cases_check_code_unique
 from lambda_functions.v1.tests.conftest import (
     insert_test_data,
     remove_test_data,
 )
 
-
-@cases_data(module=cases_check_code_unique)
-def test_check_code_unique(mock_database, caplog, case_data: CaseDataGetter):
-    test_data, code, logger_message, expected_result = case_data.get()
+@parametrize_with_cases("test_data, code, logger_message, expected_result")
+def test_check_code_unique(mock_database, caplog, test_data, code, logger_message, expected_result):
 
     insert_test_data(test_data=test_data)
     db = boto3.resource("dynamodb")
