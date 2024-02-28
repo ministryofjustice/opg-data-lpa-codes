@@ -1,6 +1,6 @@
 import copy
 
-from pytest_cases import case, cases_generator
+from pytest_cases import case, parametrize, parametrize_with_cases
 from lambda_functions.v1.tests.conftest import test_constants
 
 
@@ -329,9 +329,8 @@ def case_update_single_codes_1():
     return test_data, key, code, status, expected_result
 
 
-@cases_generator(
-    "Try and update Entries when actor and LPA is blank - {item}", item=["actor", "lpa"]
-)
+@case(id="Try and update Entries when actor and LPA is blank")
+@parametrize(item=["actor", "lpa"])
 def case_update_multiple_codes_to_inactive_in233(item):
 
     test_data = [
@@ -364,10 +363,8 @@ def case_update_multiple_codes_to_inactive_in233(item):
     return test_data, key, code, status, expected_result
 
 
-@cases_generator(
-    "Try and update Entries when actor and LPA is missing - {item}",
-    item=["actor", "lpa"],
-)
+@case(id="Try and update Entries when actor and LPA is missing")
+@parametrize(item=["actor", "lpa"])
 def case_update_multiple_codes_to_inactive_in233_1(item):
 
     test_data = [
