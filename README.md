@@ -1,7 +1,5 @@
 # opg-data-lpa-codes
 
-[![CircleCI](https://circleci.com/gh/ministryofjustice/opg-data-lpa-codes/tree/main.svg?style=svg)](https://circleci.com/gh/ministryofjustice/opg-data-lpa-codes/tree/main)
-
 LPA Integration with microservice for the generation of registration codes: Managed by opg-org-infra &amp; Terraform
 
 ## Local Environment
@@ -88,15 +86,16 @@ Check you're in root of this repo then:
 ```
 virtualenv venv --python=python3.8
 source venv/bin/activate
+pip install -r ./lambda_functions/v1/requirements/requirements.txt
 pip install -r ./lambda_functions/v1/requirements/dev-requirements.txt
 python -m pytest
 ```
 
 ## CI Pipeline
 
-When working on a ticket you should name your branch as the jira identifier of the ticket you are working on.
+When working on a ticket you should name your branch with the jira identifier of the ticket you are working on.
 
-When you push your changes to your branch and create a PR then the CircleCi workflow will run and create a branch
+When you push your changes to your branch and create a PR then the Github action will run and create a branch
 based environment in aws. This includes an api gateway instance, the lambda function and all the relevant DNS to access
 the environment.
 
