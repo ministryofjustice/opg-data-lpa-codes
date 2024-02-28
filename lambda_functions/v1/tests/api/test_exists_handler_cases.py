@@ -1,14 +1,12 @@
 import datetime
 
-
-from pytest_cases import CaseData, case_name
-
 from lambda_functions.v1.functions.lpa_codes.app.api.helpers import date_formatter
 from lambda_functions.v1.tests.conftest import test_constants
+from pytest_cases import case
 
 
-@case_name("Check if an active code exists for an actor")
-def case_actor_code_exists_1() -> CaseData:
+@case(id="Check if an active code exists for an actor")
+def case_actor_code_exists_1():
     test_data = [
         {
             "active": True,
@@ -69,8 +67,8 @@ def case_actor_code_exists_1() -> CaseData:
     return test_data, data, expected_result, expected_status_code
 
 
-@case_name("Returns null if no active codes in query result")
-def case_actor_code_exists_2() -> CaseData:
+@case(id="Returns null if no active codes in query result")
+def case_actor_code_exists_2():
     test_data = [
         {
             "active": False,
@@ -109,8 +107,8 @@ def case_actor_code_exists_2() -> CaseData:
     return test_data, data, expected_result, expected_status_code
 
 
-@case_name("Returns null with 200 if no match found")
-def case_actor_code_exists_3() -> CaseData:
+@case(id="Returns null with 200 if no match found")
+def case_actor_code_exists_3():
     test_data = [
         {
             "active": True,
@@ -149,8 +147,8 @@ def case_actor_code_exists_3() -> CaseData:
     return test_data, data, expected_result, expected_status_code
 
 
-@case_name("Returns null with 200 if no match found")
-def case_actor_code_exists_4() -> CaseData:
+@case(id="Returns null with 200 if no match found")
+def case_actor_code_exists_4():
     test_data = [
         {
             "active": True,
