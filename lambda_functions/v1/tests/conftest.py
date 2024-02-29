@@ -98,7 +98,6 @@ def aws_credentials():
     os.environ["AWS_DEFAULT_REGION"] = "eu-west-1"
 
 
-@mock_aws
 @pytest.fixture(scope="function", autouse=False)
 def mock_database(aws_credentials):
     with mock_aws():
