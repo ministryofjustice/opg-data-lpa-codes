@@ -19,9 +19,15 @@ today = datetime.date.today()
 def one_year_from_now():
     tz = pytz.utc
     today = datetime.datetime.now(tz=tz).date()
-    one_year_from_now = datetime.datetime.combine(
-        today.replace(year=today.year + 1), datetime.time.min, tzinfo=tz
-    )
+    # Set the expiry date to be one year from now except on the 29th Feb
+    if today.month == 2 and today.day == 29:
+        one_year_from_now = datetime.datetime.combine(
+            today.replace(year=today.year + 1, month=3, day=1), datetime.time.min, tzinfo=tz
+        )
+    else:
+        one_year_from_now = datetime.datetime.combine(
+            today.replace(year=today.year + 1), datetime.time.min, tzinfo=tz
+        )
 
     one_year_from_now_decimal = Decimal(one_year_from_now.strftime("%s"))
 
