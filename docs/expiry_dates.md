@@ -16,7 +16,7 @@ As described above, it is done on creation, in the code creation endpoint, in la
 Expiry date is set as ttl field in the terraform, so dynamo will automatically remove these
 
 ## Does the code handle expired codes gracefully?
-The code for searching dynamo has extra checking to handle the 48 hr period which AWS say may elapse before deletion actually happens. Other than that, expired codes simply get deleted so no longet will appear
+The code for searching dynamo has extra checking to handle the 48 hr period which AWS say may elapse before deletion actually happens. Other than that, expired codes simply get deleted so no longer will appear
 
 ## Changes required for new paper code support
 For Modernise codes the difference we will want to
