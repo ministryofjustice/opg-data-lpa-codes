@@ -13,7 +13,7 @@ default_test_data = [
         "generated_date": "29/03/2020",
         "last_updated_date": "25/08/2020",
         "dob": "1960-06-05",
-        "lpa": "700000000138",
+        "lpa": "7000-0000-0138",
     },
     {
         "active": True,
@@ -23,7 +23,7 @@ default_test_data = [
         "generated_date": "27/06/2019",
         "last_updated_date": "03/02/2020",
         "dob": "1960-06-05",
-        "lpa": "700000000138",
+        "lpa": "7000-0000-0138",
     },
     {
         "active": True,
@@ -33,7 +33,7 @@ default_test_data = [
         "generated_date": "05/04/2020",
         "last_updated_date": "28/02/2021",
         "dob": "1960-06-05",
-        "lpa": "700000000138",
+        "lpa": "7000-0000-0138",
     },
     {
         "active": False,
@@ -43,7 +43,7 @@ default_test_data = [
         "generated_date": "07/08/2019",
         "last_updated_date": "24/03/2020",
         "dob": "1960-06-05",
-        "lpa": "700000000138",
+        "lpa": "7000-0000-0138",
     },
     {
         "active": False,
@@ -53,7 +53,7 @@ default_test_data = [
         "generated_date": "06/08/2019",
         "last_updated_date": "01/12/2019",
         "dob": "1960-06-05",
-        "lpa": "700000000138",
+        "lpa": "7000-0000-0138",
     },
     {
         "active": False,
@@ -63,7 +63,7 @@ default_test_data = [
         "generated_date": "03/01/2020",
         "last_updated_date": "11/04/2020",
         "dob": "1960-06-05",
-        "lpa": "700000000138",
+        "lpa": "7000-0000-0138",
     },
     {
         "active": False,
@@ -73,7 +73,7 @@ default_test_data = [
         "generated_date": "09/03/2020",
         "last_updated_date": "17/10/2020",
         "dob": "1960-06-05",
-        "lpa": "700000000138",
+        "lpa": "7000-0000-0138",
     },
 ]
 
@@ -83,7 +83,7 @@ def case_get_codes_1():
     test_data = deepcopy(default_test_data)
     code = None
     key = {
-        "lpa": "700000000138",
+        "lpa": "7000-0000-0138",
         "actor": "mediumblue",
     }
 
@@ -149,7 +149,7 @@ def case_get_codes_11_in233_1():
     test_data = deepcopy(default_test_data)
     code = None
     key = {
-        "lpa": "700000000138",
+        "lpa": "7000-0000-0138",
         "actor": "fake_actor",
     }
 
@@ -215,7 +215,7 @@ def case_get_codes_3():
     test_data = deepcopy(default_test_data)
     code = "ZY577rXcRVLY"
     key = {
-        "lpa": "700000000138",
+        "lpa": "7000-0000-0138",
         "actor": "mediumblue",
     }
 
@@ -250,12 +250,12 @@ def case_get_codes_13():
             "generated_date": "2019-05-25",
             "last_updated_date": "2019-05-25",
             "dob": "1960-06-05",
-            "lpa": "700000000138",
+            "lpa": "7000-0000-0138",
         },
     ]
     code = None
     key = {
-        "lpa": "700000000138",
+        "lpa": "7000-0000-0138",
         "actor": "mediumblue",
     }
 
@@ -289,7 +289,7 @@ def case_get_codes_12():
             "generated_date": "2019-05-25",
             "last_updated_date": "2019-05-25",
             "dob": "1960-06-05",
-            "lpa": "700000000138",
+            "lpa": "7000-0000-0138",
         },
     ]
     code = "YsSu4iAztUXm"
