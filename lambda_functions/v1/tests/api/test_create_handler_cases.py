@@ -5,7 +5,7 @@ from pytest_cases import case
 
 default_test_data = [
     {
-        "lpa": "7000-0000-0092",
+        "lpa": "700000000092",
         "actor": "12ad81a9-f89d-4804-99f5-7c0c8669ac9b",
         "code": "code_1",
         "active": True,
@@ -16,7 +16,7 @@ default_test_data = [
         "status_details": "Generated",
     },
     {
-        "lpa": "7000-0000-0092",
+        "lpa": "700000000092",
         "actor": "12ad81a9-f89d-4804-99f5-7c0c8669ac9b",
         "code": "code_2",
         "active": True,
@@ -58,7 +58,7 @@ def case_create_a_code_1():
     data = {
         "lpas": [
             {
-                "lpa": "7000-0000-0092",
+                "lpa": "700000000092",
                 "actor": "12ad81a9-f89d-4804-99f5-7c0c8669ac9b",
                 "dob": "1960-06-05",
             }
@@ -70,7 +70,7 @@ def case_create_a_code_1():
     expected_result = {
         "codes": [
             {
-                "lpa": "7000-0000-0092",
+                "lpa": "700000000092",
                 "actor": "12ad81a9-f89d-4804-99f5-7c0c8669ac9b",
                 "code": code,
             }

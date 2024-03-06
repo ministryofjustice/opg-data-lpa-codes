@@ -15,7 +15,7 @@ def case_actor_code_exists_1():
             "dob": "1960-06-05",
             "expiry_date": test_constants["EXPIRY_DATE"],
             "last_updated_date": "2019-12-26",
-            "lpa": "7000-0000-0095",
+            "lpa": "700000000095",
             "generated_date": "2019-09-31",
             "status_details": "Generated",
         },
@@ -26,7 +26,7 @@ def case_actor_code_exists_1():
             "dob": "1966-12-09",
             "expiry_date": test_constants["EXPIRY_DATE"],
             "last_updated_date": "2019-12-26",
-            "lpa": "7000-0000-0095",
+            "lpa": "700000000095",
             "generated_date": "2019-09-31",
             "status_details": "Superseded",
         },
@@ -37,7 +37,7 @@ def case_actor_code_exists_1():
             "dob": "1965-08-21",
             "expiry_date": test_constants["EXPIRY_DATE"],
             "last_updated_date": "2019-12-26",
-            "lpa": "700000002196",
+            "lpa": "lpa_2",
             "generated_date": "2019-09-31",
             "status_details": "Generated",
         },
@@ -48,14 +48,14 @@ def case_actor_code_exists_1():
             "dob": "1960-06-05",
             "expiry_date": test_constants["EXPIRY_DATE"],
             "last_updated_date": "2019-12-26",
-            "lpa": "7000-0000-0095",
+            "lpa": "700000000095",
             "generated_date": "2019-09-31",
             "status_details": "Revoked",
         }
     ]
 
     data = {
-        "lpa": "7000-0000-0095",
+        "lpa": "700000000095",
         "actor": "actor_1"
     }
 
@@ -77,7 +77,7 @@ def case_actor_code_exists_2():
             "dob": "1960-06-05",
             "expiry_date": test_constants["EXPIRY_DATE"],
             "last_updated_date": "2019-12-26",
-            "lpa": "7000-0000-0095",
+            "lpa": "700000000095",
             "generated_date": "2019-09-31",
             "status_details": "Revoked",
         },
@@ -88,14 +88,14 @@ def case_actor_code_exists_2():
             "dob": "1960-06-05",
             "expiry_date": test_constants["EXPIRY_DATE"],
             "last_updated_date": "2019-12-26",
-            "lpa": "7000-0000-0095",
+            "lpa": "700000000095",
             "generated_date": "2019-09-31",
             "status_details": "Revoked",
         }
     ]
 
     data = {
-        "lpa": "7000-0000-0095",
+        "lpa": "700000000095",
         "actor": "actor_1"
     }
 
@@ -117,7 +117,7 @@ def case_actor_code_exists_3():
             "dob": "1966-12-09",
             "expiry_date": test_constants["EXPIRY_DATE"],
             "last_updated_date": "2019-12-26",
-            "lpa": "7000-0000-0095",
+            "lpa": "700000000095",
             "generated_date": "2019-09-31",
             "status_details": "Superseded",
         },
@@ -128,14 +128,14 @@ def case_actor_code_exists_3():
             "dob": "1960-06-05",
             "expiry_date": test_constants["EXPIRY_DATE"],
             "last_updated_date": "2019-12-26",
-            "lpa": "7000-0000-0095",
+            "lpa": "700000000095",
             "generated_date": "2019-09-31",
             "status_details": "Revoked",
         }
     ]
 
     data = {
-        "lpa": "7000-0000-0095",
+        "lpa": "700000000095",
         "actor": "actor_1"
     }
 
@@ -157,7 +157,7 @@ def case_actor_code_exists_4():
             "dob": "1966-12-09",
             "expiry_date": test_constants["EXPIRY_DATE"],
             "last_updated_date": "2019-12-26",
-            "lpa": "7000-0000-0095",
+            "lpa": "700000000095",
             "generated_date": "2019-09-31",
             "status_details": "Superseded",
         },
@@ -168,14 +168,14 @@ def case_actor_code_exists_4():
             "dob": "1960-06-05",
             "expiry_date": test_constants["EXPIRY_DATE"],
             "last_updated_date": "2019-12-26",
-            "lpa": "7000-0000-0095",
+            "lpa": "700000000095",
             "generated_date": "2019-09-31",
             "status_details": "Revoked",
         }
     ]
 
     data = {
-        "lpa": "7000-0000-0095",
+        "lpa": "700000000095",
         "actor": "actor_1"
     }
 
