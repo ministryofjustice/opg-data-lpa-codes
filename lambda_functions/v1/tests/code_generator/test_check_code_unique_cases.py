@@ -10,7 +10,7 @@ default_test_data = [
         "generated_date": "22/07/2019",
         "last_updated_date": "11/09/2019",
         "dob": "1960-06-05",
-        "lpa": "maximize_best_of_breed_synergies",
+        "lpa": "M-12CD-1234-CB12",
     },
     {
         "active": True,
@@ -20,7 +20,7 @@ default_test_data = [
         "generated_date": "18/11/2019",
         "last_updated_date": "23/05/2020",
         "dob": "1960-06-05",
-        "lpa": "maximize_best_of_breed_synergies",
+        "lpa": "M-12CD-1234-CB12",
     },
     {
         "active": True,
@@ -30,7 +30,7 @@ default_test_data = [
         "generated_date": "10/09/2019",
         "last_updated_date": "22/11/2019",
         "dob": "1960-06-05",
-        "lpa": "maximize_best_of_breed_synergies",
+        "lpa": "M-ABCD-1234-AB12",
     },
     {
         "active": False,
@@ -40,7 +40,7 @@ default_test_data = [
         "generated_date": "25/08/2019",
         "last_updated_date": "18/08/2020",
         "dob": "1960-06-05",
-        "lpa": "maximize_best_of_breed_synergies",
+        "lpa": "M-12CD-1234-CB12",
     },
 ]
 

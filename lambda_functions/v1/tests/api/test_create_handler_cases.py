@@ -5,7 +5,7 @@ from pytest_cases import case
 
 default_test_data = [
     {
-        "lpa": "eed4f597-fd87-4536-99d0-895778824861",
+        "lpa": "7000-0000-0092",
         "actor": "12ad81a9-f89d-4804-99f5-7c0c8669ac9b",
         "code": "code_1",
         "active": True,
@@ -16,7 +16,7 @@ default_test_data = [
         "status_details": "Generated",
     },
     {
-        "lpa": "eed4f597-fd87-4536-99d0-895778824861",
+        "lpa": "7000-0000-0092",
         "actor": "12ad81a9-f89d-4804-99f5-7c0c8669ac9b",
         "code": "code_2",
         "active": True,
@@ -27,7 +27,7 @@ default_test_data = [
         "status_details": "Generated",
     },
     {
-        "lpa": "productize_out_of_the_box_portals",
+        "lpa": "M-3AF4-1274-A81H",
         "actor": "violet",
         "code": "code_3",
         "active": True,
@@ -38,7 +38,7 @@ default_test_data = [
         "status_details": "Generated",
     },
     {
-        "lpa": "productize_out_of_the_box_portals",
+        "lpa": "M-3AF4-1274-A81H",
         "actor": "violet",
         "code": "code_4",
         "active": True,
@@ -58,7 +58,7 @@ def case_create_a_code_1():
     data = {
         "lpas": [
             {
-                "lpa": "eed4f597-fd87-4536-99d0-895778824861",
+                "lpa": "7000-0000-0092",
                 "actor": "12ad81a9-f89d-4804-99f5-7c0c8669ac9b",
                 "dob": "1960-06-05",
             }
@@ -70,7 +70,7 @@ def case_create_a_code_1():
     expected_result = {
         "codes": [
             {
-                "lpa": "eed4f597-fd87-4536-99d0-895778824861",
+                "lpa": "7000-0000-0092",
                 "actor": "12ad81a9-f89d-4804-99f5-7c0c8669ac9b",
                 "code": code,
             }
@@ -89,27 +89,27 @@ def case_create_a_code_2():
             {
                 "actor": "violet_1",
                 "dob": "1966-05-21",
-                "lpa": "productize_out_of_the_box_portals",
+                "lpa": "M-3AF4-1274-A81H",
             },
             {
                 "actor": "violet_2",
                 "dob": "1988-11-21",
-                "lpa": "productize_out_of_the_box_portals",
+                "lpa": "M-3AF4-1274-A81H",
             },
             {
                 "actor": "violet_3",
                 "dob": "1969-01-28",
-                "lpa": "productize_out_of_the_box_portals",
+                "lpa": "M-3AF4-1274-A81H",
             },
             {
                 "actor": "violet_4",
                 "dob": "1967-05-11",
-                "lpa": "productize_out_of_the_box_portals",
+                "lpa": "M-3AF4-1274-A81H",
             },
             {
                 "actor": "violet_5",
                 "dob": "1967-12-10",
-                "lpa": "productize_out_of_the_box_portals",
+                "lpa": "M-3AF4-1274-A81H",
             },
         ]
     }
@@ -121,27 +121,27 @@ def case_create_a_code_2():
             {
                 "actor": "violet_1",
                 "code": code,
-                "lpa": "productize_out_of_the_box_portals",
+                "lpa": "M-3AF4-1274-A81H",
             },
             {
                 "actor": "violet_2",
                 "code": code,
-                "lpa": "productize_out_of_the_box_portals",
+                "lpa": "M-3AF4-1274-A81H",
             },
             {
                 "actor": "violet_3",
                 "code": code,
-                "lpa": "productize_out_of_the_box_portals",
+                "lpa": "M-3AF4-1274-A81H",
             },
             {
                 "actor": "violet_4",
                 "code": code,
-                "lpa": "productize_out_of_the_box_portals",
+                "lpa": "M-3AF4-1274-A81H",
             },
             {
                 "actor": "violet_5",
                 "code": code,
-                "lpa": "productize_out_of_the_box_portals",
+                "lpa": "M-3AF4-1274-A81H",
             },
         ]
     }
