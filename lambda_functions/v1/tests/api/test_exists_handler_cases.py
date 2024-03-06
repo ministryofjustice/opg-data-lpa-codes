@@ -37,7 +37,7 @@ def case_actor_code_exists_1():
             "dob": "1965-08-21",
             "expiry_date": test_constants["EXPIRY_DATE"],
             "last_updated_date": "2019-12-26",
-            "lpa": "7000-0000-2196",
+            "lpa": "700000002196",
             "generated_date": "2019-09-31",
             "status_details": "Generated",
         },
