@@ -16,7 +16,7 @@ def case_revoke_a_code_1():
             "generated_date": "2019-09-31",
             "last_updated_date": "2019-12-26",
             "dob": "1960-06-05",
-            "lpa": "700000000096",
+            "lpa": "7000-0000-0096",
             "status_details": "Generated",
         }
     ]
@@ -48,7 +48,7 @@ def case_revoke_a_code_2():
             "generated_date": "2019-09-31",
             "last_updated_date": "2019-12-26",
             "dob": "1960-06-05",
-            "lpa": "700000000096",
+            "lpa": "7000-0000-0096",
             "status_details": "Superseded",
         }
     ]
@@ -80,7 +80,7 @@ def case_revoke_a_code_3():
             "generated_date": "2019-09-31",
             "last_updated_date": "2019-12-26",
             "dob": "1960-06-05",
-            "lpa": "700000000096",
+            "lpa": "7000-0000-0096",
             "status_details": "Revoked",
         }
     ]
