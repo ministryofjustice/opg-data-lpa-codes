@@ -5,7 +5,7 @@ from pytest_cases import case
 
 default_test_data = [
     {
-        "lpa": "eed4f597-fd87-4536-99d0-895778824861",
+        "lpa": "700000000047",
         "actor": "12ad81a9-f89d-4804-99f5-7c0c8669ac9b",
         "code": "code_1",
         "active": True,
@@ -16,7 +16,7 @@ default_test_data = [
         "status_details": "Generated",
     },
     {
-        "lpa": "eed4f597-fd87-4536-99d0-895778824861",
+        "lpa": "700000000047",
         "actor": "12ad81a9-f89d-4804-99f5-7c0c8669ac9b",
         "code": "code_2",
         "active": True,
@@ -27,7 +27,7 @@ default_test_data = [
         "status_details": "Generated",
     },
     {
-        "lpa": "productize_out_of_the_box_portals",
+        "lpa": "M-3AB4-1234-A812",
         "actor": "violet",
         "code": "code_3",
         "active": True,
@@ -38,7 +38,7 @@ default_test_data = [
         "status_details": "Generated",
     },
     {
-        "lpa": "productize_out_of_the_box_portals",
+        "lpa": "M-3AB4-1234-A812",
         "actor": "violet",
         "code": "code_4",
         "active": True,

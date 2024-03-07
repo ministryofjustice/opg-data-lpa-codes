@@ -12,12 +12,12 @@ def case_validate_valid_code_1():
             "generated_date": "2019-09-31",
             "last_updated_date": "2019-12-26",
             "dob": "1960-06-05",
-            "lpa": "scale_virtual_e_commerce",
+            "lpa": "M-3AC4-1274-AP1H",
         }
     ]
 
     data = {
-        "lpa": "scale_virtual_e_commerce",
+        "lpa": "M-3AC4-1274-AP1H",
         "dob": "1960-06-05",
         "code": "t39hg7zQdE59",
     }
@@ -38,12 +38,12 @@ def case_validate_valid_code_2():
             "generated_date": "2019-09-31",
             "last_updated_date": "2019-12-26",
             "dob": "1960-06-05",
-            "lpa": "scale_virtual_e_commerce",
+            "lpa": "M-3AC4-1274-AP1H",
         }
     ]
 
     data = {
-        "lpa": "scale_virtual_e_commerce",
+        "lpa": "M-3AC4-1274-AP1H",
         "dob": "1960-06-05",
         "code": "t39hg7zQdE59",
     }
@@ -64,7 +64,7 @@ def case_validate_non_existent_code():
             "generated_date": "2019-09-31",
             "last_updated_date": "2019-12-26",
             "dob": "1960-06-05",
-            "lpa": "scale_virtual_e_commerce",
+            "lpa": "M-3AC4-1274-AP1H",
         }
     ]
 
@@ -90,12 +90,12 @@ def case_validate_invalid_code_1():
             "generated_date": "2019-09-31",
             "last_updated_date": "2019-12-26",
             "dob": "1960-06-05",
-            "lpa": "scale_virtual_e_commerce",
+            "lpa": "M-3AC4-1274-AP1H",
         }
     ]
 
     data = {
-        "lpa": "scale_virtual_e_commerce",
+        "lpa": "M-3AC4-1274-AP1H",
         "dob": "1960-06-15",
         "code": "t39hg7zQdE59",
     }
@@ -116,7 +116,7 @@ def case_validate_invalid_code_2():
             "generated_date": "2019-09-31",
             "last_updated_date": "2019-12-26",
             "dob": "1960-06-05",
-            "lpa": "scale_virtual_e_commerce",
+            "lpa": "M-3AC4-1274-AP1H",
         }
     ]
 
@@ -138,12 +138,12 @@ def case_validate_valid_code_3():
             "generated_date": "2019-09-31",
             "last_updated_date": "2019-12-26",
             "dob": "1960-06-05",
-            "lpa": "scale_virtual_e_commerce",
+            "lpa": "M-3AC4-1274-AP1H",
         }
     ]
 
     data = {
-        "lpa": "scale_virtual_e_commerce",
+        "lpa": "M-3AC4-1274-AP1H",
         "dob": "1960-06-05",
         "code": "t39hg7zQdE59",
     }
