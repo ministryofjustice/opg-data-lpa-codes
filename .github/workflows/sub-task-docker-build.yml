@@ -51,7 +51,7 @@ jobs:
 
       - name: Trivy Image Vulnerability Scanner
         id: trivy_scan
-        uses: aquasecurity/trivy-action@f3d98514b056d8c71a3552e8328c225bc7f6f353
+        uses: aquasecurity/trivy-action@062f2592684a31eb3aa050cc61e7ca1451cecd3d
         with:
           image-ref: ${{ matrix.name }}:latest
           severity: 'HIGH,CRITICAL'
@@ -62,13 +62,13 @@ jobs:
 
       - name: Upload Trivy scan results to GitHub Security tab
         id: trivy_upload_sarif
-        uses: github/codeql-action/upload-sarif@v2
+        uses: github/codeql-action/upload-sarif@v3
         if: always()
         with:
           sarif_file: 'trivy-results.sarif'
 
       - name: Install AWS Cli
-        uses: unfor19/install-aws-cli-action@e8b481e524a99f37fbd39fdc1dcb3341ab091367
+        uses: unfor19/install-aws-cli-action@27d6061dae5d39e89be4d2246824f15e111a7e06
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@3bd0e770227859bbc3298e52dc2bf4fc0d3300ae
