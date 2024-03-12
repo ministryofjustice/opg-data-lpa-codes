@@ -222,7 +222,7 @@ def insert_new_code(database, key, dob, code):
             "generated_date": date_formatter(datetime.datetime.now()),
             "status_details": "Generated",
         }
-    if lpa[0] != 'M' : 
+    if lpa[0] not in ('M' , 'm') :
         item.update({"expiry_date" : calculate_expiry_date(today=datetime.datetime.now())})
     table.put_item(
         Item=item

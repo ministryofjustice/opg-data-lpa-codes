@@ -24,7 +24,7 @@ def two_years_from_now():
 
     return two_years_from_now_decimal
 
-@parametrize_with_cases("test_data, data, expected_result, expected_last_updated_date, expected_status_code")
+@parametrize_with_cases("test_data, data, expected_result, expected_last_updated_date, expected_status_code, expected_expiry_date")
 @freeze_time(datetime.date.today())
 def test_post(mock_database, 
     test_data,
@@ -32,6 +32,7 @@ def test_post(mock_database,
     expected_result,
     expected_last_updated_date,
     expected_status_code,
+    expected_expiry_date
 ):
     # Set up test data
     insert_test_data(test_data=test_data)
@@ -67,7 +68,7 @@ def test_post(mock_database,
     remove_test_data(test_data)
 
 
-@parametrize_with_cases("test_data, data, expected_result, expected_last_updated_date,expected_status_code")
+@parametrize_with_cases("test_data, data, expected_result, expected_last_updated_date, expected_status_code, expected_expiry_date")
 def test_get_codes_broken(
     mock_database,
     mock_generate_code,
@@ -78,6 +79,7 @@ def test_get_codes_broken(
     expected_result,
     expected_last_updated_date,
     expected_status_code,
+    expected_expiry_date
 ):
 
     result, status_code = handle_mark_used(data=data)

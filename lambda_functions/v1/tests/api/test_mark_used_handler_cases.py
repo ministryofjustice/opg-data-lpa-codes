@@ -35,6 +35,7 @@ def case_mark_a_code_as_used():
         data,
         expected_result,
         expected_last_updated_date,
+        expected_status_code,
         expected_expiry_date,
     )
 
@@ -60,6 +61,7 @@ def case_mark_a_code_as_used_but_does_not_exist():
 
     expected_result = {"codes marked used": 0}
     expected_last_updated_date = "2019-12-26"
+    expected_expiry_date = two_years_from_now()
     expected_status_code = 200
     return (
         test_data,
@@ -67,4 +69,5 @@ def case_mark_a_code_as_used_but_does_not_exist():
         expected_result,
         expected_last_updated_date,
         expected_status_code,
+        expected_expiry_date,
     )
