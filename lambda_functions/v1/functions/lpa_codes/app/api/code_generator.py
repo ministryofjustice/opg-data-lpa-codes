@@ -212,8 +212,7 @@ def insert_new_code(database, key, dob, code):
     lpa = key["lpa"]
     actor = key["actor"]
 
-    table.put_item(
-        Item={
+    item={
             "lpa": lpa,
             "actor": actor,
             "code": code,
@@ -221,9 +220,12 @@ def insert_new_code(database, key, dob, code):
             "last_updated_date": date_formatter(datetime.datetime.now()),
             "dob": dob,
             "generated_date": date_formatter(datetime.datetime.now()),
-            "expiry_date": calculate_expiry_date(today=datetime.datetime.now()),
             "status_details": "Generated",
         }
+    if lpa[0] != 'M' : 
+        item.update({"expiry_date" : calculate_expiry_date(today=datetime.datetime.now())})
+    table.put_item(
+        Item=item
     )
 
     inserted_item = get_codes(database, code=code)
