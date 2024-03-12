@@ -20,7 +20,7 @@ jobs:
           fetch-depth: '0'
 
       - name: Configure AWS Credentials For Terraform
-        uses: aws-actions/configure-aws-credentials@3bd0e770227859bbc3298e52dc2bf4fc0d3300ae
+        uses: aws-actions/configure-aws-credentials@1b1cca71d5af87b48fbf0941a0dc68ba542e9485
         with:
           aws-access-key-id: ${{ secrets.aws_access_key_id_actions }}
           aws-secret-access-key: ${{ secrets.aws_secret_access_key_actions }}
