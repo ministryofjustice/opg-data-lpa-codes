@@ -29,7 +29,7 @@ def case_mark_a_code_as_used():
     expected_result = {"codes marked used": 1}
     expected_last_updated_date = test_constants["TODAY_ISO"]
     expected_status_code = 200
-    expected_expiry_date = two_years_from_now
+    expected_expiry_date = two_years_from_now()
     return (
         test_data,
         data,
