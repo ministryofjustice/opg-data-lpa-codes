@@ -70,7 +70,10 @@ def test_data(mock_database, mock_generate_code, test_data, data, expected_resul
                     assert item["status_details"] == "Generated"
                     assert item["last_updated_date"] == test_constants["TODAY_ISO"]
                     assert item["generated_date"] == test_constants["TODAY_ISO"]
-                    assert item["expiry_date"] == test_constants["EXPIRY_DATE"]
+                    if lpa[0] in ('M' , 'm') :
+                        assert ('expiry_date' not in item)
+                    else:
+                        assert item["expiry_date"] == test_constants["EXPIRY_DATE"]
                 else:
                     assert item["active"] is False
                     assert item["status_details"] == "Superseded"
