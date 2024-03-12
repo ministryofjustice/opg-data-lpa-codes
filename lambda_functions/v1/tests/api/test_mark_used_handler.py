@@ -3,6 +3,7 @@ import datetime
 import boto3
 import pytz
 from boto3.dynamodb.conditions import Key
+from decimal import Decimal
 
 from lambda_functions.v1.functions.lpa_codes.app.api import code_generator
 from lambda_functions.v1.functions.lpa_codes.app.api.database import lpa_codes_table
