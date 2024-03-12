@@ -386,6 +386,85 @@ paths:
             application/vnd.opg-data.v1+json:
               schema:
                 $ref: '#/components/schemas/Error503'
+  /mark_used:
+    post:
+      summary: "Mark a Modernise code as used - set the expiry date from now"
+      description: "Mark a Modernise code as used - set the expiry date from nowe"
+      operationId: api.resources.mark_used_route
+      security:
+        - sigv4: []
+      x-amazon-apigateway-request-validator: "all"
+      x-amazon-apigateway-integration:
+        uri: arn:aws:apigateway:${region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${region}:${account_id}:function:$${stageVariables.lpa_codes_function_name}/invocations
+        responses:
+          default:
+            statusCode: "200"
+        passthroughBehavior: "when_no_match"
+        httpMethod: "POST"
+        contentHandling: "CONVERT_TO_TEXT"
+        type: "aws_proxy"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                code:
+                  type: string
+              example:
+                code: "YsSu4iAztUXm"
+      responses:
+        200:
+          description: OK
+        400:
+          description: Generic bad request (generally invalid syntax)
+          content:
+            application/vnd.opg-data.v1+json:
+              schema:
+                $ref: '#/components/schemas/Error400'
+        401:
+          description: Unauthorised (no current user and there should be)
+          content:
+            application/vnd.opg-data.v1+json:
+              schema:
+                $ref: '#/components/schemas/Error401'
+        403:
+          description: Forbidden - The current user is forbidden from accessing this data (in this way)
+          content:
+            application/vnd.opg-data.v1+json:
+              schema:
+                $ref: '#/components/schemas/Error403'
+        404:
+          description: That URL is not a valid route, or the item resource does not exist
+          content:
+            application/vnd.opg-data.v1+json:
+              schema:
+                $ref: '#/components/schemas/Error404'
+        413:
+          description: Payload too large
+          content:
+            application/vnd.opg-data.v1+json:
+              schema:
+                $ref: '#/components/schemas/Error413'
+        415:
+          description: Unsupported media type
+          content:
+            application/vnd.opg-data.v1+json:
+              schema:
+                $ref: '#/components/schemas/Error415'
+        500:
+          description: Something unexpected happened and it is the API"s fault
+          content:
+            application/vnd.opg-data.v1+json:
+              schema:
+                $ref: '#/components/schemas/Error500'
+        503:
+          description: Service Unavailable - please try again later
+          content:
+            application/vnd.opg-data.v1+json:
+              schema:
+                $ref: '#/components/schemas/Error503'
   /exists:
     post:
       summary: "Checks if a code exists for a specific actor on an LPA"
