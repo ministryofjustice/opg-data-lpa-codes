@@ -101,13 +101,16 @@ def get_codes(database, key=None, code=None):
         )
 
         try:
-            expiry_date = query_result["Item"]["expiry_date"]
+            if "expiry_date" in query_result["Item"] :
+                expiry_date = query_result["Item"]["expiry_date"]
 
-            if expiry_date > ttl_cutoff:
-                query_result["Item"]["expiry_date"] = int(expiry_date)
-                codes.append(query_result["Item"])
+                if expiry_date > ttl_cutoff:
+                    query_result["Item"]["expiry_date"] = int(expiry_date)
+                    codes.append(query_result["Item"])
+                else:
+                    logger.info("Code does not exist in database")
             else:
-                logger.info("Code does not exist in database")
+                codes.append(query_result["Item"])
         except KeyError:
             # TODO better error handling here
             logger.info("Code does not exist in database")
