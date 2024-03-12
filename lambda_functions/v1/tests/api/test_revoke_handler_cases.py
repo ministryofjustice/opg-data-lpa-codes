@@ -37,6 +37,37 @@ def case_revoke_a_code_1():
     )
 
 
+@case(id="Revoke a not yet used modernise code")
+def case_revoke_a_not_yet_used_modernise_code():
+    test_data = [
+        {
+            "active": True,
+            "actor": "violet",
+            "code": "jmABs6fFaNJG",
+            "generated_date": "2019-09-31",
+            "last_updated_date": "2019-12-26",
+            "dob": "1960-06-05",
+            "lpa": "M-3AC4-1274-AP1H",
+            "status_details": "Generated",
+        }
+    ]
+
+    data = {
+        "code": "jmABs6fFaNJG",
+    }
+
+    expected_result = {"codes revoked": 1}
+    expected_last_updated_date = test_constants["TODAY_ISO"]
+    expected_status_code = 200
+    return (
+        test_data,
+        data,
+        expected_result,
+        expected_last_updated_date,
+        expected_status_code,
+    )
+
+
 @case(id="Revoke an inactive code")
 def case_revoke_a_code_2():
     test_data = [

@@ -1,6 +1,7 @@
 from . import code_generator
 from .database import db_connection
-from .helpers import custom_logger
+from .helpers import custom_logger, calculate_expiry_date
+import datetime
 
 
 logger = custom_logger()
@@ -137,6 +138,41 @@ def handle_revoke(data):
 
     return {"codes revoked": update_result}, 200
 
+
+def handle_mark_used(data):
+    """
+    Updates sets the expiry_date of the provided code to 2 years from now
+    Returns the number of codes marked used - 
+
+    Args:
+        data: dict of payload data
+
+    Example args:
+        {
+          "code": "YsSu4iAztUXm"
+        }
+
+    Returns:
+        tuple: (number of codes marked used, http status code)
+
+    Example return:
+        (
+            {"codes marked used": 1},
+            200
+        )
+
+    """
+    db = db_connection()
+
+    try:
+        update_result = code_generator.update_codes(
+            database=db, code=data["code"], expiry_date=calculate_expiry_date(months = 24, today=datetime.datetime.now())
+        )
+    except Exception as e:
+        logger.error(f"Error in handle_mark_used > update_codes: {e}")
+        return None, 500
+
+    return {"codes marked used": update_result}, 200
 
 def handle_validate(data):
     """
