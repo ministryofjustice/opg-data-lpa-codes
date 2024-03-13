@@ -26,7 +26,7 @@ def generate_code(database):
     attempts = 0
     max_attempts = 10
 
-    while unique is not True:
+    while not unique:
         new_code = "".join(secrets.choice(acceptable_characters) for i in range(0, 12))
         unique = check_code_unique(database=database, code=new_code)
         attempts += 1
