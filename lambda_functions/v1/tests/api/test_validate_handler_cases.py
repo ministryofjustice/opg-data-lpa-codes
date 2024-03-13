@@ -27,6 +27,30 @@ def case_validate_valid_code_1():
     return test_data, data, expected_result, expected_status_code
 
 
+@case(id="Try to validate a modernise code with no expiry date")
+def case_validate_valid_code_1():
+    test_data = [
+        {
+            "active": True,
+            "actor": "lightcyan",
+            "code": "t39hg7zQdE59",
+            "generated_date": "2019-09-31",
+            "last_updated_date": "2019-12-26",
+            "dob": "1960-06-05",
+            "lpa": "M-3AC4-1274-AP1H",
+        }
+    ]
+
+    data = {
+        "lpa": "M-3AC4-1274-AP1H",
+        "dob": "1960-06-05",
+        "code": "t39hg7zQdE59",
+    }
+
+    expected_result = {"actor": "lightcyan"}
+    expected_status_code = 200
+    return test_data, data, expected_result, expected_status_code
+
 @case(id="Try to validate a code that is valid but not active")
 def case_validate_valid_code_2():
     test_data = [
