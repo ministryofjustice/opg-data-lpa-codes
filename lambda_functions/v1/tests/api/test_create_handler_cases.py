@@ -80,6 +80,34 @@ def case_create_a_code_1():
     return test_data, data, expected_result, expected_status_code
 
 
+@case(id="Create a single Modernise code")
+def case_create_a_modernise_code():
+    test_data = copy.deepcopy(default_test_data)
+
+    data = {
+        "lpas": [
+            {
+                "lpa": "M-3AF4-1274-A81H",
+                "actor": "12ad81a9-f89d-4804-99f5-7c0c8669ac9b",
+                "dob": "1960-06-05",
+            }
+        ]
+    }
+
+    code = test_constants["DEFAULT_CODE"]
+
+    expected_result = {
+        "codes": [
+            {
+                "lpa": "M-3AF4-1274-A81H",
+                "actor": "12ad81a9-f89d-4804-99f5-7c0c8669ac9b",
+                "code": code,
+            }
+        ]
+    }
+    expected_status_code = 200
+    return test_data, data, expected_result, expected_status_code
+
 @case(id="Create multiple codes")
 def case_create_a_code_2():
     test_data = copy.deepcopy(default_test_data)
