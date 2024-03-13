@@ -101,13 +101,16 @@ def get_codes(database, key=None, code=None):
         )
 
         try:
-            expiry_date = query_result["Item"]["expiry_date"]
+            if "expiry_date" in query_result["Item"] :
+                expiry_date = query_result["Item"]["expiry_date"]
 
-            if expiry_date > ttl_cutoff:
-                query_result["Item"]["expiry_date"] = int(expiry_date)
-                codes.append(query_result["Item"])
+                if expiry_date > ttl_cutoff:
+                    query_result["Item"]["expiry_date"] = int(expiry_date)
+                    codes.append(query_result["Item"])
+                else:
+                    logger.info("Code does not exist in database")
             else:
-                logger.info("Code does not exist in database")
+                codes.append(query_result["Item"])
         except KeyError:
             # TODO better error handling here
             logger.info("Code does not exist in database")
@@ -137,7 +140,7 @@ def get_codes(database, key=None, code=None):
     return codes
 
 
-def update_codes(database, key=None, code=None, status=False, status_details=None):
+def update_codes(database, key=None, code=None, status=False, status_details=None, expiry_date=None):
     """
     Generic method to update the status of rows in the db, eithet by key (lpa/actor)
     or code.
@@ -148,6 +151,7 @@ def update_codes(database, key=None, code=None, status=False, status_details=Non
         code: string
         status: boolean
         status_details: string
+        expiry_date: string
 
     Returns:
         int: number of rows updated
@@ -164,17 +168,28 @@ def update_codes(database, key=None, code=None, status=False, status_details=Non
     updated_rows = 0
     for entry in entries:
         if entry["active"] != status:
-
-            table.update_item(
-                Key={"code": entry["code"]},
-                UpdateExpression="set active = :a, last_updated_date = :d, "
-                "status_details = :s",
-                ExpressionAttributeValues={
-                    ":a": status,
-                    ":d": date_formatter(datetime.datetime.now()),
-                    ":s": status_details,
-                },
-            )
+            if expiry_date:
+                table.update_item(
+                    Key={"code": entry["code"]},
+                    UpdateExpression="set active = :a, last_updated_date = :d, "
+                    "expiry_date = :e",
+                    ExpressionAttributeValues={
+                        ":a": status,
+                        ":d": date_formatter(datetime.datetime.now()),
+                        ":e": expiry_date,
+                    },
+                )
+            else:
+                table.update_item(
+                    Key={"code": entry["code"]},
+                    UpdateExpression="set active = :a, last_updated_date = :d, "
+                    "status_details = :s",
+                    ExpressionAttributeValues={
+                        ":a": status,
+                        ":d": date_formatter(datetime.datetime.now()),
+                        ":s": status_details,
+                    },
+                )
 
             updated_rows += 1
     logger.info(f"{updated_rows} rows updated for LPA/Actor")
@@ -200,8 +215,7 @@ def insert_new_code(database, key, dob, code):
     lpa = key["lpa"]
     actor = key["actor"]
 
-    table.put_item(
-        Item={
+    item={
             "lpa": lpa,
             "actor": actor,
             "code": code,
@@ -209,9 +223,12 @@ def insert_new_code(database, key, dob, code):
             "last_updated_date": date_formatter(datetime.datetime.now()),
             "dob": dob,
             "generated_date": date_formatter(datetime.datetime.now()),
-            "expiry_date": calculate_expiry_date(today=datetime.datetime.now()),
             "status_details": "Generated",
         }
+    if lpa[0] not in ('M' , 'm') :
+        item.update({"expiry_date" : calculate_expiry_date(today=datetime.datetime.now())})
+    table.put_item(
+        Item=item
     )
 
     inserted_item = get_codes(database, code=code)
