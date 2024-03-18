@@ -63,14 +63,15 @@ def handle_create(data):
 
         key = {"lpa": lpa, "actor": actor}
 
-        # 1. expire all existing codes for LPA/Actor combo
-        try:
-            code_generator.update_codes(
-                database=db, key=key, status=False, status_details="Superseded"
-            )
-        except Exception as e:
-            logger.error(f"Error in handle_create > get_codes: {e}")
-            return None, 500
+        # 1. for legacy (non-Modernise) LPAs only, expire all existing codes for LPA/Actor combo
+        if lpa[0] not in ('M' , 'm'):
+            try:
+                code_generator.update_codes(
+                    database=db, key=key, status=False, status_details="Superseded"
+                )
+            except Exception as e:
+                logger.error(f"Error in handle_create > get_codes: {e}")
+                return None, 500
 
         # 2. generate a new code
         try:
