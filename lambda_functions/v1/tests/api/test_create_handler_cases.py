@@ -88,7 +88,7 @@ def case_create_a_modernise_code():
         "lpas": [
             {
                 "lpa": "M-3AF4-1274-A81H",
-                "actor": "12ad81a9-f89d-4804-99f5-7c0c8669ac9b",
+                "actor": "violet",
                 "dob": "1960-06-05",
             }
         ]
@@ -100,7 +100,7 @@ def case_create_a_modernise_code():
         "codes": [
             {
                 "lpa": "M-3AF4-1274-A81H",
-                "actor": "12ad81a9-f89d-4804-99f5-7c0c8669ac9b",
+                "actor": "violet",
                 "code": code,
             }
         ]

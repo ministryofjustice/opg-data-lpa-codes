@@ -75,8 +75,14 @@ def test_data(mock_database, mock_generate_code, test_data, data, expected_resul
                     else:
                         assert item["expiry_date"] == test_constants["EXPIRY_DATE"]
                 else:
-                    assert item["active"] is False
-                    assert item["status_details"] == "Superseded"
+                    # Existing Modernise codes should remain untouched
+                    if lpa[0] in ('M' , 'm'):
+                        assert item["active"] is True
+                        assert item["status_details"] == "Generated"
+                    else:
+                    # Existing Legacy codes should now be superseded
+                        assert item["active"] is False
+                        assert item["status_details"] == "Superseded"
         else:
             assert codes_created == expected_result
             break
