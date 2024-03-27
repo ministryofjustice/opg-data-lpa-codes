@@ -23,7 +23,7 @@ jobs:
         uses: actions/checkout@v4.1.1
 
       - name: Setup Python
-        uses: actions/setup-python@9a7ac94420f42ee15fc60ab88d0dca4be1fd5757
+        uses: actions/setup-python@82c7e631bb3cdc910f68e0081d67478d79c6982d
         with:
           python-version: '3.11'
 
