@@ -6,7 +6,7 @@ import boto3
 import pytest
 import pytz
 from flask import request
-from moto import mock_dynamodb
+from moto import mock_aws
 import datetime
 from lambda_functions.v1.functions.lpa_codes.app.api import (
     code_generator,
@@ -100,7 +100,7 @@ def aws_credentials():
 
 @pytest.fixture(scope="function", autouse=False)
 def mock_database(aws_credentials):
-    with mock_dynamodb():
+    with mock_aws():
         print("db setup")
         mock_db = boto3.resource("dynamodb")
         table_name = test_constants["TABLE_NAME"]
