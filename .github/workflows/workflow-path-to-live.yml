@@ -116,6 +116,21 @@ jobs:
       aws_access_key_id_actions: ${{ secrets.AWS_ACCESS_KEY_ID }}
       aws_secret_access_key_actions: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
+  integration_environment_apply:
+    name: Integration Environment Terraform Plan and Apply
+    needs: [
+      'production_environment_apply',
+      'create_tags'
+    ]
+    uses: ./.github/workflows/sub-task-terraform.yml
+    with:
+      terraform_path: 'terraform/environment'
+      image_tag: main-${{ needs.create_tags.outputs.version_tag }}
+      workspace: integration
+    secrets:
+      aws_access_key_id_actions: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      aws_secret_access_key_actions: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
   workflow_complete:
     name: Workflow Complete
     needs: ['production_environment_apply']
