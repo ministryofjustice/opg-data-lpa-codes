@@ -3,22 +3,11 @@ variable "account_name" {
   type        = string
 }
 
-variable "api_name" {
-  description = "Name fo the API gateway"
-  type        = string
-}
-
-variable "aws_subnet_ids" {
-  description = "List of subnets"
-  type        = list(string)
-}
-
-variable "domain_name" {
-  description = "Domain name to use"
-}
-
 variable "lpa_codes_lambda" {
   description = "Lambda Object"
+  type = object({
+    function_name = string
+  })
 }
 
 variable "openapi_version" {
@@ -39,10 +28,16 @@ variable "region_name" {
 
 variable "rest_api" {
   description = "The rest API Object"
+  type = object({
+    id   = string
+    name = string
+  })
 }
 
 variable "tags" {
   description = "Tags to use"
+  type        = map(string)
+  default     = {}
 }
 
 variable "content_api_sha" {
