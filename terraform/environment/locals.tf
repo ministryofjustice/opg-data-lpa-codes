@@ -14,10 +14,6 @@ locals {
     source-code            = "https://github.com/ministryofjustice/opg-data-lpa-codes"
   }
 
-  policy_len_tag = {
-    policy_len = aws_api_gateway_rest_api.lpa_codes.policy
-  }
-
   api_name = "lpa-codes"
 
   api_template_vars = {
@@ -29,7 +25,7 @@ locals {
 
   //Modify for new version of API
   latest_openapi_version = "v1"
-  openapi_spec           = file("../../lambda_functions/${local.latest_openapi_version}/openapi/${local.api_name}-openapi-${local.latest_openapi_version}.yml")
+  openapi_spec           = "../../lambda_functions/${local.latest_openapi_version}/openapi/${local.api_name}-openapi-${local.latest_openapi_version}.yml"
 }
 
 output "rest_arn" {
