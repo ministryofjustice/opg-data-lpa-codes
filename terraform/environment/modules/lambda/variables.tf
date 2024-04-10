@@ -32,14 +32,25 @@ variable "openapi_version" {
 
 variable "rest_api" {
   description = "The rest api lambda attached to"
+  type = object({
+    execution_arn = string
+  })
 }
 
 variable "account" {
   description = "The account object"
+  type = object({
+    account_mapping    = string
+    target_environment = string
+  })
 }
 
 variable "dynamodb_table" {
   description = "The dynamodb table that the lambda should access"
+  type = object({
+    arn        = string
+    stream_arn = string
+  })
 }
 
 variable "image_uri" {
