@@ -33,7 +33,7 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@a75f1a3ccea3c602b976c7c8c15b0c200cf101d0
         with:
-          terraform_version: 1.5.5
+          terraform_version: 1.7.2
 
       - name: Configure AWS Credentials For Terraform
         uses: aws-actions/configure-aws-credentials@cb66b82ec859c0a491fac75d3cabf2786144330b
