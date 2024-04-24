@@ -62,8 +62,8 @@ jobs:
       workspace: ${{ needs.branch_name.outputs.formatted_branch }}
     secrets:
       source_github_token: ${{ secrets.GITHUB_TOKEN }}
-      aws_access_key_id_actions: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      aws_secret_access_key_actions: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      aws_access_key_id_actions: ${{ secrets.AWS_ACCESS_KEY_ID_ACTIONS }}
+      aws_secret_access_key_actions: ${{ secrets.AWS_SECRET_ACCESS_KEY_ACTIONS }}
 
   unit_tests:
     name: Unit tests
@@ -78,8 +78,8 @@ jobs:
       tag: ${{ needs.create_tags.outputs.version_tag }}
       branch_name: ${{ needs.branch_name.outputs.formatted_branch }}
     secrets:
-      aws_access_key_id_actions: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      aws_secret_access_key_actions: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      aws_access_key_id_actions: ${{ secrets.AWS_ACCESS_KEY_ID_ACTIONS }}
+      aws_secret_access_key_actions: ${{ secrets.AWS_SECRET_ACCESS_KEY_ACTIONS }}
 
   terraform_apply:
     name: Terraform Plan and Apply Environment
@@ -96,8 +96,8 @@ jobs:
       image_tag: ${{ needs.create_tags.outputs.version_tag }}
       workspace: ${{ needs.branch_name.outputs.formatted_branch }}
     secrets:
-      aws_access_key_id_actions: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      aws_secret_access_key_actions: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      aws_access_key_id_actions: ${{ secrets.AWS_ACCESS_KEY_ID_ACTIONS }}
+      aws_secret_access_key_actions: ${{ secrets.AWS_SECRET_ACCESS_KEY_ACTIONS }}
 
   integration_tests:
     name: Integration tests against branch environment
@@ -110,8 +110,8 @@ jobs:
     with:
       workspace: ${{ needs.branch_name.outputs.formatted_branch }}
     secrets:
-      aws_access_key_id_actions: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      aws_secret_access_key_actions: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      aws_access_key_id_actions: ${{ secrets.AWS_ACCESS_KEY_ID_ACTIONS }}
+      aws_secret_access_key_actions: ${{ secrets.AWS_SECRET_ACCESS_KEY_ACTIONS }}
 
   workflow_complete:
     name: Workflow Complete

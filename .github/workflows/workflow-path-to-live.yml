@@ -56,8 +56,8 @@ jobs:
       tag: main-${{ needs.create_tags.outputs.version_tag }}
       branch_name: ${{ needs.branch_name.outputs.formatted_branch }}
     secrets:
-      aws_access_key_id_actions: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      aws_secret_access_key_actions: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      aws_access_key_id_actions: ${{ secrets.AWS_ACCESS_KEY_ID_ACTIONS }}
+      aws_secret_access_key_actions: ${{ secrets.AWS_SECRET_ACCESS_KEY_ACTIONS }}
 
   development_environment_apply:
     name: Development Environment Terraform Plan
@@ -71,8 +71,8 @@ jobs:
       image_tag: main-${{ needs.create_tags.outputs.version_tag }}
       workspace: development
     secrets:
-      aws_access_key_id_actions: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      aws_secret_access_key_actions: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      aws_access_key_id_actions: ${{ secrets.AWS_ACCESS_KEY_ID_ACTIONS }}
+      aws_secret_access_key_actions: ${{ secrets.AWS_SECRET_ACCESS_KEY_ACTIONS }}
 
   preproduction_environment_apply:
     name: Preproduction Environment Terraform Plan and Apply
@@ -86,8 +86,8 @@ jobs:
       image_tag: main-${{ needs.create_tags.outputs.version_tag }}
       workspace: preproduction
     secrets:
-      aws_access_key_id_actions: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      aws_secret_access_key_actions: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      aws_access_key_id_actions: ${{ secrets.AWS_ACCESS_KEY_ID_ACTIONS }}
+      aws_secret_access_key_actions: ${{ secrets.AWS_SECRET_ACCESS_KEY_ACTIONS }}
 
   preproduction_integration_tests:
     name: Integration tests against preproduction
@@ -98,8 +98,8 @@ jobs:
     with:
       workspace: 'preproduction'
     secrets:
-      aws_access_key_id_actions: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      aws_secret_access_key_actions: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      aws_access_key_id_actions: ${{ secrets.AWS_ACCESS_KEY_ID_ACTIONS }}
+      aws_secret_access_key_actions: ${{ secrets.AWS_SECRET_ACCESS_KEY_ACTIONS }}
 
   production_environment_apply:
     name: Production Environment Terraform Plan and Apply
@@ -113,8 +113,8 @@ jobs:
       image_tag: main-${{ needs.create_tags.outputs.version_tag }}
       workspace: production
     secrets:
-      aws_access_key_id_actions: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      aws_secret_access_key_actions: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      aws_access_key_id_actions: ${{ secrets.AWS_ACCESS_KEY_ID_ACTIONS }}
+      aws_secret_access_key_actions: ${{ secrets.AWS_SECRET_ACCESS_KEY_ACTIONS }}
 
   integration_environment_apply:
     name: Integration Environment Terraform Plan and Apply
@@ -128,8 +128,8 @@ jobs:
       image_tag: main-${{ needs.create_tags.outputs.version_tag }}
       workspace: integration
     secrets:
-      aws_access_key_id_actions: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      aws_secret_access_key_actions: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      aws_access_key_id_actions: ${{ secrets.AWS_ACCESS_KEY_ID_ACTIONS }}
+      aws_secret_access_key_actions: ${{ secrets.AWS_SECRET_ACCESS_KEY_ACTIONS }}
 
   workflow_complete:
     name: Workflow Complete
