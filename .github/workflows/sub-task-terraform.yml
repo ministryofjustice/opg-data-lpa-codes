@@ -44,13 +44,6 @@ jobs:
           role-duration-seconds: 3600
           role-session-name: OPGLPACodesGithubAction
 
-      - name: Modify openapispec
-        run: |
-          sed -i "s/\"\${allowed_roles}\"/\${allowed_roles}/" lpa-codes-openapi-v1.yml
-          echo $?
-          cat lpa-codes-openapi-v1.yml
-        working-directory: lambda_functions/v1/openapi
-
       - name: Terraform Init
         run: terraform init -input=false -upgrade
         working-directory: ./${{ inputs.terraform_path }}
