@@ -71,7 +71,7 @@ jobs:
         uses: unfor19/install-aws-cli-action@27d6061dae5d39e89be4d2246824f15e111a7e06
 
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@a78e788c51463a506fbaaec784bab37f73afb4e8
+        uses: aws-actions/configure-aws-credentials@ffc9011218e7227b402bc4cc49b703e8a3121c0f
         with:
           aws-access-key-id: ${{ secrets.aws_access_key_id_actions }}
           aws-secret-access-key: ${{ secrets.aws_secret_access_key_actions }}
@@ -82,7 +82,7 @@ jobs:
 
       - name: Login to ECR
         id: login_ecr
-        uses: aws-actions/amazon-ecr-login@39dec3e3a2815eec8f45c713f018a826565f0ac1
+        uses: aws-actions/amazon-ecr-login@3b8097c25e1fc9742d2d91e6cdafe7b13d1f3d93
         with:
           registries: 311462405659
 
