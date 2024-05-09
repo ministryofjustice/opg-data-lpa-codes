@@ -43,7 +43,7 @@ jobs:
           aws-region: eu-west-1
           role-duration-seconds: 3600
           role-session-name: OPGLPACodesGithubAction
-
+          
       - name: Modify openapispec
         run:
           sed -i "s/\"\${allowed_roles}\"/\${allowed_roles}/" lpa-codes-openapi-v1.yml
