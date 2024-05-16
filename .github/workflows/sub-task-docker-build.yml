@@ -43,7 +43,7 @@ jobs:
     steps:
       - name: Check out code
         id: checkout_code
-        uses: actions/checkout@v4.1.4
+        uses: actions/checkout@v4.1.5
 
       - name: Build Container
         id: build_container
@@ -71,7 +71,7 @@ jobs:
         uses: unfor19/install-aws-cli-action@27d6061dae5d39e89be4d2246824f15e111a7e06
 
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@ffc9011218e7227b402bc4cc49b703e8a3121c0f
+        uses: aws-actions/configure-aws-credentials@fff2104678c2113fcefb9ae8294dc7ccb803e27c
         with:
           aws-access-key-id: ${{ secrets.aws_access_key_id_actions }}
           aws-secret-access-key: ${{ secrets.aws_secret_access_key_actions }}
@@ -82,7 +82,7 @@ jobs:
 
       - name: Login to ECR
         id: login_ecr
-        uses: aws-actions/amazon-ecr-login@3b8097c25e1fc9742d2d91e6cdafe7b13d1f3d93
+        uses: aws-actions/amazon-ecr-login@cc03dd1c0bf990dc30ab360f4f39614f94e96cce
         with:
           registries: 311462405659
 
