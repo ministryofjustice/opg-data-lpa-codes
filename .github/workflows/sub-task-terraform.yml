@@ -31,7 +31,7 @@ jobs:
         uses: unfor19/install-aws-cli-action@27d6061dae5d39e89be4d2246824f15e111a7e06
 
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@85c6779ba663fba59057333bd3cb12abb7259051
+        uses: hashicorp/setup-terraform@fa933962d0efbe0dd57ac844e52cdb97ff655f84
         with:
           terraform_version: 1.7.2
 
