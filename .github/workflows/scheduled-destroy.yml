@@ -21,7 +21,7 @@ jobs:
   terraform_environment_cleanup:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@b80ff79f1755d06ba70441c368a6fe801f5f3a62
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
       - uses: unfor19/install-aws-cli-action@27d6061dae5d39e89be4d2246824f15e111a7e06
       - uses: hashicorp/setup-terraform@c5b46f3a2076045773780eb458c4c05f8869043d
         with:
