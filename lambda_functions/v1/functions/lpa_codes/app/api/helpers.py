@@ -25,7 +25,7 @@ def custom_logger(name=None):
         "line": "%(lineno)d",
         "message": "%(message)s",
     }
-    formatted_log = json.dumps(log_record)
+    formatted_log = json.loads(json.dumps(log_record))
 
     formatter = logging.Formatter(
         fmt=formatted_log
