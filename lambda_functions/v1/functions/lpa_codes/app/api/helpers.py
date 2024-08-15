@@ -16,20 +16,10 @@ def custom_logger(name=None):
         Logger instance
     """
     logger_name = name if name else "lpa_code_generator"
-    
-    log_record = {
-        "time": "%(asctime)s",
-        "level": "%(levelname)s",
-        "logger_name": {logger_name},
-        "function": "funcName)s",
-        "line": "%(lineno)d",
-        "message": "%(message)s",
-    }
-    formatted_log = json.loads(json.dumps(log_record))
 
     formatter = logging.Formatter(
-        fmt=formatted_log
-    )
+        fmt=f"%(asctime)s - %(levelname)s - {logger_name} - in %("
+        f"funcName)s:%(lineno)d - %(message)s"
 
     handler = logging.StreamHandler()
     handler.setFormatter(formatter)
