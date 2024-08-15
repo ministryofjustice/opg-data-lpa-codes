@@ -1,4 +1,5 @@
 import logging
+import json
 import os
 
 from dateutil.relativedelta import relativedelta
@@ -15,6 +16,7 @@ def custom_logger(name=None):
         Logger instance
     """
     logger_name = name if name else "lpa_code_generator"
+
     formatter = logging.Formatter(
         fmt=f"%(asctime)s - %(levelname)s - {logger_name} - in %("
         f"funcName)s:%(lineno)d - %(message)s"
