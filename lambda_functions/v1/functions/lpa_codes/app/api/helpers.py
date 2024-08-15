@@ -28,7 +28,7 @@ def custom_logger(name=None):
     formatted_log = json.dumps(log_record)
 
     formatter = logging.Formatter(
-        fmt=f"{formatted_log}"
+        fmt=formatted_log
     )
 
     handler = logging.StreamHandler()
