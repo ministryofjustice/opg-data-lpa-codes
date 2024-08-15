@@ -20,6 +20,7 @@ def custom_logger(name=None):
     formatter = logging.Formatter(
         fmt=f"%(asctime)s - %(levelname)s - {logger_name} - in %("
         f"funcName)s:%(lineno)d - %(message)s"
+    )
 
     handler = logging.StreamHandler()
     handler.setFormatter(formatter)
