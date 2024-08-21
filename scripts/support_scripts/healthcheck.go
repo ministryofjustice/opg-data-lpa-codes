@@ -13,9 +13,12 @@ import (
 )
 
 func main() {
-
-	roleToAssume := "arn:aws:iam::288342028542:role/operator"
+	roleToAssume := "arn:aws:iam::367815980639:role/operator"
 	url := "https://uml2623api.dev.lpa-codes.api.opg.service.justice.gov.uk/v1/healthcheck"
+	// roleToAssume := "arn:aws:iam::367815980639:role/operator"
+	// url := "https://dev.lpa-codes.api.opg.service.justice.gov.uk/v1/healthcheck"
+	// roleToAssume := "arn:aws:iam::288342028542:role/operator"
+	// url := "https://uml2623api.dev.lpa-codes.api.opg.service.justice.gov.uk/v1/healthcheck"
 	mySession := session.Must(session.NewSession())
 	creds := stscreds.NewCredentials(mySession, roleToAssume)
 	cfg := aws.Config{Credentials: creds, Region: aws.String("eu-west-1")}
