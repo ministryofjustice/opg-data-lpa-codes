@@ -8,9 +8,7 @@ resource "aws_api_gateway_rest_api" "lpa_codes" {
   }
 
   lifecycle {
-    replace_triggered_by = [
-      data.aws_iam_role.lambda_role
-    ]
+    replace_triggered_by = [null_resource.open_api]
   }
 
   tags = local.default_tags
