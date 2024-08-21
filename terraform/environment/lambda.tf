@@ -26,6 +26,6 @@ data "aws_ecr_repository" "lpa_codes_dbstream" {
 }
 
 data "aws_iam_role" "lambda_role" {
-  provider = aws.management
+  provider = aws
   name     = "lambda-lpa-codes-uml2623api-20240821074917112100000001"
 }
