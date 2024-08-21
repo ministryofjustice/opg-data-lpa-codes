@@ -9,7 +9,7 @@ resource "aws_api_gateway_rest_api" "lpa_codes" {
 
   lifecycle {
     replace_triggered_by = [
-      module.lambda.lambda_iam_role
+      module.lamdba_lpa_codes_v1.lambda_iam_role
     ]
   }
 
