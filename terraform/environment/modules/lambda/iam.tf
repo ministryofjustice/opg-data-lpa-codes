@@ -7,10 +7,6 @@ resource "aws_iam_role" "lambda_role" {
   tags = var.tags
 }
 
-output "lambda_iam_role" {
-  value = aws_iam_role.lambda_role
-}
-
 data "aws_iam_policy_document" "lambda_assume" {
   statement {
     actions = ["sts:AssumeRole"]
