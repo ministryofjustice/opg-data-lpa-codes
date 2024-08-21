@@ -6,6 +6,13 @@ resource "aws_api_gateway_rest_api" "lpa_codes" {
   endpoint_configuration {
     types = ["REGIONAL"]
   }
+
+  lifecycle {
+    replace_triggered_by = [
+      module.lamdba_lpa_codes_v1.lambda_iam_role
+    ]
+  }
+
   tags = local.default_tags
 }
 
