@@ -7,12 +7,6 @@ resource "aws_api_gateway_rest_api" "lpa_codes" {
     types = ["REGIONAL"]
   }
 
-  lifecycle {
-    replace_triggered_by = [
-      data.aws_iam_role.lambda_role
-    ]
-  }
-
   tags = local.default_tags
 }
 
