@@ -6,6 +6,11 @@ resource "aws_api_gateway_rest_api" "lpa_codes" {
   endpoint_configuration {
     types = ["REGIONAL"]
   }
+
+  lifecycle {
+    replace_triggered_by = [null_resource.open_api]
+  }
+
   tags = local.default_tags
 }
 
