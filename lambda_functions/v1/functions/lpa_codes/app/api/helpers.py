@@ -24,6 +24,7 @@ def custom_logger(name=None):
     handler.setFormatter(formatter)
 
     logger = logging.getLogger(name)
+    logger.propagate = False
 
     try:
         logger.setLevel(os.environ["LOGGER_LEVEL"])
