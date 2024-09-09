@@ -227,10 +227,19 @@ def insert_new_code(database, key, dob, code):
         }
     if lpa[0] not in ('M' , 'm') :
         item.update({"expiry_date" : calculate_expiry_date(today=datetime.datetime.now())})
+
     table.put_item(
         Item=item
     )
 
     inserted_item = get_codes(database, code=code)
 
+    # if returned item is zero length (which can occasionally happen), do some retries
+    attempts = 0
+    while len(inserted_item) == 0 and attempts < 5: 
+        inserted_item = get_codes(database, code=code)
+        print("attempting get_codes")
+        attempts += 1
+
     return inserted_item
+
