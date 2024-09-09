@@ -238,7 +238,6 @@ def insert_new_code(database, key, dob, code):
     attempts = 0
     while len(inserted_item) == 0 and attempts < 5: 
         inserted_item = get_codes(database, code=code)
-        print("attempting get_codes")
         attempts += 1
 
     return inserted_item
