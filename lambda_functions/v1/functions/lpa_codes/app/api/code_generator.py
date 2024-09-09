@@ -227,10 +227,14 @@ def insert_new_code(database, key, dob, code):
         }
     if lpa[0] not in ('M' , 'm') :
         item.update({"expiry_date" : calculate_expiry_date(today=datetime.datetime.now())})
-    table.put_item(
+
+    response = table.put_item(
         Item=item
     )
 
-    inserted_item = get_codes(database, code=code)
+    status_code = response['ResponseMetadata']['HTTPStatusCode']
+    if status_code == 200:
+        return item
+    else:
+        return None
 
-    return inserted_item
