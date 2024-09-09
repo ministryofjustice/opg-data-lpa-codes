@@ -1,5 +1,6 @@
 import datetime
 import secrets
+import time
 from boto3.dynamodb.conditions import Key, Attr
 
 from .database import lpa_codes_table
@@ -237,8 +238,10 @@ def insert_new_code(database, key, dob, code):
     # if returned list of items is zero length (which can occasionally happen), do some retries
     attempts = 0
     while len(inserted_item) == 0 and attempts < 5: 
+        time.sleep(0.1)
         inserted_item = get_codes(database, code=code)
         attempts += 1
+
 
     return inserted_item
 
