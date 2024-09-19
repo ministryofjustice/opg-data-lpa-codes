@@ -37,9 +37,6 @@ jobs:
           - name: 'lpa-codes'
             path: 'lambda_functions/v1'
             dockerfile: "Function"
-          - name: 'lpa-codes-dynamo'
-            path: 'lambda_functions/v1'
-            dockerfile: "Dynamo"
     steps:
       - name: Check out code
         id: checkout_code
