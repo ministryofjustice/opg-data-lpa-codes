@@ -23,25 +23,6 @@ services:
       AWS_DEFAULT_REGION: eu-west-1
     entrypoint: /aws-lambda/aws-lambda-rie /usr/local/bin/python -m awslambdaric app.lpa_codes.lambda_handler
 
-  lpa-codes-dynamodb:
-    image: lpa-codes-dynamodb:latest
-    build:
-      context: ./lambda_functions/v1
-      dockerfile: Dockerfile-Dynamo
-    ports:
-      - "9010:8080"
-    volumes:
-      - ./lambda_functions/.aws-lambda-rie:/aws-lambda
-      - ./lambda_functions/v1/functions/lpa_codes_dynamodb_streams/app:/function/app
-    depends_on:
-      - dynamodb
-      - table-helper
-    environment:
-      LOCAL_URL: host.docker.internal
-      ENVIRONMENT: local
-      API_VERSION: v1
-    entrypoint: /aws-lambda/aws-lambda-rie /usr/local/bin/python -m awslambdaric app.dynamodb_stream.lambda_handler
-
   table-helper:
     build:
       context: ./lambda_functions/v1
