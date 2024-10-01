@@ -33,7 +33,7 @@ jobs:
           terraform_version: 1.7.2
 
       - name: configure AWS credentials for terraform
-        uses: aws-actions/configure-aws-credentials@050bf7aae915badb82daa8e68fd95c9070706953 # pin@v1.7.0
+        uses: aws-actions/configure-aws-credentials@73daff1b20af655c574cf2018ed2cc18a597bf5c # pin@v1.7.0
         with:
           aws-access-key-id: ${{ secrets.aws_access_key_id_actions }}
           aws-secret-access-key: ${{ secrets.aws_secret_access_key_actions }}
