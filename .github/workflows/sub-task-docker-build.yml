@@ -40,7 +40,7 @@ jobs:
     steps:
       - name: Check out code
         id: checkout_code
-        uses: actions/checkout@v4.2.0
+        uses: actions/checkout@v4.2.1
 
       - name: Build Container
         id: build_container
