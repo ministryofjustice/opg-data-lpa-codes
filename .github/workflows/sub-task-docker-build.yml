@@ -48,7 +48,7 @@ jobs:
 
       - name: Trivy Image Vulnerability Scanner
         id: trivy_scan
-        uses: aquasecurity/trivy-action@807896715e16054f9ae275ea68a15ee3908f0124
+        uses: aquasecurity/trivy-action@5681af892cd0f4997658e2bacc62bd0a894cf564
         with:
           image-ref: ${{ matrix.name }}:latest
           severity: 'HIGH,CRITICAL'
