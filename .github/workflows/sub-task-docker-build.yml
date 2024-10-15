@@ -40,7 +40,23 @@ jobs:
     steps:
       - name: Check out code
         id: checkout_code
-        uses: actions/checkout@v4.2.1
+        uses: actions/checkout@v4.1.7
+      
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@909c963c254b4e2e2f5aa6ef17217c4d7a7c4a31
+        with:
+          aws-access-key-id: ${{ secrets.aws_access_key_id_actions }}
+          aws-secret-access-key: ${{ secrets.aws_secret_access_key_actions }}
+          aws-region: eu-west-1
+          role-to-assume: arn:aws:iam::311462405659:role/integrations-ci
+          role-duration-seconds: 900
+          role-session-name: OPGLPACodesGithubAction
+
+      - name: Login to ECR
+        id: login_ecr
+        uses: aws-actions/amazon-ecr-login@46d808a88fadc001401c8b8275bd97e2a95a98ec
+        with:
+          registries: 311462405659
 
       - name: Build Container
         id: build_container
@@ -48,7 +64,10 @@ jobs:
 
       - name: Trivy Image Vulnerability Scanner
         id: trivy_scan
-        uses: aquasecurity/trivy-action@5681af892cd0f4997658e2bacc62bd0a894cf564
+        uses: aquasecurity/trivy-action@a20de5420d57c4102486cdd9578b45609c99d7eb
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TRIVY_DB_REPOSITORY: ${{ steps.login_ecr.outputs.registry }}/trivy-db-public-ecr/aquasecurity/trivy-db:2
         with:
           image-ref: ${{ matrix.name }}:latest
           severity: 'HIGH,CRITICAL'
@@ -66,22 +85,6 @@ jobs:
 
       - name: Install AWS Cli
         uses: unfor19/install-aws-cli-action@27d6061dae5d39e89be4d2246824f15e111a7e06
-
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@2cefa29f8797029f898b1baeff3e21a144128687
-        with:
-          aws-access-key-id: ${{ secrets.aws_access_key_id_actions }}
-          aws-secret-access-key: ${{ secrets.aws_secret_access_key_actions }}
-          aws-region: eu-west-1
-          role-to-assume: arn:aws:iam::311462405659:role/integrations-ci
-          role-duration-seconds: 900
-          role-session-name: OPGLPACodesGithubAction
-
-      - name: Login to ECR
-        id: login_ecr
-        uses: aws-actions/amazon-ecr-login@d5dd46d537c86e506335323688c342319bedcfe1
-        with:
-          registries: 311462405659
 
       - name: Push to ECR
         env:
