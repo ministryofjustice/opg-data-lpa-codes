@@ -20,10 +20,10 @@ jobs:
     steps:
       - name: Check out code
         id: checkout_code
-        uses: actions/checkout@v4.2.1
+        uses: actions/checkout@v4.2.2
 
       - name: Setup Python
-        uses: actions/setup-python@19dfb7b659fa9e60c2f89c33335ab5f6f1792b6e
+        uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b
         with:
           python-version: '3.11'
 
