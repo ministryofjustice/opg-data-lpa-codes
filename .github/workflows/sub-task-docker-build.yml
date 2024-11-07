@@ -43,7 +43,7 @@ jobs:
         uses: actions/checkout@v4.2.2
       
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@16ffc4e9d9f32c3680fe46c04be1bfe4cde7b524
+        uses: aws-actions/configure-aws-credentials@97834a484a5ab3c40fa9e2eb40fcf8041105a573
         with:
           aws-access-key-id: ${{ secrets.aws_access_key_id_actions }}
           aws-secret-access-key: ${{ secrets.aws_secret_access_key_actions }}
