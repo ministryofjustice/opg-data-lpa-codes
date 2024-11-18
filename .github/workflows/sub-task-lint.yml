@@ -28,7 +28,7 @@ jobs:
     steps:
       - uses: actions/checkout@3b9b8c884f6b4bb4d5be2779c26374abadae0871 # pin@v3
 
-      - uses: hashicorp/setup-terraform@4fab0119030f0b41039f372591efdbf7dbcd8fd8 # pin@v2.0.0
+      - uses: hashicorp/setup-terraform@fd3bf06534214722507d89f9d499612bf7799787 # pin@v2.0.0
         with:
           terraform_version: 1.7.2
 
