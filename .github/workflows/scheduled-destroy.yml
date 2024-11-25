@@ -23,7 +23,7 @@ jobs:
     steps:
       - uses: actions/checkout@cbb722410c2e876e24abbe8de2cc27693e501dcb
       - uses: unfor19/install-aws-cli-action@27d6061dae5d39e89be4d2246824f15e111a7e06
-      - uses: hashicorp/setup-terraform@638baae34350e2a9782c370af78c5da9eac4e8a0
+      - uses: hashicorp/setup-terraform@344fef46b6edc7c46ce8b3b8b0a3ece7e77e05f0
         with:
           terraform_version: 1.7.2
           terraform_wrapper: false
