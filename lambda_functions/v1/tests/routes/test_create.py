@@ -45,6 +45,37 @@ def test_create(server):
         assert r.status_code == 200
         assert r.json() == expected_return
 
+@pytest.mark.run(order=1)
+def test_create_digital_lpa(server):
+
+    with server.app_context():
+        test_data = {
+            "lpas": [
+                {
+                    "lpa": "M-3J8F-86JF-9UDA",
+                    "actor": "12ad81a9-f89d-4804-99f5-7c0c8669ac8e",
+                    "dob": "1960-06-05",
+                }
+            ]
+        }
+
+        test_headers = {"Content-Type": "application/json"}
+
+        expected_return = {
+            "codes": [
+                {
+                    "actor": "12ad81a9-f89d-4804-99f5-7c0c8669ac8e",
+                    "code": "tOhkrldOqewm",
+                    "lpa": "M-3J8F-86JF-9UDA",
+                }
+            ]
+        }
+
+        r = requests.post(
+            server.url + "/create", headers=test_headers, data=json.dumps(test_data)
+        )
+        assert r.status_code == 200
+        assert r.json() == expected_return
 
 @pytest.mark.run(order=1)
 def test_create_missing_lpa(server):
