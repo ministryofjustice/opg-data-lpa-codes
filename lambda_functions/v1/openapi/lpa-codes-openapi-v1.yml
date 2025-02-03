@@ -145,7 +145,7 @@ paths:
                     properties:
                       lpa:
                         type: string
-                        pattern: '[0-9]{12}|^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$'
+                        pattern: '([0-9]{12}|^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12})|(M(-[0-9A-Z]{4}){3})$'
                       actor:
                         type: string
                         pattern: '[0-9]{12}|^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$'
