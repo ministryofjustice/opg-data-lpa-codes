@@ -43,7 +43,7 @@ jobs:
         uses: actions/checkout@v4.2.2
       
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@4fc4975a852c8cd99761e2de1f4ba73402e44dd9
+        uses: aws-actions/configure-aws-credentials@3478c15aa1cf2543c22efcbbd3e483d49c3a31d7
         with:
           aws-access-key-id: ${{ secrets.aws_access_key_id_actions }}
           aws-secret-access-key: ${{ secrets.aws_secret_access_key_actions }}
@@ -54,7 +54,7 @@ jobs:
 
       - name: Login to ECR
         id: login_ecr
-        uses: aws-actions/amazon-ecr-login@21a7588699d87a47d51abd55e077cb0fcf66fe7c
+        uses: aws-actions/amazon-ecr-login@5987c53246a4cdb9fb822a0b17a98df3cdc62942
         with:
           registries: 311462405659
 
