@@ -39,6 +39,9 @@ resource "aws_lambda_function" "lambda_function" {
       ENVIRONMENT  = var.environment
     }
   }
+  logging_config {
+    log_format = "JSON"
+  }
   tracing_config {
     mode = "Active"
   }
