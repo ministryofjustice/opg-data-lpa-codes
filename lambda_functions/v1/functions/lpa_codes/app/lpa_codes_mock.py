@@ -11,7 +11,12 @@ TOKEN_DB = {"asdf1234567890": {"uid": 100}}
 
 
 def apikey_auth(token, required_scopes):
-    info = TOKEN_DB.get(token, None)
+
+    # if we have been sent an AWS token, set it by hand
+    if token[0:16] == 'AWS4-HMAC-SHA256':
+        info = TOKEN_DB.get('asdf1234567890', None)
+    else:
+        info = TOKEN_DB.get(token, None)
 
     if not info:
         raise OAuthProblem("Invalid token")

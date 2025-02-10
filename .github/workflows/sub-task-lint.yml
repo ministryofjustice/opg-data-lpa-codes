@@ -26,14 +26,14 @@ jobs:
         include:
           - folder: 'environment'
     steps:
-      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # pin@v3
+      - uses: actions/checkout@85e6279cec87321a52edac9c87bce653a07cf6c2 # pin@v3
 
-      - uses: hashicorp/setup-terraform@7f4493e15578a47490e79892b308bf23dee56c45 # pin@v2.0.0
+      - uses: hashicorp/setup-terraform@49dee962d541c13290ae1c9c9be9c8b741ecb6bc # pin@v2.0.0
         with:
           terraform_version: 1.7.2
 
       - name: configure AWS credentials for terraform
-        uses: aws-actions/configure-aws-credentials@12e3392609eaaceb7ae6191b3f54bbcb85b5002b # pin@v1.7.0
+        uses: aws-actions/configure-aws-credentials@16fec6080fdb89d4b237dee411b7bf8f3658ec97 # pin@v1.7.0
         with:
           aws-access-key-id: ${{ secrets.aws_access_key_id_actions }}
           aws-secret-access-key: ${{ secrets.aws_secret_access_key_actions }}
