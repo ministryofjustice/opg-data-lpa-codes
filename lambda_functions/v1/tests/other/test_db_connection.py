@@ -41,7 +41,6 @@ def test_db_connection(monkeypatch, caplog):
         assert "host.docker.internal" in caplog.text
 
     monkeypatch.setenv("ENVIRONMENT", "ci")
-    monkeypatch.setenv("LOCAL_URL", None)
 
     db_connection()
 
