@@ -35,7 +35,7 @@ services:
     depends_on:
       - dynamodb
     environment:
-      LOCAL_URL: dynamodb
+      LOCAL_URL: http://dynamodb:8000
       ENVIRONMENT: local
       AWS_ACCESS_KEY_ID: testing
       AWS_SECRET_ACCESS_KEY: testing #pragma: allowlist secret
