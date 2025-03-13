@@ -13,7 +13,7 @@ services:
       - dynamodb
       - table-helper
     environment:
-      LOCAL_URL: host.docker.internal
+      LOCAL_URL: http://dynamodb:8000
       ENVIRONMENT: local
       API_VERSION: v1
       AWS_ACCESS_KEY_ID: testing
@@ -34,7 +34,7 @@ services:
     volumes:
       - ./lambda_functions/v1/:/var/www/lambda_functions/v1/
     environment:
-      LOCAL_URL: host.docker.internal
+      LOCAL_URL: http://dynamodb:8000
       ENVIRONMENT: local
       AWS_ACCESS_KEY_ID: testing
       AWS_SECRET_ACCESS_KEY: testing #pragma: allowlist secret
