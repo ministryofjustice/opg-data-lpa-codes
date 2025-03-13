@@ -21,7 +21,10 @@ def db_connection():
         if os.environ.get("LOCAL_URL"):
             url = os.environ.get("LOCAL_URL")
         else:
-            url = "http://localhost:8000"
+            if os.environ.get("ENVIRONMENT") == "ci":
+                url = "http://host.docker.internal:8000"
+            else:
+                url = "http://localhost:8000"
         conn = boto3.resource(
             "dynamodb", endpoint_url=url, region_name="eu-west-1"
         )
