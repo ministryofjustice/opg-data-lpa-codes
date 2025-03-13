@@ -28,17 +28,17 @@ def dynamodb_connection(conn="resource"):
     if os.environ.get("LOCAL_URL") is not None:
         local_url = os.environ.get("LOCAL_URL")
     else:
-        local_url = "localhost"
+        local_url = "http://localhost:8000"
     if conn == "resource":
         ddb = boto3.resource(
             "dynamodb",
-            endpoint_url="http://" + local_url + ":8000",
+            endpoint_url=local_url,
             region_name="eu-west-1",
         )
     else:
         ddb = boto3.client(
             "dynamodb",
-            endpoint_url="http://" + local_url + ":8000",
+            endpoint_url=local_url,
             region_name="eu-west-1",
         )
     return ddb
