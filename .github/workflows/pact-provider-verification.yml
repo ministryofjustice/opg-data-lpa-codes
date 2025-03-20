@@ -15,7 +15,7 @@ jobs:
     name: Provider verification
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - run: docker compose -f docker-compose-pact.yml up -d api_gateway
       - name: Wait for container
         run: timeout 60s sh -c 'until curl -q -X POST localhost:4343/v1/create | grep 401; do echo "Waiting for table-helper to be healthy..."; sleep 2; done'
