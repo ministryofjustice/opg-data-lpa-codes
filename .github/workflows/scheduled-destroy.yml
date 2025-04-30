@@ -42,7 +42,12 @@ jobs:
           wget https://github.com/ministryofjustice/opg-terraform-workspace-manager/releases/download/v0.3.2/opg-terraform-workspace-manager_Linux_x86_64.tar.gz -O $HOME/terraform-workspace-manager.tar.gz
           sudo tar -xvf $HOME/terraform-workspace-manager.tar.gz -C /usr/local/bin
           sudo chmod +x /usr/local/bin/terraform-workspace-manager
-
+      
+      - name: Setup SSH private key
+        uses: webfactory/ssh-agent@d4b9b8ff72958532804b70bbe600ad43b36d5f2e # v0.8.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY_ALLOW_LIST_REPOSITORY }}
+      
       - name: Terraform Init
         working-directory: terraform/environment
         run: terraform init -input=false

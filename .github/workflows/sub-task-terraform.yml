@@ -49,6 +49,11 @@ jobs:
           sed -i "s/\"\${allowed_roles}\"/\${allowed_roles}/" lpa-codes-openapi-v1.yml
         working-directory: lambda_functions/v1/openapi
 
+      - name: Setup SSH private key
+        uses: webfactory/ssh-agent@d4b9b8ff72958532804b70bbe600ad43b36d5f2e # v0.8.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY_ALLOW_LIST_REPOSITORY }}
+          
       - name: Terraform Init
         run: terraform init -input=false -upgrade
         working-directory: ./${{ inputs.terraform_path }}
