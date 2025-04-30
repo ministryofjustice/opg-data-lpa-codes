@@ -44,3 +44,8 @@ variable "content_api_sha" {
   description = "SHA for the content of the openapi spec"
   type        = string
 }
+
+variable "content_api_gateway_policy_sha" {
+  description = "SHA for the content of the API Gateway Policy"
+  type        = string
+}

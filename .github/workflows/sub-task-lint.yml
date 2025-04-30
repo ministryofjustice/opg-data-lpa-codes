@@ -16,6 +16,8 @@ on:
         required: true
       aws_secret_access_key_actions:
         required: true
+      ssh_private_key_allow_list_repository:
+        required: true
       source_github_token:
         required: true
 jobs:
@@ -43,6 +45,11 @@ jobs:
       - name: terraform fmt ${{ matrix.folder }} check
         run: terraform fmt -check -recursive
         working-directory: ./terraform/${{ matrix.folder }}
+
+      - name: Setup SSH private key
+        uses: webfactory/ssh-agent@d4b9b8ff72958532804b70bbe600ad43b36d5f2e # v0.8.0
+        with:
+          ssh-private-key: ${{ secrets.ssh_private_key_allow_list_repository }}
 
       - name: terraform validate ${{ inputs.workspace }}
         env:

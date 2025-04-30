@@ -2,8 +2,9 @@ resource "aws_api_gateway_deployment" "deploy" {
   rest_api_id = var.rest_api.id
 
   triggers = {
-    redeployment = var.content_api_sha
-    image_tag    = var.image_tag
+    open_api_spec      = var.content_api_sha
+    api_gateway_policy = var.content_api_gateway_policy_sha
+    image_tag          = var.image_tag
   }
 
   lifecycle {
