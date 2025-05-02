@@ -18,6 +18,9 @@ on:
         required: true
       aws_secret_access_key_actions:
         required: true
+      ssh_private_key_allow_list_repository:
+        required: true
+
 
 jobs:
   terraform_workflow:
@@ -33,7 +36,7 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3.1.2
         with:
-          terraform_version: 1.7.2
+          terraform_version: 1.11.4
 
       - name: Configure AWS Credentials For Terraform
         uses: aws-actions/configure-aws-credentials@ececac1a45f3b08a01d2dd070d28d111c5fe6722 # v4.1.0
@@ -44,10 +47,10 @@ jobs:
           role-duration-seconds: 3600
           role-session-name: OPGLPACodesGithubAction
 
-      - name: Modify openapispec
-        run:
-          sed -i "s/\"\${allowed_roles}\"/\${allowed_roles}/" lpa-codes-openapi-v1.yml
-        working-directory: lambda_functions/v1/openapi
+      - name: Setup SSH private key
+        uses: webfactory/ssh-agent@d4b9b8ff72958532804b70bbe600ad43b36d5f2e # v0.8.0
+        with:
+          ssh-private-key: ${{ secrets.ssh_private_key_allow_list_repository }}
 
       - name: Terraform Init
         run: terraform init -input=false -upgrade
