@@ -32,16 +32,16 @@ jobs:
         env:
           ROLE: integrations-ci
           TF_WORKSPACE: ${{ inputs.workspace }}
+        working-directory: scripts/ci_pipeline/load_testing
         run: |
-          if [ "${TF_WORKSPACE}" == "preproduction" ]
+          if [ "${TF_WORKSPACE}" == "development" ]
             then
-              echo "Running against preproduction"
-              export BRANCH="pre"
-              export ACCOUNT="492687888235"
+              echo "Running against development"
+              export BRANCH="dev"
+              export ACCOUNT="288342028542"
             else
               echo "Running against branch environment"
               export BRANCH="${TF_WORKSPACE}.dev"
               export ACCOUNT="288342028542"
             fi
             go run load_testing.go
-        working-directory: scripts/ci_pipeline/load_testing
