@@ -91,6 +91,7 @@ jobs:
     name: Preproduction Environment Terraform Plan and Apply
     needs: [
       'development_environment_apply',
+      'development_integration_tests',
       'create_tags'
     ]
     uses: ./.github/workflows/sub-task-terraform.yml
@@ -106,7 +107,7 @@ jobs:
   production_environment_apply:
     name: Production Environment Terraform Plan and Apply
     needs: [
-      'preproduction_integration_tests',
+      'preproduction_environment_apply',
       'create_tags'
     ]
     uses: ./.github/workflows/sub-task-terraform.yml
