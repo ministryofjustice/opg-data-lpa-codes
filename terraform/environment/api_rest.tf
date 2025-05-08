@@ -80,5 +80,5 @@ locals {
       module.allow_list.sirius_prod_allow_list,
     )
   }
-  ip_restrictions_enabled = contains(["preproduction"], local.account.account_mapping)
+  ip_restrictions_enabled = contains(["preproduction", "production"], local.account.account_mapping)
 }
