@@ -6,7 +6,7 @@ RUN apk add --no-cache \
     libstdc++ \
     elfutils-dev
 
-RUN apk update && apk upgrade expat
+RUN apk update && apk upgrade --no-cache expat sqlite-libs libcrypto3 libssl3 musl musl-utils
 
 FROM python-alpine as build-image
 
