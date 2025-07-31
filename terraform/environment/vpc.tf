@@ -7,8 +7,11 @@ data "aws_subnet" "private" {
   availability_zone = data.aws_availability_zones.available.names[count.index]
 
   filter {
-    name   = "tag:Name"
-    values = ["private*"]
+    name = "tag:Name"
+    values = [
+      "application-*",
+      "private-*"
+    ]
   }
 }
 
