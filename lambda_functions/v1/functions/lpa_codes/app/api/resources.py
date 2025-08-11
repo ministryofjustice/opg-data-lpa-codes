@@ -1,6 +1,7 @@
 import os
 
-from flask import Blueprint, abort, request, jsonify
+from flask_openapi3 import APIBlueprint
+from flask import request, jsonify, abort
 
 from .errors import error_message
 from .helpers import custom_logger
@@ -8,8 +9,23 @@ from . import endpoints
 
 logger = custom_logger("code generator")
 
+aws_endpoint_integration_template = {
+    "x-amazon-apigateway-request-validator": "all",
+    "x-amazon-apigateway-integration": {
+        "uri": "arn:aws:apigateway:${region}:lambda:path/2015-03-31/functions/"
+        "arn:aws:lambda:${region}:${account_id}:function:"
+        "$${stageVariables.lpa_codes_function_name}/invocations",
+        "responses": {"default": {"statusCode": "200"}},
+        "passthroughBehavior": "when_no_match",
+        "httpMethod": "POST",
+        "contentHandling": "CONVERT_TO_TEXT",
+        "type": "aws_proxy",
+    },
+}
+
+security = [{"sigv4": []}]
 version = os.getenv("API_VERSION")
-api = Blueprint("api", __name__, url_prefix=f"/{version}")
+api = APIBlueprint("lpa-codes-api", __name__, url_prefix=f"/{version}")
 
 
 @api.app_errorhandler(404)
@@ -32,8 +48,19 @@ def handle500(error=None):
     return error_message(500, f"Something went wrong: {error}")
 
 
-@api.route("/healthcheck", methods=["HEAD", "GET"])
+healthcheck_api = APIBlueprint("healthcheck", __name__, abp_security=security)
+
+
+@healthcheck_api.get(
+    "/healthcheck",
+    operation_id="api.resources.handle_healthcheck",
+    responses={200: {"content": {"application/json": {"schema": {"type": "string"}}}}},
+    openapi_extensions=aws_endpoint_integration_template,
+)
 def handle_healthcheck():
+    """Healthcheck endpoint
+    Checks health of our lambda
+    """
     response_message = "OK"
 
     return jsonify(response_message), 200
@@ -100,6 +127,7 @@ def revoke_route():
 
     return jsonify(result), status_code
 
+
 @api.route("/mark_used", methods=["POST"])
 def mark_used_route():
     """
@@ -127,6 +155,7 @@ def mark_used_route():
     result, status_code = endpoints.handle_mark_used(data=post_data)
 
     return jsonify(result), status_code
+
 
 @api.route("/validate", methods=["POST"])
 def validate_route():
@@ -228,3 +257,6 @@ def actor_code_details_route():
     print(result)
 
     return jsonify(result), status_code
+
+
+api.register_api(healthcheck_api)
