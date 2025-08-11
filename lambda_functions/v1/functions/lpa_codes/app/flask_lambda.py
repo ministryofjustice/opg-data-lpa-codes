@@ -21,7 +21,7 @@ try:
 except ImportError:
     from urllib.parse import urlencode
 
-from flask import Flask
+from flask_openapi3 import OpenAPI
 
 try:
     from cBytesIO import BytesIO
@@ -96,7 +96,7 @@ class LambdaResponse(object):
         self.response_headers = dict(response_headers)
 
 
-class FlaskLambda(Flask):
+class FlaskLambda(OpenAPI):
     def __call__(self, event, context):
         try:
             if "httpMethod" not in event:
