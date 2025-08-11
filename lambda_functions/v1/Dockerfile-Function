@@ -8,7 +8,7 @@ RUN apk add --no-cache \
 
 RUN apk update && apk upgrade --no-cache expat sqlite-libs libcrypto3 libssl3 musl musl-utils
 
-FROM python-alpine as build-image
+FROM python-alpine AS build-image
 
 # Install aws-lambda-cpp build dependencies
 RUN apk add --no-cache \
