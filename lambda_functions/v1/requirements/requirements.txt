@@ -1,4 +1,4 @@
 #Update this date to trigger update of layers: 290416
 awslambdaric==3.0.0
-flask==3.0.2
 boto3~=1.28
+flask-openapi3[yaml]==4.2.1
