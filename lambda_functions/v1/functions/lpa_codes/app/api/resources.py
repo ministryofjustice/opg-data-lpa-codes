@@ -1,6 +1,8 @@
 import os
 
 from flask import Blueprint, abort, request, jsonify
+from openapi_core import OpenAPI
+from openapi_core.contrib.flask.decorators import FlaskOpenAPIViewDecorator
 
 from .errors import error_message
 from .helpers import custom_logger
@@ -10,6 +12,9 @@ logger = custom_logger("code generator")
 
 version = os.getenv("API_VERSION")
 api = Blueprint("api", __name__, url_prefix=f"/{version}")
+
+openapi = OpenAPI.from_file_path(os.getenv("OPENAPI_SPEC_PATH", "./openapi/lpa-codes-openapi-v1.yml"))
+openapi_validated = FlaskOpenAPIViewDecorator(openapi)
 
 
 @api.app_errorhandler(404)
@@ -33,6 +38,7 @@ def handle500(error=None):
 
 
 @api.route("/healthcheck", methods=["HEAD", "GET"])
+@openapi_validated
 def handle_healthcheck():
     response_message = "OK"
 
@@ -40,6 +46,7 @@ def handle_healthcheck():
 
 
 @api.route("/create", methods=["POST"])
+@openapi_validated
 def create_route():
     """
     Creates a new code for the given lpa/actor/dob combo.
@@ -73,6 +80,7 @@ def create_route():
 
 
 @api.route("/revoke", methods=["POST"])
+@openapi_validated
 def revoke_route():
     """
     Revokes the given code
@@ -100,7 +108,9 @@ def revoke_route():
 
     return jsonify(result), status_code
 
+
 @api.route("/mark_used", methods=["POST"])
+@openapi_validated
 def mark_used_route():
     """
     Marks the given code as used (sets the expiry date)
@@ -128,7 +138,9 @@ def mark_used_route():
 
     return jsonify(result), status_code
 
+
 @api.route("/validate", methods=["POST"])
+@openapi_validated
 def validate_route():
     """
     Validates a code/lpa/dob combo
@@ -163,6 +175,7 @@ def validate_route():
 
 
 @api.route("/exists", methods=["POST"])
+@openapi_validated
 def actor_code_exists_route():
     """
     Checks if a code exists for a given actor on an LPA
@@ -195,6 +208,7 @@ def actor_code_exists_route():
 
 
 @api.route("/code", methods=["POST"])
+@openapi_validated
 def actor_code_details_route():
     """
     Returns data for an Actor Activation code
