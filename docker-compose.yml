@@ -9,6 +9,7 @@ services:
     volumes:
       - ./lambda_functions/.aws-lambda-rie:/aws-lambda
       - ./lambda_functions/v1/functions/lpa_codes/app:/function/app
+      - ./lambda_functions/v1/openapi/lpa-codes-openapi-v1.yml:/openapi/lpa-codes-openapi-v1.yml
     depends_on:
       - dynamodb
       - table-helper
@@ -21,6 +22,7 @@ services:
       AWS_SECURITY_TOKEN: testing
       AWS_SESSION_TOKEN: testing
       AWS_DEFAULT_REGION: eu-west-1
+      OPENAPI_SPEC_PATH: /openapi/lpa-codes-openapi-v1.yml
     entrypoint: /aws-lambda/aws-lambda-rie /usr/local/bin/python -m awslambdaric app.lpa_codes.lambda_handler
 
   table-helper:
@@ -41,6 +43,7 @@ services:
       AWS_SECURITY_TOKEN: testing
       AWS_SESSION_TOKEN: testing
       AWS_DEFAULT_REGION: eu-west-1
+      OPENAPI_SPEC_PATH: /var/www/lambda_functions/v1/openapi/lpa-codes-openapi-v1.yml
 
   dynamodb:
     image: amazon/dynamodb-local:latest
