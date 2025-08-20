@@ -9,6 +9,7 @@ services:
     volumes:
       - ./lambda_functions/.aws-lambda-rie:/aws-lambda
       - ./lambda_functions/v1/functions/lpa_codes/app:/function/app
+      - ./lambda_functions/v1/openapi/lpa-codes-openapi-v1.yml:/function/openapi/lpa-codes-openapi-v1.yml
     depends_on:
       - dynamodb
       - table-helper
