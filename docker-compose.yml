@@ -43,7 +43,7 @@ services:
       AWS_DEFAULT_REGION: eu-west-1
 
   dynamodb:
-    image: amazon/dynamodb-local:latest
+    image: amazon/dynamodb-local:latest@sha256:2fed5e3a965a4ba5aa6ac82baec57058b5a3848e959d705518f3fd579a77e76b
     entrypoint: java
     command: "-jar DynamoDBLocal.jar -sharedDb"
     ports:
