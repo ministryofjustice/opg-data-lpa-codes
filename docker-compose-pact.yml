@@ -1,6 +1,6 @@
 services:
   postgres:
-    image: postgres
+    image: postgres@sha256:29e0bb09c8e7e7fc265ea9f4367de9622e55bae6b0b97e7cce740c2d63c2ebc0
     ports:
       - "5433:5432"
     environment:
@@ -8,7 +8,7 @@ services:
       POSTGRES_PASSWORD: password #pragma: allowlist secret
       POSTGRES_DB: postgres
   broker_app:
-    image: pactfoundation/pact-broker
+    image: pactfoundation/pact-broker@sha256:05b05a192c771b33ba67ffdf2d6829bb32600145ca8f154165187d318c8ee70f
     ports:
       - "9293:80"
       - "9292:9292"
@@ -47,7 +47,7 @@ services:
         aliases:
           - lpa-codes.local
   dynamodb:
-    image: amazon/dynamodb-local:latest
+    image: amazon/dynamodb-local:latest@sha256:2fed5e3a965a4ba5aa6ac82baec57058b5a3848e959d705518f3fd579a77e76b
     entrypoint: java
     command: "-jar DynamoDBLocal.jar -sharedDb"
     ports:
@@ -57,7 +57,7 @@ services:
         aliases:
           - lpa-codes.local
   pact-verifier:
-    image: pactfoundation/pact-ref-verifier
+    image: pactfoundation/pact-ref-verifier@sha256:514b680cd0ad2fa95c6df7a541e3b03c8dd1176de26e84e58a349de96e305bce
     entrypoint:
       - pact_verifier_cli
       - --hostname=api_gateway
