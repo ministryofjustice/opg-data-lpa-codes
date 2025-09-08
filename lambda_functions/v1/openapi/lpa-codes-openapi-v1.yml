@@ -2,80 +2,10 @@
 openapi: '3.0.2'
 info:
   title: lpa-codes-${environment}
-  version: '1.0'
+  version: '2.0'
 servers:
   - url: /v1
     description: we use the path only so we can use in different contexts
-
-x-amazon-apigateway-request-validators:
-  all:
-    validateRequestParameters: true
-    validateRequestBody: true
-
-x-amazon-apigateway-gateway-responses:
-  ACCESS_DENIED:
-      responseTemplates:
-        application/json: '{"errors": { "id": "$context.requestId", "code": "OPGDATA-API-FORBIDDEN", "title":$context.error.messageString, "detail":"Forbidden - The current user is forbidden from accessing this data (in this way)", "meta": {"x-ray": "$context.xrayTraceId"} }}'
-  API_CONFIGURATION_ERROR:
-      responseTemplates:
-        application/json: '{"errors": { "id": "$context.requestId", "code": "OPGDATA-API-API_CONFIGURATION_ERROR", "title":$context.error.messageString, "detail": "", "meta": {"x-ray": "$context.xrayTraceId"} }}'
-  AUTHORIZER_CONFIGURATION_ERROR:
-      responseTemplates:
-        application/json: '{"errors": { "id": "$context.requestId", "code": "OPGDATA-API-AUTHORIZER_CONFIGURATION_ERROR", "title":$context.error.messageString, "detail": "", "meta": {"x-ray": "$context.xrayTraceId"} }}'
-  AUTHORIZER_FAILURE:
-      responseTemplates:
-        application/json: '{"errors": { "id": "$context.requestId", "code": "OPGDATA-API-AUTHORIZER_FAILURE", "title":$context.error.messageString, "detail": "", "meta": {"x-ray": "$context.xrayTraceId"} }}'
-  BAD_REQUEST_BODY:
-      responseTemplates:
-        application/json: '{"errors": [{ "id": "$context.requestId", "code": "OPGDATA-API-INVALIDREQUEST", "title":$context.error.messageString, "detail":"$context.error.validationErrorString", "meta": {"x-ray": "$context.xrayTraceId"} }]}'
-  BAD_REQUEST_PARAMETERS:
-      responseTemplates:
-        application/json: '{"errors": { "id": "$context.requestId", "code": "OPGDATA-API-BAD_REQUEST_PARAMETERS", "title":$context.error.messageString, "detail": "", "meta": {"x-ray": "$context.xrayTraceId"} }}'
-  DEFAULT_4XX:
-      responseTemplates:
-        application/json: '{"errors": { "id": "$context.requestId", "code": "OPGDATA-API-INVALIDREQUEST", "title":$context.error.messageString, "detail": "", "meta": {"x-ray": "$context.xrayTraceId"} }}'
-  DEFAULT_5XX:
-      responseTemplates:
-        application/json: '{"errors": { "id": "$context.requestId", "code": "OPGDATA-API-SERVERERROR", "title":$context.error.messageString, "detail":"Something unexpected happened internally", "meta": {"x-ray": "$context.xrayTraceId"} }}'
-  EXPIRED_TOKEN:
-      responseTemplates:
-        application/json: '{"errors": { "id": "$context.requestId", "code": "OPGDATA-API-EXPIRED_TOKEN", "title":$context.error.messageString, "detail": "", "meta": {"x-ray": "$context.xrayTraceId"} }}'
-  INTEGRATION_FAILURE:
-      responseTemplates:
-        application/json: '{"errors": { "id": "$context.requestId", "code": "OPGDATA-API-INTEGRATION_FAILURE", "title":$context.error.messageString, "detail": "", "meta": {"x-ray": "$context.xrayTraceId"} }}'
-  INTEGRATION_TIMEOUT:
-      responseTemplates:
-        application/json: '{"errors": { "id": "$context.requestId", "code": "OPGDATA-API-INTEGRATION_TIMEOUT", "title":$context.error.messageString, "detail": "", "meta": {"x-ray": "$context.xrayTraceId"} }}'
-  INVALID_API_KEY:
-      responseTemplates:
-        application/json: '{"errors": { "id": "$context.requestId", "code": "OPGDATA-API-INVALID_API_KEY", "title":$context.error.messageString, "detail": "", "meta": {"x-ray": "$context.xrayTraceId"} }}'
-  INVALID_SIGNATURE:
-      responseTemplates:
-        application/json: '{"errors": { "id": "$context.requestId", "code": "OPGDATA-API-INVALID_SIGNATURE", "title":$context.error.messageString, "detail": "", "meta": {"x-ray": "$context.xrayTraceId"} }}'
-  MISSING_AUTHENTICATION_TOKEN:
-      responseTemplates:
-        application/json: '{"errors": { "id": "$context.requestId", "code": "OPGDATA-API-MISSING_AUTHENTICATION_TOKEN", "title":$context.error.messageString, "detail": "", "meta": {"x-ray": "$context.xrayTraceId"} }}'
-  QUOTA_EXCEEDED:
-      responseTemplates:
-        application/json: '{"errors": { "id": "$context.requestId", "code": "OPGDATA-API-QUOTA_EXCEEDED", "title":$context.error.messageString, "detail": "", "meta": {"x-ray": "$context.xrayTraceId"} }}'
-  REQUEST_TOO_LARGE:
-      responseTemplates:
-        application/json: '{"errors": { "id": "$context.requestId", "code": "OPGDATA-API-FILESIZELIMIT", "title":$context.error.messageString, "detail":"Payload too large, try and upload in smaller chunks", "meta": {"x-ray": "$context.xrayTraceId"} }}'
-  RESOURCE_NOT_FOUND:
-      responseTemplates:
-        application/json: '{"errors": { "id": "$context.requestId", "code": "OPGDATA-API-NOTFOUND", "title":$context.error.messageString, "detail":"That URL is not a valid route, or the item resource does not exist", "meta": {"x-ray": "$context.xrayTraceId"} }}'
-  THROTTLED:
-      responseTemplates:
-        application/json: '{"errors": { "id": "$context.requestId", "code": "OPGDATA-API-THROTTLED", "title":$context.error.messageString, "detail": "", "meta": {"x-ray": "$context.xrayTraceId"} }}'
-  UNAUTHORIZED:
-      responseTemplates:
-        application/json: '{"errors": { "id": "$context.requestId", "code": "OPGDATA-API-UNAUTHORISED", "title":$context.error.messageString, "detail":"Unauthorised (no current user and there should be)", "meta": {"x-ray": "$context.xrayTraceId"} }}'
-  UNSUPPORTED_MEDIA_TYPE:
-      responseTemplates:
-        application/json: '{"errors": { "id": "$context.requestId", "code": "OPGDATA-API-MEDIA", "title":$context.error.messageString, "detail":"Unsupported media type for this endpoint", "meta": {"x-ray": "$context.xrayTraceId"} }}'
-  WAF_FILTERED:
-      responseTemplates:
-        application/json: '{"errors": { "id": "$context.requestId", "code": "OPGDATA-API-WAF_FILTERED", "title":$context.error.messageString, "detail": "", "meta": {"x-ray": "$context.xrayTraceId"} }}'
 
 paths:
   /healthcheck:
@@ -85,36 +15,16 @@ paths:
       operationId: api.resources.handle_healthcheck
       security:
         - sigv4: []
-      x-amazon-apigateway-request-validator: "all"
-      x-amazon-apigateway-integration:
-        uri: arn:aws:apigateway:${region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${region}:${account_id}:function:$${stageVariables.lpa_codes_function_name}/invocations
-        responses:
-          default:
-            statusCode: "200"
-        passthroughBehavior: "when_no_match"
-        httpMethod: "POST"
-        contentHandling: "CONVERT_TO_TEXT"
-        type: "aws_proxy"
       responses:
         200:
           description: OK
   /create:
     post:
-      x-amazon-apigateway-request-validator: "all"
       summary: "Create a new code"
       description: "Create a new 12 digit alpha-numeric code unique to this LPA and Actor"
       operationId: api.resources.create_route
       security:
         - sigv4: []
-      x-amazon-apigateway-integration:
-        uri: arn:aws:apigateway:${region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${region}:${account_id}:function:$${stageVariables.lpa_codes_function_name}/invocations
-        responses:
-          default:
-            statusCode: "201"
-        passthroughBehavior: "when_no_match"
-        httpMethod: "POST"
-        contentHandling: "CONVERT_TO_TEXT"
-        type: "aws_proxy"
       requestBody:
         required: true
         content:
@@ -139,15 +49,15 @@ paths:
                         pattern: '[0-9]{4}-[0-9]{2}-[0-9]{2}$'
               additionalProperties: false
               example:
-                  lpas:
-                    - lpa: "eed4f597-fd87-4536-99d0-895778824861"
-                      actor: "12ad81a9-f89d-4804-99f5-7c0c8669ac9b"
-                      dob: "1960-06-05"
-                    - lpa: "eed4f597-fd87-4536-99d0-895778824861"
-                      actor: "9a619d46-8712-4bfb-a49f-c14914ff319d"
-                      dob: "1983-08-20"
+                lpas:
+                  - lpa: "895778824861"
+                    actor: "12ad81a9-f89d-4804-99f5-7c0c8669ac9b"
+                    dob: "1960-06-05"
+                  - lpa: "895778824861"
+                    actor: "9a619d46-8712-4bfb-a49f-c14914ff319d"
+                    dob: "1983-08-20"
       responses:
-        201:
+        200:
           description: OK
           content:
             application/json:
@@ -159,65 +69,13 @@ paths:
             application/vnd.opg-data.v1+json:
               schema:
                 $ref: '#/components/schemas/Error400'
-        401:
-          description: Unauthorised (no current user and there should be)
-          content:
-            application/vnd.opg-data.v1+json:
-              schema:
-                $ref: '#/components/schemas/Error401'
-        403:
-          description: Forbidden - The current user is forbidden from accessing this data (in this way)
-          content:
-            application/vnd.opg-data.v1+json:
-              schema:
-                $ref: '#/components/schemas/Error403'
-        404:
-          description: That URL is not a valid route, or the item resource does not exist
-          content:
-            application/vnd.opg-data.v1+json:
-              schema:
-                $ref: '#/components/schemas/Error404'
-        413:
-          description: Payload too large
-          content:
-            application/vnd.opg-data.v1+json:
-              schema:
-                $ref: '#/components/schemas/Error413'
-        415:
-          description: Unsupported media type
-          content:
-            application/vnd.opg-data.v1+json:
-              schema:
-                $ref: '#/components/schemas/Error415'
-        500:
-          description: Something unexpected happened and it is the API"s fault
-          content:
-            application/vnd.opg-data.v1+json:
-              schema:
-                $ref: '#/components/schemas/Error500'
-        503:
-          description: Service Unavailable - please try again later
-          content:
-            application/vnd.opg-data.v1+json:
-              schema:
-                $ref: '#/components/schemas/Error503'
   /validate:
     post:
       summary: "Validate a code"
-      description: "Validate a code"
+      description: "Validates the combination of lpa/dob/code is active and valid"
       operationId: api.resources.validate_route
       security:
         - sigv4: []
-      x-amazon-apigateway-request-validator: "all"
-      x-amazon-apigateway-integration:
-        uri: arn:aws:apigateway:${region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${region}:${account_id}:function:$${stageVariables.lpa_codes_function_name}/invocations
-        responses:
-          default:
-            statusCode: "200"
-        passthroughBehavior: "when_no_match"
-        httpMethod: "POST"
-        contentHandling: "CONVERT_TO_TEXT"
-        type: "aws_proxy"
       requestBody:
         required: true
         content:
@@ -233,7 +91,7 @@ paths:
                 code:
                   type: string
               example:
-                lpa: "eed4f597-fd87-4536-99d0-895778824861"
+                lpa: "895778824861"
                 dob: "1960-06-05"
                 code: "YsSu4iAztUXm"
       responses:
@@ -249,65 +107,19 @@ paths:
             application/vnd.opg-data.v1+json:
               schema:
                 $ref: '#/components/schemas/Error400'
-        401:
-          description: Unauthorised (no current user and there should be)
-          content:
-            application/vnd.opg-data.v1+json:
-              schema:
-                $ref: '#/components/schemas/Error401'
-        403:
-          description: Forbidden - The current user is forbidden from accessing this data (in this way)
-          content:
-            application/vnd.opg-data.v1+json:
-              schema:
-                $ref: '#/components/schemas/Error403'
-        404:
-          description: That URL is not a valid route, or the item resource does not exist
-          content:
-            application/vnd.opg-data.v1+json:
-              schema:
-                $ref: '#/components/schemas/Error404'
-        413:
-          description: Payload too large
-          content:
-            application/vnd.opg-data.v1+json:
-              schema:
-                $ref: '#/components/schemas/Error413'
-        415:
-          description: Unsupported media type
-          content:
-            application/vnd.opg-data.v1+json:
-              schema:
-                $ref: '#/components/schemas/Error415'
         500:
           description: Something unexpected happened and it is the API"s fault
           content:
             application/vnd.opg-data.v1+json:
               schema:
                 $ref: '#/components/schemas/Error500'
-        503:
-          description: Service Unavailable - please try again later
-          content:
-            application/vnd.opg-data.v1+json:
-              schema:
-                $ref: '#/components/schemas/Error503'
   /revoke:
     post:
       summary: "Revoke a code"
-      description: "Revoke a code"
+      description: "Updates the status of the provided code to revoked"
       operationId: api.resources.revoke_route
       security:
         - sigv4: []
-      x-amazon-apigateway-request-validator: "all"
-      x-amazon-apigateway-integration:
-        uri: arn:aws:apigateway:${region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${region}:${account_id}:function:$${stageVariables.lpa_codes_function_name}/invocations
-        responses:
-          default:
-            statusCode: "200"
-        passthroughBehavior: "when_no_match"
-        httpMethod: "POST"
-        contentHandling: "CONVERT_TO_TEXT"
-        type: "aws_proxy"
       requestBody:
         required: true
         content:
@@ -328,65 +140,19 @@ paths:
             application/vnd.opg-data.v1+json:
               schema:
                 $ref: '#/components/schemas/Error400'
-        401:
-          description: Unauthorised (no current user and there should be)
-          content:
-            application/vnd.opg-data.v1+json:
-              schema:
-                $ref: '#/components/schemas/Error401'
-        403:
-          description: Forbidden - The current user is forbidden from accessing this data (in this way)
-          content:
-            application/vnd.opg-data.v1+json:
-              schema:
-                $ref: '#/components/schemas/Error403'
-        404:
-          description: That URL is not a valid route, or the item resource does not exist
-          content:
-            application/vnd.opg-data.v1+json:
-              schema:
-                $ref: '#/components/schemas/Error404'
-        413:
-          description: Payload too large
-          content:
-            application/vnd.opg-data.v1+json:
-              schema:
-                $ref: '#/components/schemas/Error413'
-        415:
-          description: Unsupported media type
-          content:
-            application/vnd.opg-data.v1+json:
-              schema:
-                $ref: '#/components/schemas/Error415'
         500:
           description: Something unexpected happened and it is the API"s fault
           content:
             application/vnd.opg-data.v1+json:
               schema:
                 $ref: '#/components/schemas/Error500'
-        503:
-          description: Service Unavailable - please try again later
-          content:
-            application/vnd.opg-data.v1+json:
-              schema:
-                $ref: '#/components/schemas/Error503'
   /mark_used:
     post:
       summary: "Mark a Modernise code as used - set the expiry date from now"
-      description: "Mark a Modernise code as used - set the expiry date from nowe"
+      description: "Mark a Modernise code as used - Updates the expiry_date of the provided code to 2 years from now"
       operationId: api.resources.mark_used_route
       security:
         - sigv4: []
-      x-amazon-apigateway-request-validator: "all"
-      x-amazon-apigateway-integration:
-        uri: arn:aws:apigateway:${region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${region}:${account_id}:function:$${stageVariables.lpa_codes_function_name}/invocations
-        responses:
-          default:
-            statusCode: "200"
-        passthroughBehavior: "when_no_match"
-        httpMethod: "POST"
-        contentHandling: "CONVERT_TO_TEXT"
-        type: "aws_proxy"
       requestBody:
         required: true
         content:
@@ -407,48 +173,12 @@ paths:
             application/vnd.opg-data.v1+json:
               schema:
                 $ref: '#/components/schemas/Error400'
-        401:
-          description: Unauthorised (no current user and there should be)
-          content:
-            application/vnd.opg-data.v1+json:
-              schema:
-                $ref: '#/components/schemas/Error401'
-        403:
-          description: Forbidden - The current user is forbidden from accessing this data (in this way)
-          content:
-            application/vnd.opg-data.v1+json:
-              schema:
-                $ref: '#/components/schemas/Error403'
-        404:
-          description: That URL is not a valid route, or the item resource does not exist
-          content:
-            application/vnd.opg-data.v1+json:
-              schema:
-                $ref: '#/components/schemas/Error404'
-        413:
-          description: Payload too large
-          content:
-            application/vnd.opg-data.v1+json:
-              schema:
-                $ref: '#/components/schemas/Error413'
-        415:
-          description: Unsupported media type
-          content:
-            application/vnd.opg-data.v1+json:
-              schema:
-                $ref: '#/components/schemas/Error415'
         500:
           description: Something unexpected happened and it is the API"s fault
           content:
             application/vnd.opg-data.v1+json:
               schema:
                 $ref: '#/components/schemas/Error500'
-        503:
-          description: Service Unavailable - please try again later
-          content:
-            application/vnd.opg-data.v1+json:
-              schema:
-                $ref: '#/components/schemas/Error503'
   /exists:
     post:
       summary: "Checks if a code exists for a specific actor on an LPA"
@@ -456,16 +186,6 @@ paths:
       operationId: api.resources.actor_code_exists_route
       security:
         - sigv4: []
-      x-amazon-apigateway-request-validator: "all"
-      x-amazon-apigateway-integration:
-        uri: arn:aws:apigateway:${region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${region}:${account_id}:function:$${stageVariables.lpa_codes_function_name}/invocations
-        responses:
-          default:
-            statusCode: "200"
-        passthroughBehavior: "when_no_match"
-        httpMethod: "POST"
-        contentHandling: "CONVERT_TO_TEXT"
-        type: "aws_proxy"
       requestBody:
         required: true
         content:
@@ -478,7 +198,7 @@ paths:
                 actor:
                   type: string
               example:
-                lpa: "eed4f597-fd87-4536-99d0-895778824861"
+                lpa: "895778824861"
                 actor: "12ad81a9-f89d-4804-99f5-7c0c8669ac9b"
       responses:
         200:
@@ -493,48 +213,12 @@ paths:
             application/vnd.opg-data.v1+json:
               schema:
                 $ref: '#/components/schemas/Error400'
-        401:
-          description: Unauthorised (no current user and there should be)
-          content:
-            application/vnd.opg-data.v1+json:
-              schema:
-                $ref: '#/components/schemas/Error401'
-        403:
-          description: Forbidden - The current user is forbidden from accessing this data (in this way)
-          content:
-            application/vnd.opg-data.v1+json:
-              schema:
-                $ref: '#/components/schemas/Error403'
-        404:
-          description: That URL is not a valid route, or the item resource does not exist
-          content:
-            application/vnd.opg-data.v1+json:
-              schema:
-                $ref: '#/components/schemas/Error404'
-        413:
-          description: Payload too large
-          content:
-            application/vnd.opg-data.v1+json:
-              schema:
-                $ref: '#/components/schemas/Error413'
-        415:
-          description: Unsupported media type
-          content:
-            application/vnd.opg-data.v1+json:
-              schema:
-                $ref: '#/components/schemas/Error415'
         500:
           description: Something unexpected happened and it is the API"s fault
           content:
             application/vnd.opg-data.v1+json:
               schema:
                 $ref: '#/components/schemas/Error500'
-        503:
-          description: Service Unavailable - please try again later
-          content:
-            application/vnd.opg-data.v1+json:
-              schema:
-                $ref: '#/components/schemas/Error503'
   /code:
     post:
       summary: "Returns all details for a code"
@@ -542,16 +226,6 @@ paths:
       operationId: api.resources.actor_code_details_route
       security:
         - sigv4: []
-      x-amazon-apigateway-request-validator: "all"
-      x-amazon-apigateway-integration:
-        uri: arn:aws:apigateway:${region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${region}:${account_id}:function:$${stageVariables.lpa_codes_function_name}/invocations
-        responses:
-          default:
-            statusCode: "200"
-        passthroughBehavior: "when_no_match"
-        httpMethod: "POST"
-        contentHandling: "CONVERT_TO_TEXT"
-        type: "aws_proxy"
       requestBody:
         required: true
         content:
@@ -576,48 +250,18 @@ paths:
             application/vnd.opg-data.v1+json:
               schema:
                 $ref: '#/components/schemas/Error400'
-        401:
-          description: Unauthorised (no current user and there should be)
-          content:
-            application/vnd.opg-data.v1+json:
-              schema:
-                $ref: '#/components/schemas/Error401'
-        403:
-          description: Forbidden - The current user is forbidden from accessing this data (in this way)
-          content:
-            application/vnd.opg-data.v1+json:
-              schema:
-                $ref: '#/components/schemas/Error403'
         404:
           description: That URL is not a valid route, or the item resource does not exist
           content:
             application/vnd.opg-data.v1+json:
               schema:
                 $ref: '#/components/schemas/Error404'
-        413:
-          description: Payload too large
-          content:
-            application/vnd.opg-data.v1+json:
-              schema:
-                $ref: '#/components/schemas/Error413'
-        415:
-          description: Unsupported media type
-          content:
-            application/vnd.opg-data.v1+json:
-              schema:
-                $ref: '#/components/schemas/Error415'
         500:
           description: Something unexpected happened and it is the API"s fault
           content:
             application/vnd.opg-data.v1+json:
               schema:
                 $ref: '#/components/schemas/Error500'
-        503:
-          description: Service Unavailable - please try again later
-          content:
-            application/vnd.opg-data.v1+json:
-              schema:
-                $ref: '#/components/schemas/Error503'
 
 components:
   securitySchemes:
@@ -625,7 +269,6 @@ components:
       type: apiKey
       name: Authorization
       in: header
-      x-amazon-apigateway-authtype: awsSigv4
       x-apikeyInfoFunc: lpa_codes_mock.apikey_auth
   schemas:
     CodeCreated:
@@ -643,12 +286,12 @@ components:
                 type: string
       example:
         codes:
-        - lpa: "eed4f597-fd87-4536-99d0-895778824861"
-          actor: "12ad81a9-f89d-4804-99f5-7c0c8669ac9b"
-          code: "YsSu4iAztUXm"
-        - lpa: "eed4f597-fd87-4536-99d0-895778824861"
-          actor: "9a619d46-8712-4bfb-a49f-c14914ff319d"
-          code: "aEYVS6i9zSwy"
+          - lpa: "895778824861"
+            actor: "12ad81a9-f89d-4804-99f5-7c0c8669ac9b"
+            code: "YsSu4iAztUXm"
+          - lpa: "895778824861"
+            actor: "9a619d46-8712-4bfb-a49f-c14914ff319d"
+            code: "aEYVS6i9zSwy"
       required:
         - codes
     ValidateCode:
@@ -666,7 +309,7 @@ components:
         actor:
           type: string
       example:
-        lpa: "eed4f597-fd87-4536-99d0-895778824861"
+        lpa: "895778824861"
         actor: "12ad81a9-f89d-4804-99f5-7c0c8669ac9b"
       required:
         - lpa
@@ -703,7 +346,7 @@ components:
         expiry_date: 2023-08-20
         dob: 1983-08-20
         generated_date: 2022-08-20
-        lpa: "eed4f597-fd87-4536-99d0-895778824861"
+        lpa: "895778824861"
         actor: "12ad81a9-f89d-4804-99f5-7c0c8669ac9b"
       required:
         - active
@@ -747,68 +390,6 @@ components:
                   x-ray:
                     type: string
                     example: "93c330d4-7d84-4c1b-8fdb-54cec5bfe747"
-    Error401:
-      type: object
-      required:
-        - errors
-      properties:
-        errors:
-          type: array
-          items:
-            type: object
-            required:
-              - code
-              - title
-            properties:
-              id:
-                type: string
-                example: "A123BCD"
-              code:
-                type: string
-                example: "OPGDATA-API-UNAUTHORISED"
-              title:
-                type: string
-                example: "User is not authorised"
-              detail:
-                type: string
-                example: "Unauthorised (no current user and there should be)"
-              meta:
-                type: object
-                properties:
-                  x-ray:
-                    type: string
-                    example: "93c330d4-7d84-4c1b-8fdb-54cec5bfe747"
-    Error403:
-      type: object
-      required:
-        - errors
-      properties:
-        errors:
-          type: array
-          items:
-            type: object
-            required:
-              - code
-              - title
-            properties:
-              id:
-                type: string
-                example: "A123BCD"
-              code:
-                type: string
-                example: "OPGDATA-API-FORBIDDEN"
-              title:
-                type: string
-                example: "Access Denied"
-              detail:
-                type: string
-                example: "Forbidden - The current user is forbidden from accessing this data (in this way)"
-              meta:
-                type: object
-                properties:
-                  x-ray:
-                    type: string
-                    example: "93c330d4-7d84-4c1b-8fdb-54cec5bfe747"
     Error404:
       type: object
       required:
@@ -840,68 +421,6 @@ components:
                   x-ray:
                     type: string
                     example: "93c330d4-7d84-4c1b-8fdb-54cec5bfe747"
-    Error413:
-      type: object
-      required:
-        - errors
-      properties:
-        errors:
-          type: array
-          items:
-            type: object
-            required:
-              - code
-              - title
-            properties:
-              id:
-                type: string
-                example: "A123BCD"
-              code:
-                type: string
-                example: "OPGDATA-API-FILESIZELIMIT"
-              title:
-                type: string
-                example: "Payload too large"
-              detail:
-                type: string
-                example: "Payload too large, try and upload in smaller chunks"
-              meta:
-                type: object
-                properties:
-                  x-ray:
-                    type: string
-                    example: "93c330d4-7d84-4c1b-8fdb-54cec5bfe747"
-    Error415:
-      type: object
-      required:
-        - errors
-      properties:
-        errors:
-          type: array
-          items:
-            type: object
-            required:
-              - code
-              - title
-            properties:
-              id:
-                type: string
-                example: "A123BCD"
-              code:
-                type: string
-                example: "OPGDATA-API-MEDIA"
-              title:
-                type: string
-                example: "Unsupported media type"
-              detail:
-                type: string
-                example: "Unsupported media type for this endpoint"
-              meta:
-                type: object
-                properties:
-                  x-ray:
-                    type: string
-                    example: "93c330d4-7d84-4c1b-8fdb-54cec5bfe747"
     Error500:
       type: object
       required:
@@ -927,37 +446,6 @@ components:
               detail:
                 type: string
                 example: "Something unexpected happened internally"
-              meta:
-                type: object
-                properties:
-                  x-ray:
-                    type: string
-                    example: "93c330d4-7d84-4c1b-8fdb-54cec5bfe747"
-    Error503:
-      type: object
-      required:
-        - errors
-      properties:
-        errors:
-          type: array
-          items:
-            type: object
-            required:
-              - code
-              - title
-            properties:
-              id:
-                type: string
-                example: "A123BCD"
-              code:
-                type: string
-                example: "OPGDATA-API-UNAVAILABLE"
-              title:
-                type: string
-                example: "Service Unavailable"
-              detail:
-                type: string
-                example: "Service is currently unavailable. Please try again later"
               meta:
                 type: object
                 properties:

@@ -47,6 +47,9 @@ jobs:
           role-duration-seconds: 3600
           role-session-name: OPGLPACodesGithubAction
 
+      - name: Compile OpenAPI file
+        run: make build-apigw-openapi-spec
+
       - name: Setup SSH private key
         uses: webfactory/ssh-agent@d4b9b8ff72958532804b70bbe600ad43b36d5f2e # v0.8.0
         with:
