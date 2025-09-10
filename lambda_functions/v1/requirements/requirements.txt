@@ -2,3 +2,4 @@
 awslambdaric==3.0.0
 flask==3.0.2
 boto3~=1.28
+openapi-core==0.19.5
