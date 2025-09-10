@@ -15,6 +15,3 @@ infrastructure:
 
 scripts:
   - any: ["scripts/**/*"]
-
-pact:
-  - any: ["pact/**/*"]
