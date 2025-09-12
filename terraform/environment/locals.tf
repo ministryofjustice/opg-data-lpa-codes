@@ -25,9 +25,8 @@ locals {
 
   //Modify for new version of API
   latest_openapi_version = "v1"
-  spec_name    = "openapi-aws.compiled"
-  openapi_spec = "../../lambda_functions/${local.latest_openapi_version}/openapi/${local.api_name}-${local.spec_name}.yml"
-  #   openapi_spec = "../../lambda_functions/${local.latest_openapi_version}/openapi/${local.api_name}-openapi-${local.latest_openapi_version}.yml"
+  spec_name              = "aws.compiled"
+  openapi_spec           = "../../lambda_functions/${local.latest_openapi_version}/openapi/${local.api_name}-openapi-${local.spec_name}.yml"
 }
 
 output "rest_arn" {
