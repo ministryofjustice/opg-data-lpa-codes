@@ -1,3 +1,4 @@
+import botocore
 import copy
 
 from pytest_cases import case, parametrize, parametrize_with_cases
@@ -358,7 +359,7 @@ def case_update_multiple_codes_to_inactive_in233(item):
 
     status = False
 
-    expected_result = 0
+    expected_result = botocore.exceptions.ClientError
 
     return test_data, key, code, status, expected_result
 

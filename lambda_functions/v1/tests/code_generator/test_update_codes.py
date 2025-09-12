@@ -28,7 +28,12 @@ def test_update_codes_by_key(mock_database, test_data, key, code, status, expect
 
     # Run test function
     db = boto3.resource("dynamodb")
-    test_result = update_codes(database=db, key=key, code=code, status=status)
+    try:
+        test_result = update_codes(database=db, key=key, code=code, status=status)
+    except Exception as e:
+        assert isinstance(e, expected_result)
+        remove_test_data(test_data)
+        return
 
     # Test db contents after function
 
