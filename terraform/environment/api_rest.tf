@@ -8,18 +8,7 @@ resource "aws_api_gateway_rest_api" "lpa_codes" {
     types = ["REGIONAL"]
   }
 
-  lifecycle {
-    replace_triggered_by = [null_resource.open_api]
-  }
-
   tags = local.default_tags
-}
-
-resource "null_resource" "open_api" {
-  triggers = {
-    open_api_sha        = local.open_api_sha
-    rest_api_policy_sha = local.rest_api_policy_sha
-  }
 }
 
 locals {
@@ -41,6 +30,7 @@ data "aws_iam_policy_document" "lpa_rest_api_policy" {
     resources = ["arn:aws:execute-api:eu-west-?:${local.account.account_id}:*/*/*/*"]
   }
 }
+
 data "aws_iam_policy_document" "lpa_rest_api_ip_restriction_policy" {
   count = local.ip_restrictions_enabled ? 1 : 0
   statement {
