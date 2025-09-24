@@ -50,10 +50,10 @@ paths:
               additionalProperties: false
               example:
                 lpas:
-                  - lpa: "895778824861"
+                  - lpa: "795778824861"
                     actor: "12ad81a9-f89d-4804-99f5-7c0c8669ac9b"
                     dob: "1960-06-05"
-                  - lpa: "895778824861"
+                  - lpa: "795778824861"
                     actor: "9a619d46-8712-4bfb-a49f-c14914ff319d"
                     dob: "1983-08-20"
       responses:
@@ -91,7 +91,7 @@ paths:
                 code:
                   type: string
               example:
-                lpa: "895778824861"
+                lpa: "795778824861"
                 dob: "1960-06-05"
                 code: "YsSu4iAztUXm"
       responses:
@@ -198,7 +198,7 @@ paths:
                 actor:
                   type: string
               example:
-                lpa: "895778824861"
+                lpa: "795778824861"
                 actor: "12ad81a9-f89d-4804-99f5-7c0c8669ac9b"
       responses:
         200:
@@ -269,7 +269,7 @@ components:
       type: apiKey
       name: Authorization
       in: header
-      x-apikeyInfoFunc: lpa_codes_mock.apikey_auth
+      x-apikeyInfoFunc: lpa_codes_mock.apikey_auth #pragma: allowlist secret
   schemas:
     CodeCreated:
       properties:
@@ -286,10 +286,10 @@ components:
                 type: string
       example:
         codes:
-          - lpa: "895778824861"
+          - lpa: "795778824861"
             actor: "12ad81a9-f89d-4804-99f5-7c0c8669ac9b"
             code: "YsSu4iAztUXm"
-          - lpa: "895778824861"
+          - lpa: "795778824861"
             actor: "9a619d46-8712-4bfb-a49f-c14914ff319d"
             code: "aEYVS6i9zSwy"
       required:
@@ -309,7 +309,7 @@ components:
         actor:
           type: string
       example:
-        lpa: "895778824861"
+        lpa: "795778824861"
         actor: "12ad81a9-f89d-4804-99f5-7c0c8669ac9b"
       required:
         - lpa
@@ -346,7 +346,7 @@ components:
         expiry_date: 2023-08-20
         dob: 1983-08-20
         generated_date: 2022-08-20
-        lpa: "895778824861"
+        lpa: "795778824861"
         actor: "12ad81a9-f89d-4804-99f5-7c0c8669ac9b"
       required:
         - active

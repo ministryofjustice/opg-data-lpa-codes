@@ -1,4 +1,11 @@
+---
 openapi: '3.0.2'
+info:
+  title: lpa-codes-${environment}
+  version: '2.0'
+servers:
+  - url: /v1
+    description: we use the path only so we can use in different contexts
 
 x-amazon-apigateway-request-validators:
   all:
@@ -70,9 +77,6 @@ x-amazon-apigateway-gateway-responses:
     responseTemplates:
       application/json: '{"errors": { "id": "$context.requestId", "code": "OPGDATA-API-WAF_FILTERED", "title":$context.error.messageString, "detail": "", "meta": {"x-ray": "$context.xrayTraceId"} }}'
 
-#
-# TODO : responses in endpoints are duplicated with openapi spec, may need removing
-#
 paths:
   /healthcheck:
     get:
@@ -86,9 +90,6 @@ paths:
         httpMethod: "POST"
         contentHandling: "CONVERT_TO_TEXT"
         type: "aws_proxy"
-      responses:
-        200:
-          description: OK
 
   /create:
     post:
@@ -102,9 +103,6 @@ paths:
         httpMethod: "POST"
         contentHandling: "CONVERT_TO_TEXT"
         type: "aws_proxy"
-      responses:
-        200:
-          description: OK
 
   /validate:
     post:
@@ -118,9 +116,6 @@ paths:
         httpMethod: "POST"
         contentHandling: "CONVERT_TO_TEXT"
         type: "aws_proxy"
-      responses:
-        200:
-          description: OK
 
   /revoke:
     post:
@@ -134,9 +129,6 @@ paths:
         httpMethod: "POST"
         contentHandling: "CONVERT_TO_TEXT"
         type: "aws_proxy"
-      responses:
-        200:
-          description: OK
 
   /mark_used:
     post:
@@ -150,9 +142,6 @@ paths:
         httpMethod: "POST"
         contentHandling: "CONVERT_TO_TEXT"
         type: "aws_proxy"
-      responses:
-        200:
-          description: OK
 
   /exists:
     post:
@@ -166,9 +155,6 @@ paths:
         httpMethod: "POST"
         contentHandling: "CONVERT_TO_TEXT"
         type: "aws_proxy"
-      responses:
-        200:
-          description: OK
 
   /code:
     post:
@@ -182,12 +168,8 @@ paths:
         httpMethod: "POST"
         contentHandling: "CONVERT_TO_TEXT"
         type: "aws_proxy"
-      responses:
-        200:
-          description: OK
 
 components:
   securitySchemes:
     sigv4:
       x-amazon-apigateway-authtype: awsSigv4
-      type: apiKey
