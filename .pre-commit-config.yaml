@@ -1,14 +1,14 @@
 ---
 repos:
   - repo: https://github.com/python-openapi/openapi-spec-validator
-    rev:  0.7.1
+    rev: 0.7.1
     hooks:
-    - id: openapi-spec-validator
-      name: openapi-spec-validator
-      entry: openapi-spec-validator
-      description: Hook to validate Open API specs.
-      language: python
-      files: .*lpa-codes-openapi.*\.(json|yaml|yml)
+      - id: openapi-spec-validator
+        name: openapi-spec-validator
+        entry: openapi-spec-validator
+        description: Hook to validate Open API specs.
+        language: python
+        files: .*lpa-codes-openapi-aws.compiled.*\.(json|yaml|yml)
   - repo: https://github.com/adrienverge/yamllint.git
     rev: v1.17.0
     hooks:

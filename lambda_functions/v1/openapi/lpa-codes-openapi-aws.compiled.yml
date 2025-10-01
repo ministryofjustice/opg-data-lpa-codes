@@ -1,4 +1,3 @@
----
 openapi: '3.0.2'
 info:
   title: lpa-codes-${environment}
@@ -6,7 +5,6 @@ info:
 servers:
   - url: /v1
     description: we use the path only so we can use in different contexts
-
 paths:
   /healthcheck:
     get:
@@ -18,6 +16,16 @@ paths:
       responses:
         200:
           description: OK
+      x-amazon-apigateway-request-validator: "all"
+      x-amazon-apigateway-integration:
+        uri: arn:aws:apigateway:${region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${region}:${account_id}:function:$${stageVariables.lpa_codes_function_name}/invocations
+        responses:
+          default:
+            statusCode: "200"
+        passthroughBehavior: "when_no_match"
+        httpMethod: "POST"
+        contentHandling: "CONVERT_TO_TEXT"
+        type: "aws_proxy"
   /create:
     post:
       summary: "Create a new code"
@@ -69,6 +77,16 @@ paths:
             application/vnd.opg-data.v1+json:
               schema:
                 $ref: '#/components/schemas/Error400'
+      x-amazon-apigateway-request-validator: "all"
+      x-amazon-apigateway-integration:
+        uri: arn:aws:apigateway:${region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${region}:${account_id}:function:$${stageVariables.lpa_codes_function_name}/invocations
+        responses:
+          default:
+            statusCode: "201"
+        passthroughBehavior: "when_no_match"
+        httpMethod: "POST"
+        contentHandling: "CONVERT_TO_TEXT"
+        type: "aws_proxy"
   /validate:
     post:
       summary: "Validate a code"
@@ -113,6 +131,16 @@ paths:
             application/vnd.opg-data.v1+json:
               schema:
                 $ref: '#/components/schemas/Error500'
+      x-amazon-apigateway-request-validator: "all"
+      x-amazon-apigateway-integration:
+        uri: arn:aws:apigateway:${region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${region}:${account_id}:function:$${stageVariables.lpa_codes_function_name}/invocations
+        responses:
+          default:
+            statusCode: "200"
+        passthroughBehavior: "when_no_match"
+        httpMethod: "POST"
+        contentHandling: "CONVERT_TO_TEXT"
+        type: "aws_proxy"
   /revoke:
     post:
       summary: "Revoke a code"
@@ -146,6 +174,16 @@ paths:
             application/vnd.opg-data.v1+json:
               schema:
                 $ref: '#/components/schemas/Error500'
+      x-amazon-apigateway-request-validator: "all"
+      x-amazon-apigateway-integration:
+        uri: arn:aws:apigateway:${region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${region}:${account_id}:function:$${stageVariables.lpa_codes_function_name}/invocations
+        responses:
+          default:
+            statusCode: "200"
+        passthroughBehavior: "when_no_match"
+        httpMethod: "POST"
+        contentHandling: "CONVERT_TO_TEXT"
+        type: "aws_proxy"
   /mark_used:
     post:
       summary: "Mark a Modernise code as used - set the expiry date from now"
@@ -179,6 +217,16 @@ paths:
             application/vnd.opg-data.v1+json:
               schema:
                 $ref: '#/components/schemas/Error500'
+      x-amazon-apigateway-request-validator: "all"
+      x-amazon-apigateway-integration:
+        uri: arn:aws:apigateway:${region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${region}:${account_id}:function:$${stageVariables.lpa_codes_function_name}/invocations
+        responses:
+          default:
+            statusCode: "200"
+        passthroughBehavior: "when_no_match"
+        httpMethod: "POST"
+        contentHandling: "CONVERT_TO_TEXT"
+        type: "aws_proxy"
   /exists:
     post:
       summary: "Checks if a code exists for a specific actor on an LPA"
@@ -219,6 +267,16 @@ paths:
             application/vnd.opg-data.v1+json:
               schema:
                 $ref: '#/components/schemas/Error500'
+      x-amazon-apigateway-request-validator: "all"
+      x-amazon-apigateway-integration:
+        uri: arn:aws:apigateway:${region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${region}:${account_id}:function:$${stageVariables.lpa_codes_function_name}/invocations
+        responses:
+          default:
+            statusCode: "200"
+        passthroughBehavior: "when_no_match"
+        httpMethod: "POST"
+        contentHandling: "CONVERT_TO_TEXT"
+        type: "aws_proxy"
   /code:
     post:
       summary: "Returns all details for a code"
@@ -262,7 +320,16 @@ paths:
             application/vnd.opg-data.v1+json:
               schema:
                 $ref: '#/components/schemas/Error500'
-
+      x-amazon-apigateway-request-validator: "all"
+      x-amazon-apigateway-integration:
+        uri: arn:aws:apigateway:${region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${region}:${account_id}:function:$${stageVariables.lpa_codes_function_name}/invocations
+        responses:
+          default:
+            statusCode: "200"
+        passthroughBehavior: "when_no_match"
+        httpMethod: "POST"
+        contentHandling: "CONVERT_TO_TEXT"
+        type: "aws_proxy"
 components:
   securitySchemes:
     sigv4:
@@ -270,6 +337,7 @@ components:
       name: Authorization
       in: header
       x-apikeyInfoFunc: lpa_codes_mock.apikey_auth #pragma: allowlist secret
+      x-amazon-apigateway-authtype: awsSigv4
   schemas:
     CodeCreated:
       properties:
@@ -358,7 +426,6 @@ components:
         - last_updated_date
         - lpa
         - status_details
-
     Error400:
       type: object
       required:
@@ -452,3 +519,71 @@ components:
                   x-ray:
                     type: string
                     example: "93c330d4-7d84-4c1b-8fdb-54cec5bfe747"
+x-amazon-apigateway-request-validators:
+  all:
+    validateRequestParameters: true
+    validateRequestBody: true
+x-amazon-apigateway-gateway-responses:
+  ACCESS_DENIED:
+    responseTemplates:
+      application/json: '{"errors": { "id": "$context.requestId", "code": "OPGDATA-API-FORBIDDEN", "title":$context.error.messageString, "detail":"Forbidden - The current user is forbidden from accessing this data (in this way)", "meta": {"x-ray": "$context.xrayTraceId"} }}'
+  API_CONFIGURATION_ERROR:
+    responseTemplates:
+      application/json: '{"errors": { "id": "$context.requestId", "code": "OPGDATA-API-API_CONFIGURATION_ERROR", "title":$context.error.messageString, "detail": "", "meta": {"x-ray": "$context.xrayTraceId"} }}'
+  AUTHORIZER_CONFIGURATION_ERROR:
+    responseTemplates:
+      application/json: '{"errors": { "id": "$context.requestId", "code": "OPGDATA-API-AUTHORIZER_CONFIGURATION_ERROR", "title":$context.error.messageString, "detail": "", "meta": {"x-ray": "$context.xrayTraceId"} }}'
+  AUTHORIZER_FAILURE:
+    responseTemplates:
+      application/json: '{"errors": { "id": "$context.requestId", "code": "OPGDATA-API-AUTHORIZER_FAILURE", "title":$context.error.messageString, "detail": "", "meta": {"x-ray": "$context.xrayTraceId"} }}'
+  BAD_REQUEST_BODY:
+    responseTemplates:
+      application/json: '{"errors": [{ "id": "$context.requestId", "code": "OPGDATA-API-INVALIDREQUEST", "title":$context.error.messageString, "detail":"$context.error.validationErrorString", "meta": {"x-ray": "$context.xrayTraceId"} }]}'
+  BAD_REQUEST_PARAMETERS:
+    responseTemplates:
+      application/json: '{"errors": { "id": "$context.requestId", "code": "OPGDATA-API-BAD_REQUEST_PARAMETERS", "title":$context.error.messageString, "detail": "", "meta": {"x-ray": "$context.xrayTraceId"} }}'
+  DEFAULT_4XX:
+    responseTemplates:
+      application/json: '{"errors": { "id": "$context.requestId", "code": "OPGDATA-API-INVALIDREQUEST", "title":$context.error.messageString, "detail": "", "meta": {"x-ray": "$context.xrayTraceId"} }}'
+  DEFAULT_5XX:
+    responseTemplates:
+      application/json: '{"errors": { "id": "$context.requestId", "code": "OPGDATA-API-SERVERERROR", "title":$context.error.messageString, "detail":"Something unexpected happened internally", "meta": {"x-ray": "$context.xrayTraceId"} }}'
+  EXPIRED_TOKEN:
+    responseTemplates:
+      application/json: '{"errors": { "id": "$context.requestId", "code": "OPGDATA-API-EXPIRED_TOKEN", "title":$context.error.messageString, "detail": "", "meta": {"x-ray": "$context.xrayTraceId"} }}'
+  INTEGRATION_FAILURE:
+    responseTemplates:
+      application/json: '{"errors": { "id": "$context.requestId", "code": "OPGDATA-API-INTEGRATION_FAILURE", "title":$context.error.messageString, "detail": "", "meta": {"x-ray": "$context.xrayTraceId"} }}'
+  INTEGRATION_TIMEOUT:
+    responseTemplates:
+      application/json: '{"errors": { "id": "$context.requestId", "code": "OPGDATA-API-INTEGRATION_TIMEOUT", "title":$context.error.messageString, "detail": "", "meta": {"x-ray": "$context.xrayTraceId"} }}'
+  INVALID_API_KEY:
+    responseTemplates:
+      application/json: '{"errors": { "id": "$context.requestId", "code": "OPGDATA-API-INVALID_API_KEY", "title":$context.error.messageString, "detail": "", "meta": {"x-ray": "$context.xrayTraceId"} }}'
+  INVALID_SIGNATURE:
+    responseTemplates:
+      application/json: '{"errors": { "id": "$context.requestId", "code": "OPGDATA-API-INVALID_SIGNATURE", "title":$context.error.messageString, "detail": "", "meta": {"x-ray": "$context.xrayTraceId"} }}'
+  MISSING_AUTHENTICATION_TOKEN:
+    responseTemplates:
+      application/json: '{"errors": { "id": "$context.requestId", "code": "OPGDATA-API-MISSING_AUTHENTICATION_TOKEN", "title":$context.error.messageString, "detail": "", "meta": {"x-ray": "$context.xrayTraceId"} }}'
+  QUOTA_EXCEEDED:
+    responseTemplates:
+      application/json: '{"errors": { "id": "$context.requestId", "code": "OPGDATA-API-QUOTA_EXCEEDED", "title":$context.error.messageString, "detail": "", "meta": {"x-ray": "$context.xrayTraceId"} }}'
+  REQUEST_TOO_LARGE:
+    responseTemplates:
+      application/json: '{"errors": { "id": "$context.requestId", "code": "OPGDATA-API-FILESIZELIMIT", "title":$context.error.messageString, "detail":"Payload too large, try and upload in smaller chunks", "meta": {"x-ray": "$context.xrayTraceId"} }}'
+  RESOURCE_NOT_FOUND:
+    responseTemplates:
+      application/json: '{"errors": { "id": "$context.requestId", "code": "OPGDATA-API-NOTFOUND", "title":$context.error.messageString, "detail":"That URL is not a valid route, or the item resource does not exist", "meta": {"x-ray": "$context.xrayTraceId"} }}'
+  THROTTLED:
+    responseTemplates:
+      application/json: '{"errors": { "id": "$context.requestId", "code": "OPGDATA-API-THROTTLED", "title":$context.error.messageString, "detail": "", "meta": {"x-ray": "$context.xrayTraceId"} }}'
+  UNAUTHORIZED:
+    responseTemplates:
+      application/json: '{"errors": { "id": "$context.requestId", "code": "OPGDATA-API-UNAUTHORISED", "title":$context.error.messageString, "detail":"Unauthorised (no current user and there should be)", "meta": {"x-ray": "$context.xrayTraceId"} }}'
+  UNSUPPORTED_MEDIA_TYPE:
+    responseTemplates:
+      application/json: '{"errors": { "id": "$context.requestId", "code": "OPGDATA-API-MEDIA", "title":$context.error.messageString, "detail":"Unsupported media type for this endpoint", "meta": {"x-ray": "$context.xrayTraceId"} }}'
+  WAF_FILTERED:
+    responseTemplates:
+      application/json: '{"errors": { "id": "$context.requestId", "code": "OPGDATA-API-WAF_FILTERED", "title":$context.error.messageString, "detail": "", "meta": {"x-ray": "$context.xrayTraceId"} }}'
