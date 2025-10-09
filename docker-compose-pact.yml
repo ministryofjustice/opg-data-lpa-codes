@@ -7,6 +7,7 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password #pragma: allowlist secret
       POSTGRES_DB: postgres
+
   broker_app:
     image: pactfoundation/pact-broker@sha256:05b05a192c771b33ba67ffdf2d6829bb32600145ca8f154165187d318c8ee70f
     ports:
@@ -24,6 +25,7 @@ services:
       #Uncomment these two options for debugging purposes:
       # PACT_BROKER_WEBHOOK_HOST_WHITELIST: circleci.com
       # PACT_BROKER_LOG_LEVEL: DEBUG
+
   api_gateway:
     build:
       dockerfile: Dockerfile-Local-Helper
@@ -46,6 +48,48 @@ services:
       default:
         aliases:
           - lpa-codes.local
+
+  lpa-codes-go:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      dynamodb:
+        condition: service_healthy
+    environment:
+      LOCAL_URL: http://dynamodb:8000
+      ENVIRONMENT: local
+      AWS_ACCESS_KEY_ID: testing
+      AWS_SECRET_ACCESS_KEY: testing #pragma: allowlist secret
+      AWS_SECURITY_TOKEN: testing
+      AWS_SESSION_TOKEN: testing
+      AWS_DEFAULT_REGION: eu-west-1
+    volumes:
+      - "./lambda_functions/.aws-lambda-rie:/aws-lambda"
+    entrypoint: /aws-lambda/aws-lambda-rie /var/task/main
+
+  api_gateway-go:
+    build:
+      dockerfile: mock-apigw/Dockerfile
+      context: .
+    depends_on:
+      - lpa-codes-go
+    ports:
+      - "4444:8080"
+    environment:
+      LAMBDA_URL: http://lpa-codes-go:8080
+      LOCAL_URL: http://dynamodb:8000
+      AWS_ACCESS_KEY_ID: testing
+      AWS_SECRET_ACCESS_KEY: testing #pragma: allowlist secret
+      AWS_SECURITY_TOKEN: testing
+      AWS_SESSION_TOKEN: testing
+      AWS_DEFAULT_REGION: eu-west-1
+    healthcheck:
+      test: "curl -q http://localhost:4444"
+      interval: 5s
+      retries: 6
+      timeout: 5s
+
   dynamodb:
     image: amazon/dynamodb-local:latest@sha256:7ef4a2c45b58c2901e70a4f28e0953a422c2c631baaaf5e2c15e0805740c7752
     entrypoint: java
@@ -56,12 +100,20 @@ services:
       default:
         aliases:
           - lpa-codes.local
+    healthcheck:
+      test: "curl -q http://localhost:8000"
+      interval: 5s
+      retries: 6
+      timeout: 5s
+
   pact-verifier:
     image: pactfoundation/pact-ref-verifier@sha256:514b680cd0ad2fa95c6df7a541e3b03c8dd1176de26e84e58a349de96e305bce
+    depends_on:
+      - api_gateway-go
     entrypoint:
       - pact_verifier_cli
-      - --hostname=api_gateway
-      - --port=4343
+      - --hostname=api_gateway-go
+      - --port=8080
       - --base-path=/v1/
       - "--header=Authorization=asdf1234567890"
       - --broker-url=https://pact-broker.api.opg.service.justice.gov.uk/
