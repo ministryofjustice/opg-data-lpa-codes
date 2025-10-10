@@ -1,0 +1,4 @@
+vulnerabilities:
+  - id: CVE-2025-5278
+    statement: Waiting for image update
+    expired_at: 2025-11-10
