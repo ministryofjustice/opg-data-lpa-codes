@@ -18,7 +18,7 @@ jobs:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
 
       - run: |
-          docker compose -f docker-compose-pact.yml up -d api_gateway-go
+          make up
 
       - name: Verify specified Pact
         if: ${{ github.event_name == 'repository_dispatch' }}

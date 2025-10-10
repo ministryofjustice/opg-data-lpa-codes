@@ -38,7 +38,7 @@ func init() {
 }
 
 const pythonURL = "http://localhost:9009/2015-03-31/functions/function/invocations"
-const golangURL = "http://localhost:9010/2015-03-31/functions/function/invocations"
+const golangURL = "http://localhost:8081/2015-03-31/functions/function/invocations"
 
 func assertEqualEither(t *testing.T, expected1, expected2, actual any) bool {
 	if assert.ObjectsAreEqual(expected1, actual) {
