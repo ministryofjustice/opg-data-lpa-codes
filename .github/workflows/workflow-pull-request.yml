@@ -66,10 +66,10 @@ jobs:
       aws_secret_access_key_actions: ${{ secrets.AWS_SECRET_ACCESS_KEY_ACTIONS }}
       ssh_private_key_allow_list_repository: ${{ secrets.SSH_PRIVATE_KEY_ALLOW_LIST_REPOSITORY }}
 
-  unit_tests:
-    name: Unit tests
+  functional_tests:
+    name: Functional tests
     needs: ['create_tags', 'branch_name']
-    uses: ./.github/workflows/sub-task-unit-tests.yml
+    uses: ./.github/workflows/sub-task-functional-tests.yml
 
   docker_build_scan_push:
     name: Build, Scan and Push
@@ -89,7 +89,7 @@ jobs:
       'terraform_lint',
       'create_tags',
       'branch_name',
-      'unit_tests'
+      'functional_tests'
     ]
     uses: ./.github/workflows/sub-task-terraform.yml
     with:
