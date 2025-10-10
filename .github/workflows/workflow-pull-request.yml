@@ -82,6 +82,11 @@ jobs:
       aws_access_key_id_actions: ${{ secrets.AWS_ACCESS_KEY_ID_ACTIONS }}
       aws_secret_access_key_actions: ${{ secrets.AWS_SECRET_ACCESS_KEY_ACTIONS }}
 
+  functional_tests:
+    name: Functional tests
+    needs: ['create_tags', 'branch_name']
+    uses: ./.github/workflows/sub-task-functional-tests.yml
+
   terraform_apply:
     name: Terraform Plan and Apply Environment
     needs: [
@@ -89,7 +94,8 @@ jobs:
       'terraform_lint',
       'create_tags',
       'branch_name',
-      'unit_tests'
+      'unit_tests',
+      'functional_tests'
     ]
     uses: ./.github/workflows/sub-task-terraform.yml
     with:
