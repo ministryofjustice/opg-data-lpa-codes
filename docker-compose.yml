@@ -1,34 +1,27 @@
 services:
-  lpa-codes:
-    image: lpa-codes:latest
+  api-gateway:
     build:
-      context: ./lambda_functions/v1
-      dockerfile: Dockerfile-Function
-    ports:
-      - "9009:8080"
-    volumes:
-      - ./lambda_functions/.aws-lambda-rie:/aws-lambda
-      - ./lambda_functions/v1/functions/lpa_codes/app:/function/app
+      context: .
+      dockerfile: mock-apigw/Dockerfile
     depends_on:
-      - dynamodb
-      - table-helper
+      - lpa-codes
+    ports:
+      - "8080:8080"
     environment:
+      LAMBDA_URL: http://lpa-codes:8080
       LOCAL_URL: http://dynamodb:8000
-      ENVIRONMENT: local
-      API_VERSION: v1
       AWS_ACCESS_KEY_ID: testing
       AWS_SECRET_ACCESS_KEY: testing #pragma: allowlist secret
       AWS_SECURITY_TOKEN: testing
       AWS_SESSION_TOKEN: testing
       AWS_DEFAULT_REGION: eu-west-1
-    entrypoint: /aws-lambda/aws-lambda-rie /usr/local/bin/python -m awslambdaric app.lpa_codes.lambda_handler
 
-  lpa-codes-go:
+  lpa-codes:
     build:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "9010:8080"
+      - "8081:8080"
     depends_on:
       dynamodb:
         condition: service_healthy
@@ -43,30 +36,6 @@ services:
     volumes:
       - "./lambda_functions/.aws-lambda-rie:/aws-lambda"
     entrypoint: /aws-lambda/aws-lambda-rie /var/task/main
-    healthcheck:
-      test: "curl -q http://localhost:8080"
-      interval: 5s
-      retries: 6
-      timeout: 5s
-    
-  table-helper:
-    build:
-      context: ./lambda_functions/v1
-      dockerfile: Dockerfile-Local-Helper
-    ports:
-      - "4343:4343"
-    depends_on:
-      - dynamodb
-    volumes:
-      - ./lambda_functions/v1/:/var/www/lambda_functions/v1/
-    environment:
-      LOCAL_URL: http://dynamodb:8000
-      ENVIRONMENT: local
-      AWS_ACCESS_KEY_ID: testing
-      AWS_SECRET_ACCESS_KEY: testing #pragma: allowlist secret
-      AWS_SECURITY_TOKEN: testing
-      AWS_SESSION_TOKEN: testing
-      AWS_DEFAULT_REGION: eu-west-1
 
   dynamodb:
     image: amazon/dynamodb-local:latest@sha256:7ef4a2c45b58c2901e70a4f28e0953a422c2c631baaaf5e2c15e0805740c7752
@@ -80,13 +49,14 @@ services:
       retries: 6
       timeout: 5s
 
-  unit-tests:
-    image: unit-tests:latest
-    build:
-      context: lambda_functions/v1
-      dockerfile: Dockerfile-Tests
-    environment:
-      API_VERSION: v1
-      AWS_ACCESS_KEY_ID: testing
-      AWS_SECRET_ACCESS_KEY: testing
-      ENVIRONMENT: local
+  pact-verifier:
+    image: pactfoundation/pact-ref-verifier@sha256:514b680cd0ad2fa95c6df7a541e3b03c8dd1176de26e84e58a349de96e305bce
+    depends_on:
+      - api-gateway
+    entrypoint:
+      - pact_verifier_cli
+      - --hostname=api-gateway
+      - --port=8080
+      - --base-path=/v1/
+      - --broker-url=https://pact-broker.api.opg.service.justice.gov.uk/
+      - --provider-name=data-lpa-codes
