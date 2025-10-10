@@ -31,12 +31,6 @@ jobs:
   docker_build_scan_push:
     name: Build, Scan and Push Lambdas
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        include:
-          - name: 'lpa-codes'
-            path: 'lambda_functions/v1'
-            dockerfile: "Function"
     steps:
       - name: Check out code
         id: checkout_code
@@ -60,7 +54,7 @@ jobs:
 
       - name: Build Container
         id: build_container
-        run: docker build --file ${{ matrix.path }}/Dockerfile-${{ matrix.dockerfile }} --tag ${{ matrix.name }}:latest ${{ matrix.path }}
+        run: docker build --tag lpa-codes:latest .
 
       - name: Trivy Image Vulnerability Scanner
         id: trivy_scan
@@ -69,8 +63,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TRIVY_DB_REPOSITORY: ${{ steps.login_ecr.outputs.registry }}/trivy-db-public-ecr/aquasecurity/trivy-db:2
           TRIVY_JAVA_DB_REPOSITORY: ${{ steps.login_ecr.outputs.registry }}/trivy-db-public-ecr/aquasecurity/trivy-java-db:1
+          TRIVY_IGNOREFILE: '.trivyignore.yml'
         with:
-          image-ref: ${{ matrix.name }}:latest
+          image-ref: lpa-codes:latest
           severity: 'HIGH,CRITICAL'
           format: 'sarif'
           ignore-unfixed: true
@@ -91,12 +86,12 @@ jobs:
       - name: Push to ECR
         env:
           ECR_REGISTRY: ${{ steps.login_ecr.outputs.registry }}
-          ECR_REPOSITORY: integrations/${{ matrix.name }}-lambda
+          ECR_REPOSITORY: integrations/lpa-codes-lambda
           BRANCH_NAME: ${{ inputs.branch_name }}
         run: |
-          docker tag ${{ matrix.name }}:latest $ECR_REGISTRY/$ECR_REPOSITORY:${{ inputs.tag }}
+          docker tag lpa-codes:latest $ECR_REGISTRY/$ECR_REPOSITORY:${{ inputs.tag }}
           if [ $BRANCH_NAME == "main" ]; then
-            docker tag ${{ matrix.name }}:latest $ECR_REGISTRY/$ECR_REPOSITORY:latest
+            docker tag lpa-codes:latest $ECR_REGISTRY/$ECR_REPOSITORY:latest
           fi
             echo "skipping push for now..."
             docker push --all-tags $ECR_REGISTRY/$ECR_REPOSITORY
