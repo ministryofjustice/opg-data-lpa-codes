@@ -35,8 +35,8 @@ jobs:
       matrix:
         include:
           - name: 'lpa-codes'
-            path: 'lambda_functions/v1'
-            dockerfile: "Function"
+            path: '.'
+            dockerfile: ''
     steps:
       - name: Check out code
         id: checkout_code
@@ -60,7 +60,7 @@ jobs:
 
       - name: Build Container
         id: build_container
-        run: docker build --file ${{ matrix.path }}/Dockerfile-${{ matrix.dockerfile }} --tag ${{ matrix.name }}:latest ${{ matrix.path }}
+        run: docker build --file ${{ matrix.path }}/${{ matrix.dockerfile }} --tag ${{ matrix.name }}:latest ${{ matrix.path }}
 
       - name: Trivy Image Vulnerability Scanner
         id: trivy_scan
