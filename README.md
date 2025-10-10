@@ -5,30 +5,31 @@ LPA Integration with microservice for the generation of registration codes: Mana
 
 ## Development
 
+To start the service locally use `make up`. Then you can call the Lambda:
+
+```
+curl -XPOST "http://localhost:8081/2015-03-31/functions/function/invocations" -d '@./docs/support_files/lambda_request.json' | jq
+```
+
+Or the mock API gateway:
+
+```
+curl http://localhost:8080/v1/healthcheck
+curl http://localhost:8080/v1/create -XPOST -d @./docs/support_files/create_payload.json
+```
+
 Tests are written in `main_test.go`. To run them use:
 
 ```
 make test
 ```
 
-Once the tests have been run you'll be able to call the Lambda using this example request:
+Pacts can be verified by running:
 
 ```
-curl -XPOST "http://localhost:9010/2015-03-31/functions/function/invocations" -d '@./docs/support_files/lambda_request.json' | jq
+make test-pact
 ```
 
-The current pacts can be verified by running:
-
-```
-make pact-test
-```
-
-With this (or `make pact-up`) a mock API Gateway is created, this allows you to make local requests easier, for example:
-
-```
-curl http://localhost:4444/v1/healthcheck
-curl http://localhost:4444/v1/create -XPOST -d @./docs/support_files/create_payload.json
-```
 
 ## CI Pipeline
 
