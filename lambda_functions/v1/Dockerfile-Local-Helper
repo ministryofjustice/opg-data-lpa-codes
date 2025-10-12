@@ -1,4 +1,4 @@
-FROM python:3.12-slim@sha256:47ae396f09c1303b8653019811a8498470603d7ffefc29cb07c88f1f8cb3d19f
+FROM python:3.13-slim@sha256:087a9f3b880e8b2c7688debb9df2a5106e060225ebd18c264d5f1d7a73399db0
 WORKDIR /var/www/lambda_functions/v1
 
 # Install Python Dependencies
