@@ -27,7 +27,7 @@ type Item struct {
 	Actor           string `json:"actor" dynamodbav:"actor"`
 	Code            string `json:"code" dynamodbav:"code"`
 	DateOfBirth     string `json:"dob" dynamodbav:"dob"`
-	ExpiryDate      int64  `json:"expiry_date" dynamodbav:"expiry_date"`
+	ExpiryDate      *int64 `json:"expiry_date" dynamodbav:"expiry_date"`
 	GeneratedDate   string `json:"generated_date" dynamodbav:"generated_date"`
 	LastUpdatedDate string `json:"last_updated_date" dynamodbav:"last_updated_date"`
 	LPA             string `json:"lpa" dynamodbav:"lpa"`
@@ -89,9 +89,9 @@ func (s *Store) Code(ctx context.Context, code string) (Item, error) {
 		return Item{}, err
 	}
 
-	if v.ExpiryDate > 0 {
+	if v.ExpiryDate != nil && *v.ExpiryDate > 0 {
 		ttlCutoff := time.Now().Truncate(24 * time.Hour).Unix()
-		expiryDate := int64(v.ExpiryDate)
+		expiryDate := int64(*v.ExpiryDate)
 
 		if expiryDate <= ttlCutoff {
 			slog.Info("Code does not exist in database")
@@ -220,7 +220,8 @@ func (s *Store) InsertNewCode(ctx context.Context, key Key, dateOfBirth, code st
 	}
 
 	if key.LPA[0] != 'M' && key.LPA[0] != 'm' {
-		item.ExpiryDate = time.Now().AddDate(1, 0, 0).Unix()
+		expiresAt := time.Now().AddDate(1, 0, 0).Unix()
+		item.ExpiryDate = &expiresAt
 	}
 
 	data, err := attributevalue.MarshalMap(item)

@@ -91,8 +91,13 @@ func TestNotFound(t *testing.T) {
 	})
 }
 
-func createCode(fn lambdaFn) string {
-	resp, err := fn(http.MethodPost, "/v1/create", `{"lpas":[{"lpa":"eed4f597-fd87-4536-99d0-895778824861","actor":"12ad81a9-f89d-4804-99f5-7c0c8669ac9b","dob":"1960-06-05"}]}`)
+const (
+	createCodeLegacy    = `{"lpas":[{"lpa":"eed4f597-fd87-4536-99d0-895778824861","actor":"12ad81a9-f89d-4804-99f5-7c0c8669ac9b","dob":"1960-06-05"}]}`
+	createCodeModernise = `{"lpas":[{"lpa":"M-3J8F-86JF-9UDA","actor":"12ad81a9-f89d-4804-99f5-7c0c8669ac9b","dob":"1960-06-05"}]}`
+)
+
+func createCode(fn lambdaFn, body string) string {
+	resp, err := fn(http.MethodPost, "/v1/create", body)
 	if err != nil {
 		return ""
 	}
@@ -122,7 +127,7 @@ func createCode(fn lambdaFn) string {
 
 func TestCreate(t *testing.T) {
 	runBoth(t, "create", func(t *testing.T, fn lambdaFn) {
-		resp, err := fn(http.MethodPost, "/v1/create", `{"lpas":[{"lpa":"eed4f597-fd87-4536-99d0-895778824861","actor":"12ad81a9-f89d-4804-99f5-7c0c8669ac9b","dob":"1960-06-05"}]}`)
+		resp, err := fn(http.MethodPost, "/v1/create", createCodeLegacy)
 		if assert.Nil(t, err) {
 			assert.Equal(t, http.StatusOK, resp.StatusCode)
 
@@ -145,7 +150,7 @@ func TestCreate(t *testing.T) {
 				assertEqualEither(t,
 					time.Now().AddDate(1, 0, 0).Unix(),
 					time.Now().AddDate(1, 0, 0).Unix()-1,
-					row.ExpiryDate)
+					*row.ExpiryDate)
 				assert.Equal(t, time.Now().Format(time.DateOnly), row.GeneratedDate)
 				assert.Equal(t, time.Now().Format(time.DateOnly), row.LastUpdatedDate)
 				assert.Equal(t, "eed4f597-fd87-4536-99d0-895778824861", row.LPA)
@@ -154,10 +159,65 @@ func TestCreate(t *testing.T) {
 		}
 	})
 
-	runBoth(t, "create revokes previous", func(t *testing.T, fn lambdaFn) {
-		oldCode := createCode(fn)
+	runBoth(t, "create multiple", func(t *testing.T, fn lambdaFn) {
+		resp, err := fn(http.MethodPost, "/v1/create", `{"lpas":[{"lpa":"eed4f597-fd87-4536-99d0-895778824861","actor":"12ad81a9-f89d-4804-99f5-7c0c8669ac9b","dob":"1960-06-05"},{"lpa":"eed4f597-fd87-4536-99d0-895778824862","actor":"12ad81a9-f89d-4804-99f5-7c0c8669ac9c","dob":"1960-06-06"}]}`)
+		if assert.Nil(t, err) {
+			assert.Equal(t, http.StatusOK, resp.StatusCode)
 
-		resp, err := fn(http.MethodPost, "/v1/create", `{"lpas":[{"lpa":"eed4f597-fd87-4536-99d0-895778824861","actor":"12ad81a9-f89d-4804-99f5-7c0c8669ac9b","dob":"1960-06-05"}]}`)
+			var codes map[string][]map[string]string
+			json.Unmarshal([]byte(resp.Body), &codes)
+			if assert.Len(t, codes["codes"], 2) {
+				assert.Equal(t, "12ad81a9-f89d-4804-99f5-7c0c8669ac9b", codes["codes"][0]["actor"])
+				assert.Regexp(t, "^[0-9A-Z]{12}$", codes["codes"][0]["code"])
+				assert.Equal(t, "eed4f597-fd87-4536-99d0-895778824861", codes["codes"][0]["lpa"])
+
+				row := getCode(codes["codes"][0]["code"])
+				if row == nil {
+					assert.Fail(t, "code not found")
+					return
+				}
+
+				assert.True(t, row.Active)
+				assert.Equal(t, "12ad81a9-f89d-4804-99f5-7c0c8669ac9b", row.Actor)
+				assert.Equal(t, "1960-06-05", row.DateOfBirth)
+				assertEqualEither(t,
+					time.Now().AddDate(1, 0, 0).Unix(),
+					time.Now().AddDate(1, 0, 0).Unix()-1,
+					*row.ExpiryDate)
+				assert.Equal(t, time.Now().Format(time.DateOnly), row.GeneratedDate)
+				assert.Equal(t, time.Now().Format(time.DateOnly), row.LastUpdatedDate)
+				assert.Equal(t, "eed4f597-fd87-4536-99d0-895778824861", row.LPA)
+				assert.Equal(t, "Generated", row.StatusDetails)
+
+				assert.Equal(t, "12ad81a9-f89d-4804-99f5-7c0c8669ac9c", codes["codes"][1]["actor"])
+				assert.Regexp(t, "^[0-9A-Z]{12}$", codes["codes"][1]["code"])
+				assert.Equal(t, "eed4f597-fd87-4536-99d0-895778824862", codes["codes"][1]["lpa"])
+
+				row = getCode(codes["codes"][1]["code"])
+				if row == nil {
+					assert.Fail(t, "code not found")
+					return
+				}
+
+				assert.True(t, row.Active)
+				assert.Equal(t, "12ad81a9-f89d-4804-99f5-7c0c8669ac9c", row.Actor)
+				assert.Equal(t, "1960-06-06", row.DateOfBirth)
+				assertEqualEither(t,
+					time.Now().AddDate(1, 0, 0).Unix(),
+					time.Now().AddDate(1, 0, 0).Unix()-1,
+					*row.ExpiryDate)
+				assert.Equal(t, time.Now().Format(time.DateOnly), row.GeneratedDate)
+				assert.Equal(t, time.Now().Format(time.DateOnly), row.LastUpdatedDate)
+				assert.Equal(t, "eed4f597-fd87-4536-99d0-895778824862", row.LPA)
+				assert.Equal(t, "Generated", row.StatusDetails)
+			}
+		}
+	})
+
+	runBoth(t, "create revokes previous", func(t *testing.T, fn lambdaFn) {
+		oldCode := createCode(fn, createCodeLegacy)
+
+		resp, err := fn(http.MethodPost, "/v1/create", createCodeLegacy)
 		if assert.Nil(t, err) {
 			assert.Equal(t, http.StatusOK, resp.StatusCode)
 
@@ -180,7 +240,7 @@ func TestCreate(t *testing.T) {
 				assertEqualEither(t,
 					time.Now().AddDate(1, 0, 0).Unix(),
 					time.Now().AddDate(1, 0, 0).Unix()-1,
-					oldRow.ExpiryDate)
+					*oldRow.ExpiryDate)
 				assert.Equal(t, time.Now().Format(time.DateOnly), oldRow.GeneratedDate)
 				assert.Equal(t, time.Now().Format(time.DateOnly), oldRow.LastUpdatedDate)
 				assert.Equal(t, "eed4f597-fd87-4536-99d0-895778824861", oldRow.LPA)
@@ -198,7 +258,7 @@ func TestCreate(t *testing.T) {
 				assertEqualEither(t,
 					time.Now().AddDate(1, 0, 0).Unix(),
 					time.Now().AddDate(1, 0, 0).Unix()-1,
-					row.ExpiryDate)
+					*row.ExpiryDate)
 				assert.Equal(t, time.Now().Format(time.DateOnly), row.GeneratedDate)
 				assert.Equal(t, time.Now().Format(time.DateOnly), row.LastUpdatedDate)
 				assert.Equal(t, "eed4f597-fd87-4536-99d0-895778824861", row.LPA)
@@ -208,8 +268,8 @@ func TestCreate(t *testing.T) {
 		}
 	})
 
-	runBoth(t, "create digital", func(t *testing.T, fn lambdaFn) {
-		resp, err := fn(http.MethodPost, "/v1/create", `{"lpas":[{"lpa":"M-3J8F-86JF-9UDA","actor":"12ad81a9-f89d-4804-99f5-7c0c8669ac9b","dob":"1960-06-05"}]}`)
+	runBoth(t, "create modernise", func(t *testing.T, fn lambdaFn) {
+		resp, err := fn(http.MethodPost, "/v1/create", createCodeModernise)
 		if assert.Nil(t, err) {
 			assert.Equal(t, http.StatusOK, resp.StatusCode)
 
@@ -227,8 +287,60 @@ func TestCreate(t *testing.T) {
 				}
 
 				assert.True(t, row.Active)
+				assert.Equal(t, "12ad81a9-f89d-4804-99f5-7c0c8669ac9b", row.Actor)
+				assert.Equal(t, "1960-06-05", row.DateOfBirth)
+				assert.Nil(t, row.ExpiryDate)
 				assert.Equal(t, time.Now().Format(time.DateOnly), row.GeneratedDate)
 				assert.Equal(t, time.Now().Format(time.DateOnly), row.LastUpdatedDate)
+				assert.Equal(t, "M-3J8F-86JF-9UDA", row.LPA)
+				assert.Equal(t, "Generated", row.StatusDetails)
+			}
+		}
+	})
+
+	runBoth(t, "create modernise does not revoke previous", func(t *testing.T, fn lambdaFn) {
+		oldCode := createCode(fn, createCodeModernise)
+
+		resp, err := fn(http.MethodPost, "/v1/create", createCodeModernise)
+		if assert.Nil(t, err) {
+			assert.Equal(t, http.StatusOK, resp.StatusCode)
+
+			var codes map[string][]map[string]string
+			json.Unmarshal([]byte(resp.Body), &codes)
+			if assert.Len(t, codes["codes"], 1) {
+				assert.Equal(t, "12ad81a9-f89d-4804-99f5-7c0c8669ac9b", codes["codes"][0]["actor"])
+				assert.Regexp(t, "^[0-9A-Z]{12}$", codes["codes"][0]["code"])
+				assert.Equal(t, "M-3J8F-86JF-9UDA", codes["codes"][0]["lpa"])
+
+				oldRow := getCode(oldCode)
+				if oldRow == nil {
+					assert.Fail(t, "old code not found")
+					return
+				}
+
+				assert.True(t, oldRow.Active)
+				assert.Equal(t, "12ad81a9-f89d-4804-99f5-7c0c8669ac9b", oldRow.Actor)
+				assert.Equal(t, "1960-06-05", oldRow.DateOfBirth)
+				assert.Nil(t, oldRow.ExpiryDate)
+				assert.Equal(t, time.Now().Format(time.DateOnly), oldRow.GeneratedDate)
+				assert.Equal(t, time.Now().Format(time.DateOnly), oldRow.LastUpdatedDate)
+				assert.Equal(t, "M-3J8F-86JF-9UDA", oldRow.LPA)
+				assert.Equal(t, "Generated", oldRow.StatusDetails)
+
+				row := getCode(codes["codes"][0]["code"])
+				if row == nil {
+					assert.Fail(t, "code not found")
+					return
+				}
+
+				assert.True(t, row.Active)
+				assert.Equal(t, "12ad81a9-f89d-4804-99f5-7c0c8669ac9b", row.Actor)
+				assert.Equal(t, "1960-06-05", row.DateOfBirth)
+				assert.Nil(t, row.ExpiryDate)
+				assert.Equal(t, time.Now().Format(time.DateOnly), row.GeneratedDate)
+				assert.Equal(t, time.Now().Format(time.DateOnly), row.LastUpdatedDate)
+				assert.Equal(t, "M-3J8F-86JF-9UDA", row.LPA)
+				assert.Equal(t, "Generated", row.StatusDetails)
 			}
 		}
 	})
@@ -248,12 +360,7 @@ func TestCreate(t *testing.T) {
 			if assert.Nil(t, err) {
 				assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
 
-				assert.JSONEq(t, `{
-	"body": {"error":{"code":"Bad Request","message":"Bad payload"}},
-	"headers": {"Content-Type": "application/json"},
-	"isBase64Encoded": false,
-	"statusCode": 400
-}`, resp.Body)
+				assert.JSONEq(t, `{"body":{"error":{"code":"Bad Request","message":"Bad payload"}},"headers":{"Content-Type": "application/json"},"isBase64Encoded":false,"statusCode":400}`, resp.Body)
 			}
 		})
 	}
@@ -261,7 +368,7 @@ func TestCreate(t *testing.T) {
 
 func TestCode(t *testing.T) {
 	runBoth(t, "code", func(t *testing.T, fn lambdaFn) {
-		code := createCode(fn)
+		code := createCode(fn, createCodeLegacy)
 
 		resp, err := fn(http.MethodPost, "/v1/code", `{"code":"`+code+`"}`)
 		if assert.Nil(t, err) {
@@ -284,16 +391,46 @@ func TestCode(t *testing.T) {
 			assert.Equal(t, `{"body":{"error":{"code":"Not Found","message":"Not found url https://dev.lpa-codes.api.opg.service.justice.gov.uk/v1/code"}},"headers":{"Content-Type":"application/json"},"isBase64Encoded":false,"statusCode":404}`, resp.Body)
 		}
 	})
+
+	testcases := map[string]string{
+		"missing lpa": `{}`,
+		"empty":       `{"code":""}`,
+	}
+
+	for name, lambdaBody := range testcases {
+		runBoth(t, name, func(t *testing.T, fn lambdaFn) {
+			resp, err := fn(http.MethodPost, "/v1/code", lambdaBody)
+			if assert.Nil(t, err) {
+				assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
+
+				assert.Equal(t, `{"body":{"error":{"code":"Bad Request","message":"Bad payload"}},"headers":{"Content-Type":"application/json"},"isBase64Encoded":false,"statusCode":400}`, resp.Body)
+			}
+		})
+	}
 }
 
 func TestExists(t *testing.T) {
 	runBoth(t, "exists", func(t *testing.T, fn lambdaFn) {
-		_ = createCode(fn)
+		_ = createCode(fn, createCodeLegacy)
 
 		resp, err := fn(http.MethodPost, "/v1/exists", `{"lpa":"eed4f597-fd87-4536-99d0-895778824861","actor":"12ad81a9-f89d-4804-99f5-7c0c8669ac9b"}`)
 		if assert.Nil(t, err) {
 			assert.Equal(t, http.StatusOK, resp.StatusCode)
-			assert.Regexp(t, `\{"Created":"[0-9]{4}-[0-9]{2}-[0-9]{2}"\}`, resp.Body)
+			assert.Equal(t, `{"Created":"`+time.Now().Format(time.DateOnly)+`"}`, resp.Body)
+		}
+	})
+
+	runBoth(t, "inactive", func(t *testing.T, fn lambdaFn) {
+		code := createCode(fn, createCodeLegacy)
+
+		if _, err := fn(http.MethodPost, "/v1/revoke", `{"code":"`+code+`"}`); !assert.Nil(t, err) {
+			return
+		}
+
+		resp, err := fn(http.MethodPost, "/v1/exists", `{"lpa":"eed4f597-fd87-4536-99d0-895778824861","actor":"12ad81a9-f89d-4804-99f5-7c0c8669ac9b"}`)
+		if assert.Nil(t, err) {
+			assert.Equal(t, http.StatusOK, resp.StatusCode)
+			assert.Equal(t, `{"Created":null}`, resp.Body)
 		}
 	})
 
@@ -319,12 +456,7 @@ func TestExists(t *testing.T) {
 			if assert.Nil(t, err) {
 				assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
 
-				assert.JSONEq(t, `{
-	"body": {"error":{"code":"Bad Request","message":"Bad payload"}},
-	"headers": {"Content-Type": "application/json"},
-	"isBase64Encoded": false,
-	"statusCode": 400
-}`, resp.Body)
+				assert.JSONEq(t, `{"body":{"error":{"code":"Bad Request","message":"Bad payload"}},"headers":{"Content-Type":"application/json"},"isBase64Encoded":false,"statusCode":400}`, resp.Body)
 			}
 		})
 	}
@@ -332,7 +464,7 @@ func TestExists(t *testing.T) {
 
 func TestMarkUsed(t *testing.T) {
 	runBoth(t, "mark used", func(t *testing.T, fn lambdaFn) {
-		code := createCode(fn)
+		code := createCode(fn, createCodeLegacy)
 
 		row := getCode(code)
 		if row == nil {
@@ -352,12 +484,24 @@ func TestMarkUsed(t *testing.T) {
 			}
 
 			assert.False(t, row.Active)
-
-			seconds := time.Now().AddDate(2, 0, 0).Unix()
+			assert.Equal(t, "12ad81a9-f89d-4804-99f5-7c0c8669ac9b", row.Actor)
+			assert.Equal(t, "1960-06-05", row.DateOfBirth)
 			assertEqualEither(t,
-				seconds,
-				seconds-1,
-				row.ExpiryDate)
+				time.Now().AddDate(2, 0, 0).Unix(),
+				time.Now().AddDate(2, 0, 0).Unix()-1,
+				*row.ExpiryDate)
+			assert.Equal(t, time.Now().Format(time.DateOnly), row.GeneratedDate)
+			assert.Equal(t, time.Now().Format(time.DateOnly), row.LastUpdatedDate)
+			assert.Equal(t, "eed4f597-fd87-4536-99d0-895778824861", row.LPA)
+			assert.Equal(t, "Generated", row.StatusDetails)
+		}
+	})
+
+	runBoth(t, "wrong code", func(t *testing.T, fn lambdaFn) {
+		resp, err := fn(http.MethodPost, "/v1/mark_used", `{"code":"something"}`)
+		if assert.Nil(t, err) {
+			assert.Equal(t, http.StatusOK, resp.StatusCode)
+			assert.JSONEq(t, `{"codes marked used":0}`, resp.Body)
 		}
 	})
 
@@ -371,12 +515,7 @@ func TestMarkUsed(t *testing.T) {
 			resp, err := fn(http.MethodPost, "/v1/mark_used", lambdaBody)
 			if assert.Nil(t, err) {
 				assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
-				assert.JSONEq(t, `{
-	"body": {"error":{"code":"Bad Request","message":"Bad payload"}},
-	"headers": {"Content-Type": "application/json"},
-	"isBase64Encoded": false,
-	"statusCode": 400
-}`, resp.Body)
+				assert.JSONEq(t, `{"body":{"error":{"code":"Bad Request","message":"Bad payload"}},"headers":{"Content-Type":"application/json"},"isBase64Encoded":false,"statusCode":400}`, resp.Body)
 			}
 		})
 	}
@@ -384,7 +523,7 @@ func TestMarkUsed(t *testing.T) {
 
 func TestRevoke(t *testing.T) {
 	runBoth(t, "revoke", func(t *testing.T, fn lambdaFn) {
-		code := createCode(fn)
+		code := createCode(fn, createCodeLegacy)
 
 		resp, err := fn(http.MethodPost, "/v1/revoke", `{"code":"`+code+`"}`)
 		if assert.Nil(t, err) {
@@ -398,7 +537,24 @@ func TestRevoke(t *testing.T) {
 			}
 
 			assert.False(t, row.Active)
+			assert.Equal(t, "12ad81a9-f89d-4804-99f5-7c0c8669ac9b", row.Actor)
+			assert.Equal(t, "1960-06-05", row.DateOfBirth)
+			assertEqualEither(t,
+				time.Now().AddDate(1, 0, 0).Unix(),
+				time.Now().AddDate(1, 0, 0).Unix()-1,
+				*row.ExpiryDate)
+			assert.Equal(t, time.Now().Format(time.DateOnly), row.GeneratedDate)
+			assert.Equal(t, time.Now().Format(time.DateOnly), row.LastUpdatedDate)
+			assert.Equal(t, "eed4f597-fd87-4536-99d0-895778824861", row.LPA)
 			assert.Equal(t, "Revoked", row.StatusDetails)
+		}
+	})
+
+	runBoth(t, "wrong code", func(t *testing.T, fn lambdaFn) {
+		resp, err := fn(http.MethodPost, "/v1/revoke", `{"code":"something"}`)
+		if assert.Nil(t, err) {
+			assert.Equal(t, http.StatusOK, resp.StatusCode)
+			assert.JSONEq(t, `{"codes revoked":0}`, resp.Body)
 		}
 	})
 
@@ -412,12 +568,7 @@ func TestRevoke(t *testing.T) {
 			resp, err := fn(http.MethodPost, "/v1/revoke", lambdaBody)
 			if assert.Nil(t, err) {
 				assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
-				assert.JSONEq(t, `{
-	"body": {"error":{"code":"Bad Request","message":"Bad payload"}},
-	"headers": {"Content-Type": "application/json"},
-	"isBase64Encoded": false,
-	"statusCode": 400
-}`, resp.Body)
+				assert.JSONEq(t, `{"body":{"error":{"code":"Bad Request","message":"Bad payload"}},"headers":{"Content-Type":"application/json"},"isBase64Encoded":false,"statusCode":400}`, resp.Body)
 			}
 		})
 	}
@@ -425,7 +576,7 @@ func TestRevoke(t *testing.T) {
 
 func TestValidate(t *testing.T) {
 	runBoth(t, "validate", func(t *testing.T, fn lambdaFn) {
-		code := createCode(fn)
+		code := createCode(fn, createCodeLegacy)
 
 		resp, err := fn(http.MethodPost, "/v1/validate", `{"code":"`+code+`","lpa":"eed4f597-fd87-4536-99d0-895778824861","dob":"1960-06-05"}`)
 		if assert.Nil(t, err) {
@@ -443,7 +594,7 @@ func TestValidate(t *testing.T) {
 	})
 
 	runBoth(t, "wrong lpa", func(t *testing.T, fn lambdaFn) {
-		code := createCode(fn)
+		code := createCode(fn, createCodeLegacy)
 
 		resp, err := fn(http.MethodPost, "/v1/validate", `{"code":"`+code+`","lpa":"whatever","dob":"1960-06-05"}`)
 		if assert.Nil(t, err) {
@@ -453,9 +604,23 @@ func TestValidate(t *testing.T) {
 	})
 
 	runBoth(t, "wrong dob", func(t *testing.T, fn lambdaFn) {
-		code := createCode(fn)
+		code := createCode(fn, createCodeLegacy)
 
 		resp, err := fn(http.MethodPost, "/v1/validate", `{"code":"`+code+`","lpa":"eed4f597-fd87-4536-99d0-895778824861","dob":"1961-01-01"}`)
+		if assert.Nil(t, err) {
+			assert.Equal(t, http.StatusOK, resp.StatusCode)
+			assert.JSONEq(t, `{"actor":null}`, resp.Body)
+		}
+	})
+
+	runBoth(t, "inactive", func(t *testing.T, fn lambdaFn) {
+		code := createCode(fn, createCodeLegacy)
+
+		if _, err := fn(http.MethodPost, "/v1/revoke", `{"code":"`+code+`"}`); !assert.Nil(t, err) {
+			return
+		}
+
+		resp, err := fn(http.MethodPost, "/v1/validate", `{"code":"`+code+`","lpa":"eed4f597-fd87-4536-99d0-895778824861","dob":"1960-06-05"}`)
 		if assert.Nil(t, err) {
 			assert.Equal(t, http.StatusOK, resp.StatusCode)
 			assert.JSONEq(t, `{"actor":null}`, resp.Body)
@@ -476,12 +641,7 @@ func TestValidate(t *testing.T) {
 			resp, err := fn(http.MethodPost, "/v1/validate", lambdaBody)
 			if assert.Nil(t, err) {
 				assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
-				assert.JSONEq(t, `{
-	"body": {"error":{"code":"Bad Request","message":"Bad payload"}},
-	"headers": {"Content-Type": "application/json"},
-	"isBase64Encoded": false,
-	"statusCode": 400
-}`, resp.Body)
+				assert.JSONEq(t, `{"body":{"error":{"code":"Bad Request","message":"Bad payload"}},"headers":{"Content-Type":"application/json"},"isBase64Encoded":false,"statusCode":400}`, resp.Body)
 			}
 		})
 	}
@@ -601,7 +761,7 @@ type Row struct {
 	Actor           string `dynamodbav:"actor"`
 	Code            string `dynamodbav:"code"`
 	DateOfBirth     string `dynamodbav:"dob"`
-	ExpiryDate      int64  `dynamodbav:"expiry_date"`
+	ExpiryDate      *int64 `dynamodbav:"expiry_date"`
 	GeneratedDate   string `dynamodbav:"generated_date"`
 	LastUpdatedDate string `dynamodbav:"last_updated_date"`
 	LPA             string `dynamodbav:"lpa"`
