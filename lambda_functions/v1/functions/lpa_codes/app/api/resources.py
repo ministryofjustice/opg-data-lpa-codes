@@ -100,6 +100,7 @@ def revoke_route():
 
     return jsonify(result), status_code
 
+
 @api.route("/mark_used", methods=["POST"])
 def mark_used_route():
     """
@@ -127,6 +128,7 @@ def mark_used_route():
     result, status_code = endpoints.handle_mark_used(data=post_data)
 
     return jsonify(result), status_code
+
 
 @api.route("/validate", methods=["POST"])
 def validate_route():
@@ -228,3 +230,18 @@ def actor_code_details_route():
     print(result)
 
     return jsonify(result), status_code
+
+
+@api.route("/paper-verification-code", methods=["POST"])
+def pvc_create_route():
+    return "", 500
+
+
+@api.route("/paper-verification-code/validate", methods=["POST"])
+def pvc_validate_route():
+    return "", 500
+
+
+@api.route("/paper-verification-code/expire", methods=["POST"])
+def pvc_expire_route():
+    return "", 500
