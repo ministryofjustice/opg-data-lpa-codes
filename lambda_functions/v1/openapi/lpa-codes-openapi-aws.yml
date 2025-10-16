@@ -1,12 +1,4 @@
 ---
-openapi: '3.0.2'
-info:
-  title: lpa-codes-${environment}
-  version: '2.0'
-servers:
-  - url: /v1
-    description: we use the path only so we can use in different contexts
-
 x-amazon-apigateway-request-validators:
   all:
     validateRequestParameters: true
@@ -98,7 +90,7 @@ paths:
         uri: arn:aws:apigateway:${region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${region}:${account_id}:function:$${stageVariables.lpa_codes_function_name}/invocations
         responses:
           default:
-            statusCode: "201"
+            statusCode: "200"
         passthroughBehavior: "when_no_match"
         httpMethod: "POST"
         contentHandling: "CONVERT_TO_TEXT"
@@ -130,19 +122,6 @@ paths:
         contentHandling: "CONVERT_TO_TEXT"
         type: "aws_proxy"
 
-  /mark_used:
-    post:
-      x-amazon-apigateway-request-validator: "all"
-      x-amazon-apigateway-integration:
-        uri: arn:aws:apigateway:${region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${region}:${account_id}:function:$${stageVariables.lpa_codes_function_name}/invocations
-        responses:
-          default:
-            statusCode: "200"
-        passthroughBehavior: "when_no_match"
-        httpMethod: "POST"
-        contentHandling: "CONVERT_TO_TEXT"
-        type: "aws_proxy"
-
   /exists:
     post:
       x-amazon-apigateway-request-validator: "all"
@@ -157,6 +136,45 @@ paths:
         type: "aws_proxy"
 
   /code:
+    post:
+      x-amazon-apigateway-request-validator: "all"
+      x-amazon-apigateway-integration:
+        uri: arn:aws:apigateway:${region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${region}:${account_id}:function:$${stageVariables.lpa_codes_function_name}/invocations
+        responses:
+          default:
+            statusCode: "200"
+        passthroughBehavior: "when_no_match"
+        httpMethod: "POST"
+        contentHandling: "CONVERT_TO_TEXT"
+        type: "aws_proxy"
+
+  /paper-verification-code:
+    post:
+      x-amazon-apigateway-request-validator: "all"
+      x-amazon-apigateway-integration:
+        uri: arn:aws:apigateway:${region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${region}:${account_id}:function:$${stageVariables.lpa_codes_function_name}/invocations
+        responses:
+          default:
+            statusCode: "200"
+        passthroughBehavior: "when_no_match"
+        httpMethod: "POST"
+        contentHandling: "CONVERT_TO_TEXT"
+        type: "aws_proxy"
+
+  /paper-verification-code/validate:
+    post:
+      x-amazon-apigateway-request-validator: "all"
+      x-amazon-apigateway-integration:
+        uri: arn:aws:apigateway:${region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${region}:${account_id}:function:$${stageVariables.lpa_codes_function_name}/invocations
+        responses:
+          default:
+            statusCode: "200"
+        passthroughBehavior: "when_no_match"
+        httpMethod: "POST"
+        contentHandling: "CONVERT_TO_TEXT"
+        type: "aws_proxy"
+
+  /paper-verification-code/expire:
     post:
       x-amazon-apigateway-request-validator: "all"
       x-amazon-apigateway-integration:
