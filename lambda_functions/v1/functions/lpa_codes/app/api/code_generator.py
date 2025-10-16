@@ -102,7 +102,7 @@ def get_codes(database, key=None, code=None):
         )
 
         try:
-            if "expiry_date" in query_result["Item"] :
+            if "expiry_date" in query_result["Item"]:
                 expiry_date = query_result["Item"]["expiry_date"]
 
                 if expiry_date > ttl_cutoff:
@@ -125,7 +125,7 @@ def get_codes(database, key=None, code=None):
                 IndexName="key_index",
                 KeyConditionExpression=Key("lpa").eq(lpa) & Key("actor").eq(actor),
                 FilterExpression=Attr("expiry_date").gt(ttl_cutoff),
-                ProjectionExpression=return_fields
+                ProjectionExpression=return_fields,
             )
 
             if len(query_result["Items"]) > 0:
@@ -141,7 +141,9 @@ def get_codes(database, key=None, code=None):
     return codes
 
 
-def update_codes(database, key=None, code=None, status=False, status_details=None, expiry_date=None):
+def update_codes(
+    database, key=None, code=None, status=False, status_details=None, expiry_date=None
+):
     """
     Generic method to update the status of rows in the db, eithet by key (lpa/actor)
     or code.
@@ -216,32 +218,28 @@ def insert_new_code(database, key, dob, code):
     lpa = key["lpa"]
     actor = key["actor"]
 
-    item={
-            "lpa": lpa,
-            "actor": actor,
-            "code": code,
-            "active": True,
-            "last_updated_date": date_formatter(datetime.datetime.now()),
-            "dob": dob,
-            "generated_date": date_formatter(datetime.datetime.now()),
-            "status_details": "Generated",
-        }
-    if lpa[0] not in ('M' , 'm') :
-        item.update({"expiry_date" : calculate_expiry_date(today=datetime.datetime.now())})
+    item = {
+        "lpa": lpa,
+        "actor": actor,
+        "code": code,
+        "active": True,
+        "last_updated_date": date_formatter(datetime.datetime.now()),
+        "dob": dob,
+        "generated_date": date_formatter(datetime.datetime.now()),
+        "expiry_date": calculate_expiry_date(today=datetime.datetime.now()),
+        "status_details": "Generated",
+    }
 
-    table.put_item(
-        Item=item
-    )
+    table.put_item(Item=item)
 
     inserted_item = get_codes(database, code=code)
 
-    # if returned list of items is zero length (which can occasionally happen), do some retries
+    # if returned list of items is zero length (which can occasionally happen),
+    # do some retries
     attempts = 0
-    while len(inserted_item) == 0 and attempts < 5: 
+    while len(inserted_item) == 0 and attempts < 5:
         time.sleep(0.1)
         inserted_item = get_codes(database, code=code)
         attempts += 1
 
-
     return inserted_item
-
