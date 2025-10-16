@@ -11,7 +11,7 @@ servers:
 
 tags:
   - name: Activation Codes
-    description: Used by Sirius and LPA Store to add access to LPAs for users
+    description: Used by Sirius allow online access to LPAs for users
   - name: Paper Verification Codes
     description: Allow organisation access to paper channel LPA Store LPAs
   - name: Common
