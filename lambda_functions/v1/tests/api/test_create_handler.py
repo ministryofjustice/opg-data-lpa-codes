@@ -18,7 +18,14 @@ from freezegun import freeze_time
 
 
 @parametrize_with_cases("test_data, data, expected_result, expected_status_code")
-def test_post(mock_database, mock_generate_code, test_data, data, expected_result, expected_status_code):
+def test_post(
+    mock_database,
+    mock_generate_code,
+    test_data,
+    data,
+    expected_result,
+    expected_status_code,
+):
 
     result, status_code = handle_create(data=data)
 
@@ -31,7 +38,14 @@ def test_post(mock_database, mock_generate_code, test_data, data, expected_resul
 
 @parametrize_with_cases("test_data, data, expected_result, expected_status_code")
 @freeze_time(datetime.date.today())
-def test_data(mock_database, mock_generate_code, test_data, data, expected_result, expected_status_code):
+def test_data(
+    mock_database,
+    mock_generate_code,
+    test_data,
+    data,
+    expected_result,
+    expected_status_code,
+):
 
     insert_test_data(test_data=test_data)
 
@@ -70,19 +84,11 @@ def test_data(mock_database, mock_generate_code, test_data, data, expected_resul
                     assert item["status_details"] == "Generated"
                     assert item["last_updated_date"] == test_constants["TODAY_ISO"]
                     assert item["generated_date"] == test_constants["TODAY_ISO"]
-                    if lpa[0] in ('M' , 'm') :
-                        assert ('expiry_date' not in item)
-                    else:
-                        assert item["expiry_date"] == test_constants["EXPIRY_DATE"]
+                    assert item["expiry_date"] == test_constants["EXPIRY_DATE"]
                 else:
-                    # Existing Modernise codes should remain untouched
-                    if lpa[0] in ('M' , 'm'):
-                        assert item["active"] is True
-                        assert item["status_details"] == "Generated"
-                    else:
-                    # Existing Legacy codes should now be superseded
-                        assert item["active"] is False
-                        assert item["status_details"] == "Superseded"
+                    # Codes should now be superseded
+                    assert item["active"] is False
+                    assert item["status_details"] == "Superseded"
         else:
             assert codes_created == expected_result
             break
@@ -99,10 +105,10 @@ def test_get_codes_broken(
     mock_generate_code,
     broken_get_code,
     caplog,
-    test_data, 
-    data, 
-    expected_result, 
-    expected_status_code 
+    test_data,
+    data,
+    expected_result,
+    expected_status_code,
 ):
 
     result, status_code = handle_create(data=data)
@@ -118,10 +124,10 @@ def test_generate_code_broken(
     mock_generate_code,
     broken_generate_code,
     caplog,
-    test_data, 
-    data, 
-    expected_result, 
-    expected_status_code 
+    test_data,
+    data,
+    expected_result,
+    expected_status_code,
 ):
 
     result, status_code = handle_create(data=data)
@@ -137,10 +143,10 @@ def test_insert_new_code_broken(
     mock_generate_code,
     broken_insert_new_code,
     caplog,
-    test_data, 
-    data, 
-    expected_result, 
-    expected_status_code 
+    test_data,
+    data,
+    expected_result,
+    expected_status_code,
 ):
 
     result, status_code = handle_create(data=data)

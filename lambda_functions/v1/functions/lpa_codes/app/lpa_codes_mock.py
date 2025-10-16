@@ -13,8 +13,8 @@ TOKEN_DB = {"asdf1234567890": {"uid": 100}}
 def apikey_auth(token, required_scopes):
 
     # if we have been sent an AWS token, set it by hand
-    if token[0:16] == 'AWS4-HMAC-SHA256':
-        info = TOKEN_DB.get('asdf1234567890', None)
+    if token[0:16] == "AWS4-HMAC-SHA256":
+        info = TOKEN_DB.get("asdf1234567890", None)
     else:
         info = TOKEN_DB.get(token, None)
 
@@ -239,6 +239,8 @@ def rewrite_bad_request(response):
 
 mock = connexion.FlaskApp(__name__, specification_dir="../../../openapi/")
 mock.app.after_request(rewrite_bad_request)
-mock.add_api("lpa-codes-openapi-v1.yml", strict_validation="true")
+mock.add_api(
+    "lpa-codes-openapi-v1.yml", strict_validation=True, validate_responses=True
+)
 mock.add_api("state-openapi-v1.yml")
 mock.run(port=4343)

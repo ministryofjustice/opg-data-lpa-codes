@@ -100,33 +100,6 @@ def revoke_route():
 
     return jsonify(result), status_code
 
-@api.route("/mark_used", methods=["POST"])
-def mark_used_route():
-    """
-    Marks the given code as used (sets the expiry date)
-
-    Payload *should* be validated by API-Gateway before it gets here, but as it causes
-    everything to explode if a required field is missing we are checking here also.
-
-    Returns:
-        if payload is valid - dict of the posted data, status code
-        if payload is invalid - 400
-    """
-    post_data = request.get_json()
-
-    try:
-        code = post_data["code"]
-    except KeyError as e:
-        logger.debug(f"Missing param from request: {e}")
-        return abort(400)
-
-    if code == "":
-        logger.debug(f"Empty param in request: code")
-        return abort(400)
-
-    result, status_code = endpoints.handle_mark_used(data=post_data)
-
-    return jsonify(result), status_code
 
 @api.route("/validate", methods=["POST"])
 def validate_route():
@@ -228,3 +201,18 @@ def actor_code_details_route():
     print(result)
 
     return jsonify(result), status_code
+
+
+@api.route("/paper-verification-code", methods=["POST"])
+def pvc_create_route():
+    return "", 500
+
+
+@api.route("/paper-verification-code/validate", methods=["POST"])
+def pvc_validate_route():
+    return "", 500
+
+
+@api.route("/paper-verification-code/expire", methods=["POST"])
+def pvc_expire_route():
+    return "", 500
