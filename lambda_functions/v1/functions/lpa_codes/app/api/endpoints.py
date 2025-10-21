@@ -63,15 +63,14 @@ def handle_create(data):
 
         key = {"lpa": lpa, "actor": actor}
 
-        # 1. for legacy (non-Modernise) LPAs only, expire all existing codes for LPA/Actor combo
-        if lpa[0] not in ('M' , 'm'):
-            try:
-                code_generator.update_codes(
-                    database=db, key=key, status=False, status_details="Superseded"
-                )
-            except Exception as e:
-                logger.error(f"Error in handle_create > get_codes: {e}")
-                return None, 500
+        # 1. Expire all existing codes for LPA/Actor combo
+        try:
+            code_generator.update_codes(
+                database=db, key=key, status=False, status_details="Superseded"
+            )
+        except Exception as e:
+            logger.error(f"Error in handle_create > get_codes: {e}")
+            return None, 500
 
         # 2. generate a new code
         try:
@@ -139,41 +138,6 @@ def handle_revoke(data):
 
     return {"codes revoked": update_result}, 200
 
-
-def handle_mark_used(data):
-    """
-    Updates sets the expiry_date of the provided code to 2 years from now
-    Returns the number of codes marked used - 
-
-    Args:
-        data: dict of payload data
-
-    Example args:
-        {
-          "code": "YsSu4iAztUXm"
-        }
-
-    Returns:
-        tuple: (number of codes marked used, http status code)
-
-    Example return:
-        (
-            {"codes marked used": 1},
-            200
-        )
-
-    """
-    db = db_connection()
-
-    try:
-        update_result = code_generator.update_codes(
-            database=db, code=data["code"], expiry_date=calculate_expiry_date(months = 24, today=datetime.datetime.now())
-        )
-    except Exception as e:
-        logger.error(f"Error in handle_mark_used > update_codes: {e}")
-        return None, 500
-
-    return {"codes marked used": update_result}, 200
 
 def handle_validate(data):
     """
