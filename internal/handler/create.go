@@ -46,11 +46,9 @@ func Create(ctx context.Context, codesStore *codes.Store, event events.APIGatewa
 	for _, entry := range data.LPAs {
 		key := codes.Key{LPA: entry.LPA, Actor: entry.Actor}
 
-		// 1. for legacy (non-Modernise) LPAs only, expire all existing codes for LPA/Actor combo
-		if entry.LPA[0] != 'M' && entry.LPA[0] != 'm' {
-			if _, err := codesStore.SetStatusDetailsForKey(ctx, key, "Superseded"); err != nil {
-				return respondInternalServerError(fmt.Errorf("update codes: %w", err))
-			}
+		// 1. expire all existing codes for LPA/Actor combo
+		if _, err := codesStore.SetStatusDetailsForKey(ctx, key, "Superseded"); err != nil {
+			return respondInternalServerError(fmt.Errorf("update codes: %w", err))
 		}
 
 		// 2. generate a new code

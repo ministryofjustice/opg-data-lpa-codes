@@ -85,10 +85,33 @@ func TestNotFound(t *testing.T) {
 	runBoth(t, "not found", func(t *testing.T, fn lambdaFn) {
 		resp, err := fn(http.MethodPost, "/v1/not-found", `{}`)
 		if assert.Nil(t, err) {
-			assert.Equal(t, 404, resp.StatusCode)
+			assert.Equal(t, http.StatusNotFound, resp.StatusCode)
 			assert.JSONEq(t, `{"body":{"error":{"code":"Not Found","message":"Not found url https://dev.lpa-codes.api.opg.service.justice.gov.uk/v1/not-found"}},"headers":{"Content-Type":"application/json"},"isBase64Encoded":false,"statusCode":404}`, resp.Body)
 		}
 	})
+}
+
+func TestMethodNotAllowed(t *testing.T) {
+	postRoutes := []string{
+		"/v1/create",
+		"/v1/exists",
+		"/v1/revoke",
+		"/v1/validate",
+		"/v1/code",
+		"/v1/paper-verification-code",
+		"/v1/paper-verification-code/validate",
+		"/v1/paper-verification-code/expire",
+	}
+
+	for _, url := range postRoutes {
+		runBoth(t, "get "+url, func(t *testing.T, fn lambdaFn) {
+			resp, err := fn(http.MethodGet, url, `{}`)
+			if assert.Nil(t, err) {
+				assert.Equal(t, http.StatusMethodNotAllowed, resp.StatusCode)
+				assert.JSONEq(t, `{"body":{"error":{"code":"Method Not Allowed","message":"Method not supported"}},"headers":{"Content-Type":"application/json"},"isBase64Encoded":false,"statusCode":405}`, resp.Body)
+			}
+		})
+	}
 }
 
 const (
@@ -150,7 +173,7 @@ func TestCreate(t *testing.T) {
 				assertEqualEither(t,
 					time.Now().AddDate(1, 0, 0).Unix(),
 					time.Now().AddDate(1, 0, 0).Unix()-1,
-					*row.ExpiryDate)
+					row.ExpiryDate)
 				assert.Equal(t, time.Now().Format(time.DateOnly), row.GeneratedDate)
 				assert.Equal(t, time.Now().Format(time.DateOnly), row.LastUpdatedDate)
 				assert.Equal(t, "eed4f597-fd87-4536-99d0-895778824861", row.LPA)
@@ -183,7 +206,7 @@ func TestCreate(t *testing.T) {
 				assertEqualEither(t,
 					time.Now().AddDate(1, 0, 0).Unix(),
 					time.Now().AddDate(1, 0, 0).Unix()-1,
-					*row.ExpiryDate)
+					row.ExpiryDate)
 				assert.Equal(t, time.Now().Format(time.DateOnly), row.GeneratedDate)
 				assert.Equal(t, time.Now().Format(time.DateOnly), row.LastUpdatedDate)
 				assert.Equal(t, "eed4f597-fd87-4536-99d0-895778824861", row.LPA)
@@ -205,7 +228,7 @@ func TestCreate(t *testing.T) {
 				assertEqualEither(t,
 					time.Now().AddDate(1, 0, 0).Unix(),
 					time.Now().AddDate(1, 0, 0).Unix()-1,
-					*row.ExpiryDate)
+					row.ExpiryDate)
 				assert.Equal(t, time.Now().Format(time.DateOnly), row.GeneratedDate)
 				assert.Equal(t, time.Now().Format(time.DateOnly), row.LastUpdatedDate)
 				assert.Equal(t, "eed4f597-fd87-4536-99d0-895778824862", row.LPA)
@@ -240,7 +263,7 @@ func TestCreate(t *testing.T) {
 				assertEqualEither(t,
 					time.Now().AddDate(1, 0, 0).Unix(),
 					time.Now().AddDate(1, 0, 0).Unix()-1,
-					*oldRow.ExpiryDate)
+					oldRow.ExpiryDate)
 				assert.Equal(t, time.Now().Format(time.DateOnly), oldRow.GeneratedDate)
 				assert.Equal(t, time.Now().Format(time.DateOnly), oldRow.LastUpdatedDate)
 				assert.Equal(t, "eed4f597-fd87-4536-99d0-895778824861", oldRow.LPA)
@@ -258,7 +281,7 @@ func TestCreate(t *testing.T) {
 				assertEqualEither(t,
 					time.Now().AddDate(1, 0, 0).Unix(),
 					time.Now().AddDate(1, 0, 0).Unix()-1,
-					*row.ExpiryDate)
+					row.ExpiryDate)
 				assert.Equal(t, time.Now().Format(time.DateOnly), row.GeneratedDate)
 				assert.Equal(t, time.Now().Format(time.DateOnly), row.LastUpdatedDate)
 				assert.Equal(t, "eed4f597-fd87-4536-99d0-895778824861", row.LPA)
@@ -289,7 +312,10 @@ func TestCreate(t *testing.T) {
 				assert.True(t, row.Active)
 				assert.Equal(t, "12ad81a9-f89d-4804-99f5-7c0c8669ac9b", row.Actor)
 				assert.Equal(t, "1960-06-05", row.DateOfBirth)
-				assert.Nil(t, row.ExpiryDate)
+				assertEqualEither(t,
+					time.Now().AddDate(1, 0, 0).Unix(),
+					time.Now().AddDate(1, 0, 0).Unix()-1,
+					row.ExpiryDate)
 				assert.Equal(t, time.Now().Format(time.DateOnly), row.GeneratedDate)
 				assert.Equal(t, time.Now().Format(time.DateOnly), row.LastUpdatedDate)
 				assert.Equal(t, "M-3J8F-86JF-9UDA", row.LPA)
@@ -298,7 +324,7 @@ func TestCreate(t *testing.T) {
 		}
 	})
 
-	runBoth(t, "create modernise does not revoke previous", func(t *testing.T, fn lambdaFn) {
+	runBoth(t, "create modernise revokes previous", func(t *testing.T, fn lambdaFn) {
 		oldCode := createCode(fn, createCodeModernise)
 
 		resp, err := fn(http.MethodPost, "/v1/create", createCodeModernise)
@@ -318,14 +344,17 @@ func TestCreate(t *testing.T) {
 					return
 				}
 
-				assert.True(t, oldRow.Active)
+				assert.False(t, oldRow.Active)
 				assert.Equal(t, "12ad81a9-f89d-4804-99f5-7c0c8669ac9b", oldRow.Actor)
 				assert.Equal(t, "1960-06-05", oldRow.DateOfBirth)
-				assert.Nil(t, oldRow.ExpiryDate)
+				assertEqualEither(t,
+					time.Now().AddDate(1, 0, 0).Unix(),
+					time.Now().AddDate(1, 0, 0).Unix()-1,
+					oldRow.ExpiryDate)
 				assert.Equal(t, time.Now().Format(time.DateOnly), oldRow.GeneratedDate)
 				assert.Equal(t, time.Now().Format(time.DateOnly), oldRow.LastUpdatedDate)
 				assert.Equal(t, "M-3J8F-86JF-9UDA", oldRow.LPA)
-				assert.Equal(t, "Generated", oldRow.StatusDetails)
+				assert.Equal(t, "Superseded", oldRow.StatusDetails)
 
 				row := getCode(codes["codes"][0]["code"])
 				if row == nil {
@@ -336,7 +365,10 @@ func TestCreate(t *testing.T) {
 				assert.True(t, row.Active)
 				assert.Equal(t, "12ad81a9-f89d-4804-99f5-7c0c8669ac9b", row.Actor)
 				assert.Equal(t, "1960-06-05", row.DateOfBirth)
-				assert.Nil(t, row.ExpiryDate)
+				assertEqualEither(t,
+					time.Now().AddDate(1, 0, 0).Unix(),
+					time.Now().AddDate(1, 0, 0).Unix()-1,
+					row.ExpiryDate)
 				assert.Equal(t, time.Now().Format(time.DateOnly), row.GeneratedDate)
 				assert.Equal(t, time.Now().Format(time.DateOnly), row.LastUpdatedDate)
 				assert.Equal(t, "M-3J8F-86JF-9UDA", row.LPA)
@@ -462,65 +494,6 @@ func TestExists(t *testing.T) {
 	}
 }
 
-func TestMarkUsed(t *testing.T) {
-	runBoth(t, "mark used", func(t *testing.T, fn lambdaFn) {
-		code := createCode(fn, createCodeLegacy)
-
-		row := getCode(code)
-		if row == nil {
-			assert.Fail(t, "row not found")
-			return
-		}
-
-		resp, err := fn(http.MethodPost, "/v1/mark_used", `{"code":"`+code+`"}`)
-		if assert.Nil(t, err) {
-			assert.Equal(t, http.StatusOK, resp.StatusCode)
-			assert.JSONEq(t, `{"codes marked used":1}`, resp.Body)
-
-			row := getCode(code)
-			if row == nil {
-				assert.Fail(t, "row not found")
-				return
-			}
-
-			assert.False(t, row.Active)
-			assert.Equal(t, "12ad81a9-f89d-4804-99f5-7c0c8669ac9b", row.Actor)
-			assert.Equal(t, "1960-06-05", row.DateOfBirth)
-			assertEqualEither(t,
-				time.Now().AddDate(2, 0, 0).Unix(),
-				time.Now().AddDate(2, 0, 0).Unix()-1,
-				*row.ExpiryDate)
-			assert.Equal(t, time.Now().Format(time.DateOnly), row.GeneratedDate)
-			assert.Equal(t, time.Now().Format(time.DateOnly), row.LastUpdatedDate)
-			assert.Equal(t, "eed4f597-fd87-4536-99d0-895778824861", row.LPA)
-			assert.Equal(t, "Generated", row.StatusDetails)
-		}
-	})
-
-	runBoth(t, "wrong code", func(t *testing.T, fn lambdaFn) {
-		resp, err := fn(http.MethodPost, "/v1/mark_used", `{"code":"something"}`)
-		if assert.Nil(t, err) {
-			assert.Equal(t, http.StatusOK, resp.StatusCode)
-			assert.JSONEq(t, `{"codes marked used":0}`, resp.Body)
-		}
-	})
-
-	testcases := map[string]string{
-		"empty code":   `{"code":""}`,
-		"missing code": `{"banana":"chipmunk"}`,
-	}
-
-	for name, lambdaBody := range testcases {
-		runBoth(t, name, func(t *testing.T, fn lambdaFn) {
-			resp, err := fn(http.MethodPost, "/v1/mark_used", lambdaBody)
-			if assert.Nil(t, err) {
-				assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
-				assert.JSONEq(t, `{"body":{"error":{"code":"Bad Request","message":"Bad payload"}},"headers":{"Content-Type":"application/json"},"isBase64Encoded":false,"statusCode":400}`, resp.Body)
-			}
-		})
-	}
-}
-
 func TestRevoke(t *testing.T) {
 	runBoth(t, "revoke", func(t *testing.T, fn lambdaFn) {
 		code := createCode(fn, createCodeLegacy)
@@ -542,7 +515,7 @@ func TestRevoke(t *testing.T) {
 			assertEqualEither(t,
 				time.Now().AddDate(1, 0, 0).Unix(),
 				time.Now().AddDate(1, 0, 0).Unix()-1,
-				*row.ExpiryDate)
+				row.ExpiryDate)
 			assert.Equal(t, time.Now().Format(time.DateOnly), row.GeneratedDate)
 			assert.Equal(t, time.Now().Format(time.DateOnly), row.LastUpdatedDate)
 			assert.Equal(t, "eed4f597-fd87-4536-99d0-895778824861", row.LPA)
@@ -645,6 +618,36 @@ func TestValidate(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestPaperVerificationCode(t *testing.T) {
+	runBoth(t, "create", func(t *testing.T, fn lambdaFn) {
+		resp, err := fn(http.MethodPost, "/v1/paper-verification-code", `{}`)
+		if assert.Nil(t, err) {
+			assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)
+			assert.Equal(t, ``, resp.Body)
+		}
+	})
+}
+
+func TestPaperVerificationCodeValidate(t *testing.T) {
+	runBoth(t, "validate", func(t *testing.T, fn lambdaFn) {
+		resp, err := fn(http.MethodPost, "/v1/paper-verification-code/validate", `{}`)
+		if assert.Nil(t, err) {
+			assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)
+			assert.Equal(t, ``, resp.Body)
+		}
+	})
+}
+
+func TestPaperVerificationCodeExpire(t *testing.T) {
+	runBoth(t, "expire", func(t *testing.T, fn lambdaFn) {
+		resp, err := fn(http.MethodPost, "/v1/paper-verification-code/expire", `{}`)
+		if assert.Nil(t, err) {
+			assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)
+			assert.Equal(t, ``, resp.Body)
+		}
+	})
 }
 
 type lambdaFn func(method, path, body string) (*lambdaResponse, error)
@@ -761,7 +764,7 @@ type Row struct {
 	Actor           string `dynamodbav:"actor"`
 	Code            string `dynamodbav:"code"`
 	DateOfBirth     string `dynamodbav:"dob"`
-	ExpiryDate      *int64 `dynamodbav:"expiry_date"`
+	ExpiryDate      int64  `dynamodbav:"expiry_date"`
 	GeneratedDate   string `dynamodbav:"generated_date"`
 	LastUpdatedDate string `dynamodbav:"last_updated_date"`
 	LPA             string `dynamodbav:"lpa"`

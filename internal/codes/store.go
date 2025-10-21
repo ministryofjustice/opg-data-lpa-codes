@@ -17,6 +17,8 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 )
 
+var ErrNotFound = errors.New("code not found")
+
 type Key struct {
 	LPA   string
 	Actor string
@@ -27,7 +29,7 @@ type Item struct {
 	Actor           string `json:"actor" dynamodbav:"actor"`
 	Code            string `json:"code" dynamodbav:"code"`
 	DateOfBirth     string `json:"dob" dynamodbav:"dob"`
-	ExpiryDate      *int64 `json:"expiry_date" dynamodbav:"expiry_date"`
+	ExpiryDate      int64  `json:"expiry_date" dynamodbav:"expiry_date"`
 	GeneratedDate   string `json:"generated_date" dynamodbav:"generated_date"`
 	LastUpdatedDate string `json:"last_updated_date" dynamodbav:"last_updated_date"`
 	LPA             string `json:"lpa" dynamodbav:"lpa"`
@@ -64,8 +66,6 @@ func (s *Store) GenerateCode(ctx context.Context) (string, error) {
 	return "", errors.New("generate code reached max attempts")
 }
 
-var ErrNotFound = errors.New("code not found")
-
 // Code gets the details for the given code, checking that it is not expired. If
 // the code does not exist or is expired an ErrNotFound error is returned.
 func (s *Store) Code(ctx context.Context, code string) (Item, error) {
@@ -89,9 +89,9 @@ func (s *Store) Code(ctx context.Context, code string) (Item, error) {
 		return Item{}, err
 	}
 
-	if v.ExpiryDate != nil && *v.ExpiryDate > 0 {
+	if v.ExpiryDate > 0 {
 		ttlCutoff := time.Now().Truncate(24 * time.Hour).Unix()
-		expiryDate := int64(*v.ExpiryDate)
+		expiryDate := int64(v.ExpiryDate)
 
 		if expiryDate <= ttlCutoff {
 			slog.Info("Code does not exist in database")
@@ -162,28 +162,6 @@ func (s *Store) SetStatusDetailsForKey(ctx context.Context, key Key, statusDetai
 	return updated, nil
 }
 
-// SetExpiryForCode updates the codes with the given expiry, and makes the codes
-// inactive.
-func (s *Store) SetExpiryForCode(ctx context.Context, code string, expiry time.Time) (int, error) {
-	item, err := s.Code(ctx, code)
-	if err != nil {
-		if errors.Is(err, ErrNotFound) {
-			slog.Info("0 rows updated for LPA/Actor")
-			return 0, nil
-		}
-
-		return 0, err
-	}
-
-	updated, err := s.updateEntries(ctx, []Item{item}, map[string]any{
-		"active":      false,
-		"expiry_date": expiry.Unix(),
-	})
-
-	slog.Info(fmt.Sprintf("%d rows updated for LPA/Actor", updated))
-	return updated, nil
-}
-
 // SetStatusDetailsForCode updates the codes with the given status details, and makes the codes
 // inactive.
 func (s *Store) SetStatusDetailsForCode(ctx context.Context, code, statusDetails string) (int, error) {
@@ -216,12 +194,8 @@ func (s *Store) InsertNewCode(ctx context.Context, key Key, dateOfBirth, code st
 		LastUpdatedDate: time.Now().Format(time.DateOnly),
 		DateOfBirth:     dateOfBirth,
 		GeneratedDate:   time.Now().Format(time.DateOnly),
+		ExpiryDate:      time.Now().AddDate(1, 0, 0).Unix(),
 		StatusDetails:   "Generated",
-	}
-
-	if key.LPA[0] != 'M' && key.LPA[0] != 'm' {
-		expiresAt := time.Now().AddDate(1, 0, 0).Unix()
-		item.ExpiryDate = &expiresAt
 	}
 
 	data, err := attributevalue.MarshalMap(item)
