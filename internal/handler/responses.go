@@ -23,11 +23,14 @@ func respondBadRequest() (events.APIGatewayProxyResponse, error) {
 }
 
 func respondMethodNotAllowed() (events.APIGatewayProxyResponse, error) {
-	return events.APIGatewayProxyResponse{StatusCode: http.StatusMethodNotAllowed}, nil
+	return events.APIGatewayProxyResponse{
+		StatusCode: http.StatusMethodNotAllowed,
+		Body:       `{"body":{"error":{"code":"Method Not Allowed","message":"Method not supported"}},"headers":{"Content-Type":"application/json"},"isBase64Encoded":false,"statusCode":405}`,
+	}, nil
 }
 
 func respondInternalServerError(err error) (events.APIGatewayProxyResponse, error) {
-	return events.APIGatewayProxyResponse{StatusCode: http.StatusMethodNotAllowed}, err
+	return events.APIGatewayProxyResponse{StatusCode: http.StatusInternalServerError}, err
 }
 
 func respondOK(v any) (events.APIGatewayProxyResponse, error) {

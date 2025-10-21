@@ -30,14 +30,14 @@ func run(ctx context.Context, event events.APIGatewayProxyRequest) (events.APIGa
 		return handler.Create(ctx, codesStore, event)
 	case "/v1/exists":
 		return handler.Exists(ctx, codesStore, event)
-	case "/v1/mark_used":
-		return handler.MarkUsed(ctx, codesStore, event)
 	case "/v1/revoke":
 		return handler.Revoke(ctx, codesStore, event)
 	case "/v1/validate":
 		return handler.Validate(ctx, codesStore, event)
 	case "/v1/code":
 		return handler.Code(ctx, codesStore, event)
+	case "/v1/paper-verification-code", "/v1/paper-verification-code/validate", "/v1/paper-verification-code/expire":
+		return handler.TODO(ctx, event)
 	}
 
 	return handler.RespondNotFound(event.Path)
