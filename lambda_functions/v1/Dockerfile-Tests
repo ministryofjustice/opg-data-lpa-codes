@@ -1,4 +1,4 @@
-FROM python:3.12-slim@sha256:47ae396f09c1303b8653019811a8498470603d7ffefc29cb07c88f1f8cb3d19f
+FROM python:3.12-slim@sha256:c45a95d1267e5c4a612973d29d93f06d2c970c77496609117b0e038cf3d777c9
 ARG FUNCTION_DIR="/var/www/lambda_functions/v1"
 
 # Create function directory
