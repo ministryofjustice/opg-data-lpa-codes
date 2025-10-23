@@ -412,7 +412,7 @@ paths:
       tags:
         - Paper Verification Codes
       summary: Validate a paper verification code
-      description: Given a paper verifcation code and it's associated surname return it's validity information
+      description: Given a paper verifcation code return it's validity information
       operationId: api.resources.pvc_validate_route
       security:
         - sigv4: []
