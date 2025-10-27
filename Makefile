@@ -9,6 +9,9 @@ up:
 up-python:
 	docker compose -f docker-compose.yml -f docker-compose.python.yml up -d lpa-codes-python
 
+reset-database:
+	@curl --fail http://localhost:8080/reset-database
+
 test: up
 	EXCLUDE_PYTHON=1 go test -count 1 .
 

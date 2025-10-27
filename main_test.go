@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -772,43 +771,15 @@ type Row struct {
 }
 
 func resetDynamo() {
-	if _, err := db.DeleteTable(ctx, &dynamodb.DeleteTableInput{
-		TableName: aws.String("lpa-codes-local"),
-	}); err != nil {
-		var exception *types.ResourceNotFoundException
-		if !errors.As(err, &exception) {
-			panic(err)
-		}
-	}
-
-	if _, err := db.CreateTable(ctx, &dynamodb.CreateTableInput{
-		TableName: aws.String("lpa-codes-local"),
-		AttributeDefinitions: []types.AttributeDefinition{
-			{AttributeName: aws.String("code"), AttributeType: types.ScalarAttributeTypeS},
-			{AttributeName: aws.String("lpa"), AttributeType: types.ScalarAttributeTypeS},
-			{AttributeName: aws.String("actor"), AttributeType: types.ScalarAttributeTypeS},
-		},
-		KeySchema: []types.KeySchemaElement{
-			{AttributeName: aws.String("code"), KeyType: types.KeyTypeHash},
-		},
-		GlobalSecondaryIndexes: []types.GlobalSecondaryIndex{{
-			IndexName: aws.String("key_index"),
-			KeySchema: []types.KeySchemaElement{
-				{AttributeName: aws.String("lpa"), KeyType: types.KeyTypeHash},
-				{AttributeName: aws.String("actor"), KeyType: types.KeyTypeRange},
-			},
-			Projection: &types.Projection{ProjectionType: types.ProjectionTypeAll},
-			ProvisionedThroughput: &types.ProvisionedThroughput{
-				ReadCapacityUnits:  aws.Int64(5),
-				WriteCapacityUnits: aws.Int64(5),
-			},
-		}},
-		ProvisionedThroughput: &types.ProvisionedThroughput{
-			ReadCapacityUnits:  aws.Int64(5),
-			WriteCapacityUnits: aws.Int64(5),
-		},
-	}); err != nil {
+	resp, err := http.Post("http://localhost:8080/reset-database", "", nil)
+	if err != nil {
 		panic(err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		panic(body)
 	}
 }
 
