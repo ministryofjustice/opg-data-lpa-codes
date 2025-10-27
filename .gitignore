@@ -1,9 +1,3 @@
-# Python
-*venv
-/.idea
-__pycache__/
-*.pyc
-
 # Terraform
 **/terraform.tfstate*
 .terraform
@@ -36,5 +30,3 @@ process.yml
 
 # Misc
 *crash.log
-lambda_functions/v1/lambda_layers/python/lib/python3.7/site-packages/*
-!lambda_functions/v1/lambda_layers/python/lib/python3.7/site-packages/README.md
