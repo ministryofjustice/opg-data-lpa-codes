@@ -1,0 +1,53 @@
+services:
+  lpa-codes-python:
+    build:
+      context: ./lambda_functions/v1
+      dockerfile: Dockerfile-Function
+    ports:
+      - "9009:8080"
+    volumes:
+      - ./lambda_functions/.aws-lambda-rie:/aws-lambda
+      - ./lambda_functions/v1/functions/lpa_codes/app:/function/app
+    depends_on:
+      - dynamodb
+      - table-helper
+    environment:
+      LOCAL_URL: http://dynamodb:8000
+      ENVIRONMENT: local
+      API_VERSION: v1
+      AWS_ACCESS_KEY_ID: testing
+      AWS_SECRET_ACCESS_KEY: testing #pragma: allowlist secret
+      AWS_SECURITY_TOKEN: testing
+      AWS_SESSION_TOKEN: testing
+      AWS_DEFAULT_REGION: eu-west-1
+    entrypoint: /aws-lambda/aws-lambda-rie /usr/local/bin/python -m awslambdaric app.lpa_codes.lambda_handler
+
+  table-helper:
+    build:
+      context: ./lambda_functions/v1
+      dockerfile: Dockerfile-Local-Helper
+    ports:
+      - "4343:4343"
+    depends_on:
+      - dynamodb
+    volumes:
+      - ./lambda_functions/v1/:/var/www/lambda_functions/v1/
+    environment:
+      LOCAL_URL: http://dynamodb:8000
+      ENVIRONMENT: local
+      AWS_ACCESS_KEY_ID: testing
+      AWS_SECRET_ACCESS_KEY: testing #pragma: allowlist secret
+      AWS_SECURITY_TOKEN: testing
+      AWS_SESSION_TOKEN: testing
+      AWS_DEFAULT_REGION: eu-west-1
+
+  unit-tests:
+    image: unit-tests:latest
+    build:
+      context: lambda_functions/v1
+      dockerfile: Dockerfile-Tests
+    environment:
+      API_VERSION: v1
+      AWS_ACCESS_KEY_ID: testing
+      AWS_SECRET_ACCESS_KEY: testing
+      ENVIRONMENT: local
