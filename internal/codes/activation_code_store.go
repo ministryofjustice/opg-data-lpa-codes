@@ -139,6 +139,9 @@ func (s *ActivationCodeStore) SupersedeCodes(ctx context.Context, key Key) (int,
 		"active":         false,
 		"status_details": statusSuperseded,
 	})
+	if err != nil {
+		return 0, err
+	}
 
 	slog.Info(fmt.Sprintf("%d rows updated for LPA/Actor", updated))
 	return updated, nil
@@ -160,6 +163,9 @@ func (s *ActivationCodeStore) RevokeCode(ctx context.Context, code string) (int,
 		"active":         false,
 		"status_details": statusRevoked,
 	})
+	if err != nil {
+		return 0, err
+	}
 
 	slog.Info(fmt.Sprintf("%d rows updated for LPA/Actor", updated))
 	return updated, nil
@@ -184,7 +190,7 @@ func (s *ActivationCodeStore) InsertNewCode(ctx context.Context, key Key, dateOf
 		return ActivationCode{}, err
 	}
 
-	if _, err = s.dynamo.PutItem(ctx, &dynamodb.PutItemInput{
+	if _, err := s.dynamo.PutItem(ctx, &dynamodb.PutItemInput{
 		TableName: aws.String(s.tableName),
 		Item:      data,
 	}); err != nil {
