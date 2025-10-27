@@ -7,7 +7,6 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"os"
 	"strings"
 	"testing"
 	"time"
@@ -36,9 +35,6 @@ func init() {
 	db = dynamodb.NewFromConfig(cfg)
 }
 
-const pythonURL = "http://localhost:9009/2015-03-31/functions/function/invocations"
-const golangURL = "http://localhost:8081/2015-03-31/functions/function/invocations"
-
 func assertEqualEither(t *testing.T, expected1, expected2, actual any) bool {
 	if assert.ObjectsAreEqual(expected1, actual) {
 		return true
@@ -47,32 +43,23 @@ func assertEqualEither(t *testing.T, expected1, expected2, actual any) bool {
 	return assert.Equal(t, expected2, actual)
 }
 
-func runBoth(t *testing.T, name string, fn func(*testing.T, lambdaFn)) {
-	if os.Getenv("EXCLUDE_PYTHON") != "1" {
-		t.Run(name+"/python", func(t *testing.T) {
-			resetDynamo()
-			fn(t, callLambda(pythonURL))
-		})
-	}
-
-	if os.Getenv("EXCLUDE_GOLANG") != "1" {
-		t.Run(name+"/golang", func(t *testing.T) {
-			resetDynamo()
-			fn(t, callLambda(golangURL))
-		})
-	}
+func runTest(t *testing.T, name string, fn func(*testing.T)) {
+	t.Run(name, func(t *testing.T) {
+		resetDynamo()
+		fn(t)
+	})
 }
 
 func TestHealthcheck(t *testing.T) {
-	runBoth(t, "GET", func(t *testing.T, fn lambdaFn) {
-		resp, _ := fn(http.MethodGet, "/v1/healthcheck", `{}`)
+	t.Run("GET", func(t *testing.T) {
+		resp, _ := callLambda(http.MethodGet, "/v1/healthcheck", `{}`)
 
 		assert.Equal(t, "\"OK\"", resp.Body)
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
 	})
 
-	runBoth(t, "HEAD", func(t *testing.T, fn lambdaFn) {
-		resp, _ := fn(http.MethodHead, "/v1/healthcheck", `{}`)
+	t.Run("HEAD", func(t *testing.T) {
+		resp, _ := callLambda(http.MethodHead, "/v1/healthcheck", `{}`)
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
 
 		assert.Equal(t, "", resp.Body)
@@ -81,13 +68,11 @@ func TestHealthcheck(t *testing.T) {
 }
 
 func TestNotFound(t *testing.T) {
-	runBoth(t, "not found", func(t *testing.T, fn lambdaFn) {
-		resp, err := fn(http.MethodPost, "/v1/not-found", `{}`)
-		if assert.Nil(t, err) {
-			assert.Equal(t, http.StatusNotFound, resp.StatusCode)
-			assert.JSONEq(t, `{"body":{"error":{"code":"Not Found","message":"Not found url https://dev.lpa-codes.api.opg.service.justice.gov.uk/v1/not-found"}},"headers":{"Content-Type":"application/json"},"isBase64Encoded":false,"statusCode":404}`, resp.Body)
-		}
-	})
+	resp, err := callLambda(http.MethodPost, "/v1/not-found", `{}`)
+	if assert.Nil(t, err) {
+		assert.Equal(t, http.StatusNotFound, resp.StatusCode)
+		assert.JSONEq(t, `{"body":{"error":{"code":"Not Found","message":"Not found url https://dev.lpa-codes.api.opg.service.justice.gov.uk/v1/not-found"}},"headers":{"Content-Type":"application/json"},"isBase64Encoded":false,"statusCode":404}`, resp.Body)
+	}
 }
 
 func TestMethodNotAllowed(t *testing.T) {
@@ -103,8 +88,8 @@ func TestMethodNotAllowed(t *testing.T) {
 	}
 
 	for _, url := range postRoutes {
-		runBoth(t, "get "+url, func(t *testing.T, fn lambdaFn) {
-			resp, err := fn(http.MethodGet, url, `{}`)
+		t.Run("get "+url, func(t *testing.T) {
+			resp, err := callLambda(http.MethodGet, url, `{}`)
 			if assert.Nil(t, err) {
 				assert.Equal(t, http.StatusMethodNotAllowed, resp.StatusCode)
 				assert.JSONEq(t, `{"body":{"error":{"code":"Method Not Allowed","message":"Method not supported"}},"headers":{"Content-Type":"application/json"},"isBase64Encoded":false,"statusCode":405}`, resp.Body)
@@ -118,8 +103,8 @@ const (
 	createCodeModernise = `{"lpas":[{"lpa":"M-1234-1234-1234","actor":"12ad81a9-f89d-4804-99f5-7c0c8669ac9b","dob":"1960-06-05"}]}`
 )
 
-func createCode(fn lambdaFn, body string) string {
-	resp, err := fn(http.MethodPost, "/v1/create", body)
+func createCode(body string) string {
+	resp, err := callLambda(http.MethodPost, "/v1/create", body)
 	if err != nil {
 		return ""
 	}
@@ -148,7 +133,7 @@ func createCode(fn lambdaFn, body string) string {
 }
 
 func createPaperCode() string {
-	resp, err := callLambda(golangURL)(http.MethodPost, "/v1/paper-verification-code", `{"lpa":"M-1234-1234-1234","actor":"12ad81a9-f89d-4804-99f5-7c0c8669ac9b"}`)
+	resp, err := callLambda(http.MethodPost, "/v1/paper-verification-code", `{"lpa":"M-1234-1234-1234","actor":"12ad81a9-f89d-4804-99f5-7c0c8669ac9b"}`)
 	if err != nil {
 		return ""
 	}
@@ -175,8 +160,8 @@ func createPaperCode() string {
 }
 
 func TestCreate(t *testing.T) {
-	runBoth(t, "create", func(t *testing.T, fn lambdaFn) {
-		resp, err := fn(http.MethodPost, "/v1/create", createCodeLegacy)
+	runTest(t, "create", func(t *testing.T) {
+		resp, err := callLambda(http.MethodPost, "/v1/create", createCodeLegacy)
 		if assert.Nil(t, err) {
 			assert.Equal(t, http.StatusOK, resp.StatusCode)
 
@@ -201,8 +186,8 @@ func TestCreate(t *testing.T) {
 		}
 	})
 
-	runBoth(t, "create multiple", func(t *testing.T, fn lambdaFn) {
-		resp, err := fn(http.MethodPost, "/v1/create", `{"lpas":[{"lpa":"700000000001","actor":"700000000002","dob":"1960-06-05"},{"lpa":"700000000003","actor":"700000000004","dob":"1960-06-06"}]}`)
+	runTest(t, "create multiple", func(t *testing.T) {
+		resp, err := callLambda(http.MethodPost, "/v1/create", `{"lpas":[{"lpa":"700000000001","actor":"700000000002","dob":"1960-06-05"},{"lpa":"700000000003","actor":"700000000004","dob":"1960-06-06"}]}`)
 		if assert.Nil(t, err) {
 			assert.Equal(t, http.StatusOK, resp.StatusCode)
 
@@ -242,10 +227,10 @@ func TestCreate(t *testing.T) {
 		}
 	})
 
-	runBoth(t, "create revokes previous", func(t *testing.T, fn lambdaFn) {
-		oldCode := createCode(fn, createCodeLegacy)
+	runTest(t, "create revokes previous", func(t *testing.T) {
+		oldCode := createCode(createCodeLegacy)
 
-		resp, err := fn(http.MethodPost, "/v1/create", createCodeLegacy)
+		resp, err := callLambda(http.MethodPost, "/v1/create", createCodeLegacy)
 		if assert.Nil(t, err) {
 			assert.Equal(t, http.StatusOK, resp.StatusCode)
 
@@ -255,12 +240,6 @@ func TestCreate(t *testing.T) {
 				assert.Equal(t, "700000000002", codes["codes"][0]["actor"])
 				assert.Regexp(t, "^[0-9A-Z]{12}$", codes["codes"][0]["code"])
 				assert.Equal(t, "700000000001", codes["codes"][0]["lpa"])
-
-				oldRow := getCode(oldCode)
-				if oldRow == nil {
-					assert.Fail(t, "old code not found")
-					return
-				}
 
 				assertCode(t, Row{
 					Active:          false,
@@ -287,8 +266,8 @@ func TestCreate(t *testing.T) {
 		}
 	})
 
-	runBoth(t, "create modernise", func(t *testing.T, fn lambdaFn) {
-		resp, err := fn(http.MethodPost, "/v1/create", createCodeModernise)
+	runTest(t, "create modernise", func(t *testing.T) {
+		resp, err := callLambda(http.MethodPost, "/v1/create", createCodeModernise)
 		if assert.Nil(t, err) {
 			assert.Equal(t, http.StatusOK, resp.StatusCode)
 
@@ -298,12 +277,6 @@ func TestCreate(t *testing.T) {
 				assert.Equal(t, "12ad81a9-f89d-4804-99f5-7c0c8669ac9b", codes["codes"][0]["actor"])
 				assert.Regexp(t, "^[0-9A-Z]{12}$", codes["codes"][0]["code"])
 				assert.Equal(t, "M-1234-1234-1234", codes["codes"][0]["lpa"])
-
-				row := getCode(codes["codes"][0]["code"])
-				if row == nil {
-					assert.Fail(t, "code not found")
-					return
-				}
 
 				assertCode(t, Row{
 					Active:          true,
@@ -319,11 +292,11 @@ func TestCreate(t *testing.T) {
 		}
 	})
 
-	runBoth(t, "create modernise revokes previous", func(t *testing.T, fn lambdaFn) {
-		oldAccessCode := createCode(fn, createCodeModernise)
+	runTest(t, "create modernise revokes previous", func(t *testing.T) {
+		oldActivationCode := createCode(createCodeModernise)
 		oldPaperCode := createPaperCode()
 
-		resp, err := fn(http.MethodPost, "/v1/create", createCodeModernise)
+		resp, err := callLambda(http.MethodPost, "/v1/create", createCodeModernise)
 		if assert.Nil(t, err) {
 			assert.Equal(t, http.StatusOK, resp.StatusCode)
 
@@ -349,7 +322,7 @@ func TestCreate(t *testing.T) {
 					LastUpdatedDate: time.Now().Format(time.DateOnly),
 					LPA:             "M-1234-1234-1234",
 					StatusDetails:   "Superseded",
-				}, oldAccessCode)
+				}, oldActivationCode)
 
 				assertCode(t, Row{
 					Active:          true,
@@ -375,8 +348,8 @@ func TestCreate(t *testing.T) {
 	}
 
 	for name, lambdaBody := range testcases {
-		runBoth(t, name, func(t *testing.T, fn lambdaFn) {
-			resp, err := fn(http.MethodPost, "/v1/create", lambdaBody)
+		t.Run(name, func(t *testing.T) {
+			resp, err := callLambda(http.MethodPost, "/v1/create", lambdaBody)
 			if assert.Nil(t, err) {
 				assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
 
@@ -387,10 +360,10 @@ func TestCreate(t *testing.T) {
 }
 
 func TestCode(t *testing.T) {
-	runBoth(t, "code", func(t *testing.T, fn lambdaFn) {
-		code := createCode(fn, createCodeLegacy)
+	runTest(t, "code", func(t *testing.T) {
+		code := createCode(createCodeLegacy)
 
-		resp, err := fn(http.MethodPost, "/v1/code", `{"code":"`+code+`"}`)
+		resp, err := callLambda(http.MethodPost, "/v1/code", `{"code":"`+code+`"}`)
 		if assert.Nil(t, err) {
 			assert.Equal(t, http.StatusOK, resp.StatusCode)
 
@@ -403,8 +376,8 @@ func TestCode(t *testing.T) {
 		}
 	})
 
-	runBoth(t, "not found", func(t *testing.T, fn lambdaFn) {
-		resp, err := fn(http.MethodPost, "/v1/code", `{"code":"abcd1234abcd"}`)
+	runTest(t, "not found", func(t *testing.T) {
+		resp, err := callLambda(http.MethodPost, "/v1/code", `{"code":"abcd1234abcd"}`)
 		if assert.Nil(t, err) {
 			assert.Equal(t, http.StatusNotFound, resp.StatusCode)
 
@@ -418,8 +391,8 @@ func TestCode(t *testing.T) {
 	}
 
 	for name, lambdaBody := range testcases {
-		runBoth(t, name, func(t *testing.T, fn lambdaFn) {
-			resp, err := fn(http.MethodPost, "/v1/code", lambdaBody)
+		t.Run(name, func(t *testing.T) {
+			resp, err := callLambda(http.MethodPost, "/v1/code", lambdaBody)
 			if assert.Nil(t, err) {
 				assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
 
@@ -430,32 +403,32 @@ func TestCode(t *testing.T) {
 }
 
 func TestExists(t *testing.T) {
-	runBoth(t, "exists", func(t *testing.T, fn lambdaFn) {
-		_ = createCode(fn, createCodeLegacy)
+	runTest(t, "exists", func(t *testing.T) {
+		_ = createCode(createCodeLegacy)
 
-		resp, err := fn(http.MethodPost, "/v1/exists", `{"lpa":"700000000001","actor":"700000000002"}`)
+		resp, err := callLambda(http.MethodPost, "/v1/exists", `{"lpa":"700000000001","actor":"700000000002"}`)
 		if assert.Nil(t, err) {
 			assert.Equal(t, http.StatusOK, resp.StatusCode)
 			assert.Equal(t, `{"Created":"`+time.Now().Format(time.DateOnly)+`"}`, resp.Body)
 		}
 	})
 
-	runBoth(t, "inactive", func(t *testing.T, fn lambdaFn) {
-		code := createCode(fn, createCodeLegacy)
+	runTest(t, "inactive", func(t *testing.T) {
+		code := createCode(createCodeLegacy)
 
-		if _, err := fn(http.MethodPost, "/v1/revoke", `{"code":"`+code+`"}`); !assert.Nil(t, err) {
+		if _, err := callLambda(http.MethodPost, "/v1/revoke", `{"code":"`+code+`"}`); !assert.Nil(t, err) {
 			return
 		}
 
-		resp, err := fn(http.MethodPost, "/v1/exists", `{"lpa":"700000000001","actor":"700000000002"}`)
+		resp, err := callLambda(http.MethodPost, "/v1/exists", `{"lpa":"700000000001","actor":"700000000002"}`)
 		if assert.Nil(t, err) {
 			assert.Equal(t, http.StatusOK, resp.StatusCode)
 			assert.Equal(t, `{"Created":null}`, resp.Body)
 		}
 	})
 
-	runBoth(t, "does not exist", func(t *testing.T, fn lambdaFn) {
-		resp, err := fn(http.MethodPost, "/v1/exists", `{"lpa":"700000000001","actor":"700000000002"}`)
+	runTest(t, "does not exist", func(t *testing.T) {
+		resp, err := callLambda(http.MethodPost, "/v1/exists", `{"lpa":"700000000001","actor":"700000000002"}`)
 		if assert.Nil(t, err) {
 			assert.Equal(t, http.StatusOK, resp.StatusCode)
 
@@ -471,8 +444,8 @@ func TestExists(t *testing.T) {
 	}
 
 	for name, lambdaBody := range testcases {
-		runBoth(t, name, func(t *testing.T, fn lambdaFn) {
-			resp, err := fn(http.MethodPost, "/v1/exists", lambdaBody)
+		t.Run(name, func(t *testing.T) {
+			resp, err := callLambda(http.MethodPost, "/v1/exists", lambdaBody)
 			if assert.Nil(t, err) {
 				assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
 
@@ -483,19 +456,13 @@ func TestExists(t *testing.T) {
 }
 
 func TestRevoke(t *testing.T) {
-	runBoth(t, "revoke", func(t *testing.T, fn lambdaFn) {
-		code := createCode(fn, createCodeLegacy)
+	runTest(t, "revoke", func(t *testing.T) {
+		code := createCode(createCodeLegacy)
 
-		resp, err := fn(http.MethodPost, "/v1/revoke", `{"code":"`+code+`"}`)
+		resp, err := callLambda(http.MethodPost, "/v1/revoke", `{"code":"`+code+`"}`)
 		if assert.Nil(t, err) {
 			assert.Equal(t, http.StatusOK, resp.StatusCode)
 			assert.JSONEq(t, `{"codes revoked":1}`, resp.Body)
-
-			row := getCode(code)
-			if row == nil {
-				assert.Fail(t, "row not found")
-				return
-			}
 
 			assertCode(t, Row{
 				Active:          false,
@@ -510,8 +477,8 @@ func TestRevoke(t *testing.T) {
 		}
 	})
 
-	runBoth(t, "wrong code", func(t *testing.T, fn lambdaFn) {
-		resp, err := fn(http.MethodPost, "/v1/revoke", `{"code":"something"}`)
+	runTest(t, "wrong code", func(t *testing.T) {
+		resp, err := callLambda(http.MethodPost, "/v1/revoke", `{"code":"something"}`)
 		if assert.Nil(t, err) {
 			assert.Equal(t, http.StatusOK, resp.StatusCode)
 			assert.JSONEq(t, `{"codes revoked":0}`, resp.Body)
@@ -524,8 +491,8 @@ func TestRevoke(t *testing.T) {
 	}
 
 	for name, lambdaBody := range testcases {
-		runBoth(t, name, func(t *testing.T, fn lambdaFn) {
-			resp, err := fn(http.MethodPost, "/v1/revoke", lambdaBody)
+		t.Run(name, func(t *testing.T) {
+			resp, err := callLambda(http.MethodPost, "/v1/revoke", lambdaBody)
 			if assert.Nil(t, err) {
 				assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
 				assert.JSONEq(t, `{"body":{"error":{"code":"Bad Request","message":"Bad payload"}},"headers":{"Content-Type":"application/json"},"isBase64Encoded":false,"statusCode":400}`, resp.Body)
@@ -535,52 +502,52 @@ func TestRevoke(t *testing.T) {
 }
 
 func TestValidate(t *testing.T) {
-	runBoth(t, "validate", func(t *testing.T, fn lambdaFn) {
-		code := createCode(fn, createCodeLegacy)
+	runTest(t, "validate", func(t *testing.T) {
+		code := createCode(createCodeLegacy)
 
-		resp, err := fn(http.MethodPost, "/v1/validate", `{"code":"`+code+`","lpa":"700000000001","dob":"1960-06-05"}`)
+		resp, err := callLambda(http.MethodPost, "/v1/validate", `{"code":"`+code+`","lpa":"700000000001","dob":"1960-06-05"}`)
 		if assert.Nil(t, err) {
 			assert.Equal(t, http.StatusOK, resp.StatusCode)
 			assert.JSONEq(t, `{"actor":"700000000002"}`, resp.Body)
 		}
 	})
 
-	runBoth(t, "wrong code", func(t *testing.T, fn lambdaFn) {
-		resp, err := fn(http.MethodPost, "/v1/validate", `{"code":"whatever","lpa":"700000000001","dob":"1960-06-05"}`)
+	runTest(t, "wrong code", func(t *testing.T) {
+		resp, err := callLambda(http.MethodPost, "/v1/validate", `{"code":"whatever","lpa":"700000000001","dob":"1960-06-05"}`)
 		if assert.Nil(t, err) {
 			assert.Equal(t, http.StatusOK, resp.StatusCode)
 			assert.JSONEq(t, `{"actor":null}`, resp.Body)
 		}
 	})
 
-	runBoth(t, "wrong lpa", func(t *testing.T, fn lambdaFn) {
-		code := createCode(fn, createCodeLegacy)
+	runTest(t, "wrong lpa", func(t *testing.T) {
+		code := createCode(createCodeLegacy)
 
-		resp, err := fn(http.MethodPost, "/v1/validate", `{"code":"`+code+`","lpa":"whatever","dob":"1960-06-05"}`)
+		resp, err := callLambda(http.MethodPost, "/v1/validate", `{"code":"`+code+`","lpa":"whatever","dob":"1960-06-05"}`)
 		if assert.Nil(t, err) {
 			assert.Equal(t, http.StatusOK, resp.StatusCode)
 			assert.JSONEq(t, `{"actor":null}`, resp.Body)
 		}
 	})
 
-	runBoth(t, "wrong dob", func(t *testing.T, fn lambdaFn) {
-		code := createCode(fn, createCodeLegacy)
+	runTest(t, "wrong dob", func(t *testing.T) {
+		code := createCode(createCodeLegacy)
 
-		resp, err := fn(http.MethodPost, "/v1/validate", `{"code":"`+code+`","lpa":"700000000001","dob":"1961-01-01"}`)
+		resp, err := callLambda(http.MethodPost, "/v1/validate", `{"code":"`+code+`","lpa":"700000000001","dob":"1961-01-01"}`)
 		if assert.Nil(t, err) {
 			assert.Equal(t, http.StatusOK, resp.StatusCode)
 			assert.JSONEq(t, `{"actor":null}`, resp.Body)
 		}
 	})
 
-	runBoth(t, "inactive", func(t *testing.T, fn lambdaFn) {
-		code := createCode(fn, createCodeLegacy)
+	runTest(t, "inactive", func(t *testing.T) {
+		code := createCode(createCodeLegacy)
 
-		if _, err := fn(http.MethodPost, "/v1/revoke", `{"code":"`+code+`"}`); !assert.Nil(t, err) {
+		if _, err := callLambda(http.MethodPost, "/v1/revoke", `{"code":"`+code+`"}`); !assert.Nil(t, err) {
 			return
 		}
 
-		resp, err := fn(http.MethodPost, "/v1/validate", `{"code":"`+code+`","lpa":"700000000001","dob":"1960-06-05"}`)
+		resp, err := callLambda(http.MethodPost, "/v1/validate", `{"code":"`+code+`","lpa":"700000000001","dob":"1960-06-05"}`)
 		if assert.Nil(t, err) {
 			assert.Equal(t, http.StatusOK, resp.StatusCode)
 			assert.JSONEq(t, `{"actor":null}`, resp.Body)
@@ -597,8 +564,8 @@ func TestValidate(t *testing.T) {
 	}
 
 	for name, lambdaBody := range testcases {
-		runBoth(t, name, func(t *testing.T, fn lambdaFn) {
-			resp, err := fn(http.MethodPost, "/v1/validate", lambdaBody)
+		t.Run(name, func(t *testing.T) {
+			resp, err := callLambda(http.MethodPost, "/v1/validate", lambdaBody)
 			if assert.Nil(t, err) {
 				assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
 				assert.JSONEq(t, `{"body":{"error":{"code":"Bad Request","message":"Bad payload"}},"headers":{"Content-Type":"application/json"},"isBase64Encoded":false,"statusCode":400}`, resp.Body)
@@ -608,124 +575,109 @@ func TestValidate(t *testing.T) {
 }
 
 func TestPaperVerificationCode(t *testing.T) {
-	if os.Getenv("EXCLUDE_PYTHON") != "1" {
-		t.Run("create/python", func(t *testing.T) {
-			resp, err := callLambda(pythonURL)(http.MethodPost, "/v1/paper-verification-code", `{}`)
-			if assert.Nil(t, err) {
-				assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)
-				assert.Equal(t, ``, resp.Body)
-			}
-		})
-	}
+	t.Run("create", func(t *testing.T) {
+		resetDynamo()
 
-	if os.Getenv("EXCLUDE_GOLANG") != "1" {
-		t.Run("create/golang", func(t *testing.T) {
-			resetDynamo()
+		resp, err := callLambda(http.MethodPost, "/v1/paper-verification-code", `{"lpa":"M-1234-1234-1234","actor":"9a619d46-8712-4bfb-a49f-c14914ff319d"}`)
+		if assert.Nil(t, err) {
+			assert.Equal(t, http.StatusOK, resp.StatusCode)
 
-			resp, err := callLambda(golangURL)(http.MethodPost, "/v1/paper-verification-code", `{"lpa":"M-1234-1234-1234","actor":"9a619d46-8712-4bfb-a49f-c14914ff319d"}`)
-			if assert.Nil(t, err) {
-				assert.Equal(t, http.StatusOK, resp.StatusCode)
+			var body map[string]string
+			json.Unmarshal([]byte(resp.Body), &body)
 
-				var body map[string]string
-				json.Unmarshal([]byte(resp.Body), &body)
+			assertPaperVerificationCode(t, PaperRow{
+				PK:        "PAPER#" + body["code"],
+				UpdatedAt: time.Now(),
+				ActorLPA:  "9a619d46-8712-4bfb-a49f-c14914ff319d#M-1234-1234-1234",
+			})
 
-				assertPaperVerificationCode(t, PaperRow{
-					PK:        "PAPER#" + body["code"],
-					UpdatedAt: time.Now(),
-					ActorLPA:  "9a619d46-8712-4bfb-a49f-c14914ff319d#M-1234-1234-1234",
-				})
+			assert.Regexp(t, "^P(-[0-9A-Z]{4}){3}-[A-Z0-9]{2}$", body["code"])
 
-				assert.Regexp(t, "^P(-[0-9A-Z]{4}){3}-[A-Z0-9]{2}$", body["code"])
-
-				delete(body, "code")
-				assert.Equal(t, map[string]string{
-					"lpa":   "M-1234-1234-1234",
-					"actor": "9a619d46-8712-4bfb-a49f-c14914ff319d",
-				}, body)
-			}
-		})
-
-		t.Run("create revokes previous/golang", func(t *testing.T) {
-			resetDynamo()
-
-			oldAccessCode := createCode(callLambda(golangURL), createCodeModernise)
-			oldPaperCode := createPaperCode()
-
-			resp, err := callLambda(golangURL)(http.MethodPost, "/v1/paper-verification-code", `{"lpa":"M-1234-1234-1234","actor":"12ad81a9-f89d-4804-99f5-7c0c8669ac9b"}`)
-			if assert.Nil(t, err) {
-				assert.Equal(t, http.StatusOK, resp.StatusCode)
-
-				var body map[string]string
-				json.Unmarshal([]byte(resp.Body), &body)
-
-				assert.Equal(t, "12ad81a9-f89d-4804-99f5-7c0c8669ac9b", body["actor"])
-				assert.Regexp(t, "^P(-[0-9A-Z]{4}){3}-[A-Z0-9]{2}$", body["code"])
-				assert.Equal(t, "M-1234-1234-1234", body["lpa"])
-
-				assertCode(t, Row{
-					Active:          true,
-					Actor:           "12ad81a9-f89d-4804-99f5-7c0c8669ac9b",
-					DateOfBirth:     "1960-06-05",
-					ExpiryDate:      time.Now().AddDate(1, 0, 0).Unix(),
-					GeneratedDate:   time.Now().Format(time.DateOnly),
-					LastUpdatedDate: time.Now().Format(time.DateOnly),
-					LPA:             "M-1234-1234-1234",
-					StatusDetails:   "Generated",
-				}, oldAccessCode)
-
-				assertPaperVerificationCode(t, PaperRow{
-					PK:        "PAPER#" + oldPaperCode,
-					UpdatedAt: time.Now(),
-					ExpiresAt: time.Now().AddDate(0, 1, 0),
-					ActorLPA:  "12ad81a9-f89d-4804-99f5-7c0c8669ac9b#M-1234-1234-1234",
-				})
-
-				assertPaperVerificationCode(t, PaperRow{
-					PK:        "PAPER#" + body["code"],
-					UpdatedAt: time.Now(),
-					ActorLPA:  "12ad81a9-f89d-4804-99f5-7c0c8669ac9b#M-1234-1234-1234",
-				})
-			}
-		})
-
-		testcases := map[string]string{
-			"create missing lpa":   `{"actor":"12ad81a9-f89d-4804-99f5-7c0c8669ac9b"}`,
-			"create missing actor": `{"lpa":"M-1234-1234-1234"}`,
-			"create empty lpa":     `{"lpa":"","actor":"12ad81a9-f89d-4804-99f5-7c0c8669ac9b"}`,
-			"create empty actor":   `{"lpa":"M-1234-1234-1234","actor":""}`,
+			delete(body, "code")
+			assert.Equal(t, map[string]string{
+				"lpa":   "M-1234-1234-1234",
+				"actor": "9a619d46-8712-4bfb-a49f-c14914ff319d",
+			}, body)
 		}
+	})
 
-		for name, lambdaBody := range testcases {
-			t.Run(name, func(t *testing.T) {
-				resp, err := callLambda(golangURL)(http.MethodPost, "/v1/paper-verification-code", lambdaBody)
-				if assert.Nil(t, err) {
-					assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
+	t.Run("create revokes previous", func(t *testing.T) {
+		resetDynamo()
 
-					assert.JSONEq(t, `{"body":{"error":{"code":"Bad Request","message":"Bad payload"}},"headers":{"Content-Type": "application/json"},"isBase64Encoded":false,"statusCode":400}`, resp.Body)
-				}
+		oldActivationCode := createCode(createCodeModernise)
+		oldPaperCode := createPaperCode()
+
+		resp, err := callLambda(http.MethodPost, "/v1/paper-verification-code", `{"lpa":"M-1234-1234-1234","actor":"12ad81a9-f89d-4804-99f5-7c0c8669ac9b"}`)
+		if assert.Nil(t, err) {
+			assert.Equal(t, http.StatusOK, resp.StatusCode)
+
+			var body map[string]string
+			json.Unmarshal([]byte(resp.Body), &body)
+
+			assert.Equal(t, "12ad81a9-f89d-4804-99f5-7c0c8669ac9b", body["actor"])
+			assert.Regexp(t, "^P(-[0-9A-Z]{4}){3}-[A-Z0-9]{2}$", body["code"])
+			assert.Equal(t, "M-1234-1234-1234", body["lpa"])
+
+			assertCode(t, Row{
+				Active:          true,
+				Actor:           "12ad81a9-f89d-4804-99f5-7c0c8669ac9b",
+				DateOfBirth:     "1960-06-05",
+				ExpiryDate:      time.Now().AddDate(1, 0, 0).Unix(),
+				GeneratedDate:   time.Now().Format(time.DateOnly),
+				LastUpdatedDate: time.Now().Format(time.DateOnly),
+				LPA:             "M-1234-1234-1234",
+				StatusDetails:   "Generated",
+			}, oldActivationCode)
+
+			assertPaperVerificationCode(t, PaperRow{
+				PK:        "PAPER#" + oldPaperCode,
+				UpdatedAt: time.Now(),
+				ExpiresAt: time.Now().AddDate(0, 1, 0),
+				ActorLPA:  "12ad81a9-f89d-4804-99f5-7c0c8669ac9b#M-1234-1234-1234",
+			})
+
+			assertPaperVerificationCode(t, PaperRow{
+				PK:        "PAPER#" + body["code"],
+				UpdatedAt: time.Now(),
+				ActorLPA:  "12ad81a9-f89d-4804-99f5-7c0c8669ac9b#M-1234-1234-1234",
 			})
 		}
+	})
+
+	testcases := map[string]string{
+		"create missing lpa":   `{"actor":"12ad81a9-f89d-4804-99f5-7c0c8669ac9b"}`,
+		"create missing actor": `{"lpa":"M-1234-1234-1234"}`,
+		"create empty lpa":     `{"lpa":"","actor":"12ad81a9-f89d-4804-99f5-7c0c8669ac9b"}`,
+		"create empty actor":   `{"lpa":"M-1234-1234-1234","actor":""}`,
 	}
+
+	for name, lambdaBody := range testcases {
+		t.Run(name, func(t *testing.T) {
+			resp, err := callLambda(http.MethodPost, "/v1/paper-verification-code", lambdaBody)
+			if assert.Nil(t, err) {
+				assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
+
+				assert.JSONEq(t, `{"body":{"error":{"code":"Bad Request","message":"Bad payload"}},"headers":{"Content-Type": "application/json"},"isBase64Encoded":false,"statusCode":400}`, resp.Body)
+			}
+		})
+	}
+
 }
 
 func TestPaperVerificationCodeValidate(t *testing.T) {
-	runBoth(t, "validate", func(t *testing.T, fn lambdaFn) {
-		resp, err := fn(http.MethodPost, "/v1/paper-verification-code/validate", `{}`)
-		if assert.Nil(t, err) {
-			assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)
-			assert.Equal(t, ``, resp.Body)
-		}
-	})
+	resp, err := callLambda(http.MethodPost, "/v1/paper-verification-code/validate", `{}`)
+	if assert.Nil(t, err) {
+		assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)
+		assert.Equal(t, ``, resp.Body)
+	}
 }
 
 func TestPaperVerificationCodeExpire(t *testing.T) {
-	runBoth(t, "expire", func(t *testing.T, fn lambdaFn) {
-		resp, err := fn(http.MethodPost, "/v1/paper-verification-code/expire", `{}`)
-		if assert.Nil(t, err) {
-			assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)
-			assert.Equal(t, ``, resp.Body)
-		}
-	})
+	resp, err := callLambda(http.MethodPost, "/v1/paper-verification-code/expire", `{}`)
+	if assert.Nil(t, err) {
+		assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)
+		assert.Equal(t, ``, resp.Body)
+	}
 }
 
 type lambdaFn func(method, path, body string) (*lambdaResponse, error)
@@ -736,31 +688,29 @@ type lambdaResponse struct {
 	Body       string            `json:"body"`
 }
 
-func callLambda(url string) lambdaFn {
-	return func(method, path, body string) (*lambdaResponse, error) {
-		data := toLambdaRequest(method, path, body)
+func callLambda(method, path, body string) (*lambdaResponse, error) {
+	data := toLambdaRequest(method, path, body)
 
-		req, _ := http.NewRequest(http.MethodPost, url, data)
-		req.Header.Add("Content-Type", "application/json")
+	req, _ := http.NewRequest(http.MethodPost, "http://localhost:8081/2015-03-31/functions/function/invocations", data)
+	req.Header.Add("Content-Type", "application/json")
 
-		resp, err := http.DefaultClient.Do(req)
-		if err != nil {
-			return nil, err
-		}
-		defer resp.Body.Close()
-
-		if resp.StatusCode != http.StatusOK {
-			return nil, fmt.Errorf("lambda returned %d", resp.StatusCode)
-		}
-
-		var v lambdaResponse
-		if err := json.NewDecoder(resp.Body).Decode(&v); err != nil {
-			return nil, err
-		}
-
-		v.Body = strings.TrimSpace(v.Body)
-		return &v, nil
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, err
 	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("lambda returned %d", resp.StatusCode)
+	}
+
+	var v lambdaResponse
+	if err := json.NewDecoder(resp.Body).Decode(&v); err != nil {
+		return nil, err
+	}
+
+	v.Body = strings.TrimSpace(v.Body)
+	return &v, nil
 }
 
 func toLambdaRequest(method, path, body string) io.Reader {
