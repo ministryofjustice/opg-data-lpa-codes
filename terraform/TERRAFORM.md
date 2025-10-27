@@ -47,12 +47,3 @@ The lambdas are completely separate so a bug fix on the lambda side could be don
 ### Lambdas
 
 Lambdas are controlled through modules as per above.
-
-### Lambda layers
-
-Lambda layers contain all the requirements for a lambda. Whilst it would be nice to use a sha for
-the full folder this was causing both the lambda and layer to deploy on each deploy.
-As such it is part of the CI pipeline to check the sha of the requirements.txt.
-There is a comment in there where you can update the date which will change the sha and thus update
-the layer. Also if a new requirement is added it will rebuild the layer. Otherwise it will stick with
-the current layer.
