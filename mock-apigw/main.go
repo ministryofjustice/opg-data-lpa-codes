@@ -22,6 +22,14 @@ import (
 )
 
 func handler(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path == "/reset-database" {
+		if err := resetDatabase(r.Context()); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+
+		return
+	}
+
 	url := fmt.Sprintf("%s/2015-03-31/functions/function/invocations", os.Getenv("LAMBDA_URL"))
 
 	query := map[string]string{}
@@ -75,12 +83,10 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func main() {
-	ctx := context.Background()
-
+func resetDatabase(ctx context.Context) error {
 	cfg, err := config.LoadDefaultConfig(ctx)
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	cfg.BaseEndpoint = aws.String(cmp.Or(os.Getenv("LOCAL_URL"), "http://localhost:8000"))
@@ -92,7 +98,7 @@ func main() {
 	}); err != nil {
 		var exception *types.ResourceNotFoundException
 		if !errors.As(err, &exception) {
-			panic(err)
+			return err
 		}
 	}
 
@@ -123,9 +129,13 @@ func main() {
 			WriteCapacityUnits: aws.Int64(5),
 		},
 	}); err != nil {
-		panic(err)
+		return err
 	}
 
+	return nil
+}
+
+func main() {
 	server := &http.Server{
 		Addr:              ":8080",
 		Handler:           http.HandlerFunc(handler),

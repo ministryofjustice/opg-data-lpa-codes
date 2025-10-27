@@ -31,7 +31,7 @@ jobs:
       - name: Run Functional Tests
         id: functional_tests
         run: |
-          docker compose up -d --build --wait lpa-codes
+          make up
           EXCLUDE_PYTHON=1 go test -count 1 .
         env:
           AWS_ACCESS_KEY_ID: testing
