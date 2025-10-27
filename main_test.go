@@ -115,8 +115,8 @@ func TestMethodNotAllowed(t *testing.T) {
 }
 
 const (
-	createCodeLegacy    = `{"lpas":[{"lpa":"eed4f597-fd87-4536-99d0-895778824861","actor":"12ad81a9-f89d-4804-99f5-7c0c8669ac9b","dob":"1960-06-05"}]}`
-	createCodeModernise = `{"lpas":[{"lpa":"M-3J8F-86JF-9UDA","actor":"12ad81a9-f89d-4804-99f5-7c0c8669ac9b","dob":"1960-06-05"}]}`
+	createCodeLegacy    = `{"lpas":[{"lpa":"700000000001","actor":"700000000002","dob":"1960-06-05"}]}`
+	createCodeModernise = `{"lpas":[{"lpa":"M-1234-1234-1234","actor":"12ad81a9-f89d-4804-99f5-7c0c8669ac9b","dob":"1960-06-05"}]}`
 )
 
 func createCode(fn lambdaFn, body string) string {
@@ -301,7 +301,7 @@ func TestCreate(t *testing.T) {
 			if assert.Len(t, codes["codes"], 1) {
 				assert.Equal(t, "12ad81a9-f89d-4804-99f5-7c0c8669ac9b", codes["codes"][0]["actor"])
 				assert.Regexp(t, "^[0-9A-Z]{12}$", codes["codes"][0]["code"])
-				assert.Equal(t, "M-3J8F-86JF-9UDA", codes["codes"][0]["lpa"])
+				assert.Equal(t, "M-1234-1234-1234", codes["codes"][0]["lpa"])
 
 				row := getCode(codes["codes"][0]["code"])
 				if row == nil {
@@ -318,7 +318,7 @@ func TestCreate(t *testing.T) {
 					row.ExpiryDate)
 				assert.Equal(t, time.Now().Format(time.DateOnly), row.GeneratedDate)
 				assert.Equal(t, time.Now().Format(time.DateOnly), row.LastUpdatedDate)
-				assert.Equal(t, "M-3J8F-86JF-9UDA", row.LPA)
+				assert.Equal(t, "M-1234-1234-1234", row.LPA)
 				assert.Equal(t, "Generated", row.StatusDetails)
 			}
 		}
@@ -336,7 +336,7 @@ func TestCreate(t *testing.T) {
 			if assert.Len(t, codes["codes"], 1) {
 				assert.Equal(t, "12ad81a9-f89d-4804-99f5-7c0c8669ac9b", codes["codes"][0]["actor"])
 				assert.Regexp(t, "^[0-9A-Z]{12}$", codes["codes"][0]["code"])
-				assert.Equal(t, "M-3J8F-86JF-9UDA", codes["codes"][0]["lpa"])
+				assert.Equal(t, "M-1234-1234-1234", codes["codes"][0]["lpa"])
 
 				oldRow := getCode(oldCode)
 				if oldRow == nil {
@@ -353,7 +353,7 @@ func TestCreate(t *testing.T) {
 					oldRow.ExpiryDate)
 				assert.Equal(t, time.Now().Format(time.DateOnly), oldRow.GeneratedDate)
 				assert.Equal(t, time.Now().Format(time.DateOnly), oldRow.LastUpdatedDate)
-				assert.Equal(t, "M-3J8F-86JF-9UDA", oldRow.LPA)
+				assert.Equal(t, "M-1234-1234-1234", oldRow.LPA)
 				assert.Equal(t, "Superseded", oldRow.StatusDetails)
 
 				row := getCode(codes["codes"][0]["code"])
@@ -371,7 +371,7 @@ func TestCreate(t *testing.T) {
 					row.ExpiryDate)
 				assert.Equal(t, time.Now().Format(time.DateOnly), row.GeneratedDate)
 				assert.Equal(t, time.Now().Format(time.DateOnly), row.LastUpdatedDate)
-				assert.Equal(t, "M-3J8F-86JF-9UDA", row.LPA)
+				assert.Equal(t, "M-1234-1234-1234", row.LPA)
 				assert.Equal(t, "Generated", row.StatusDetails)
 			}
 		}
@@ -379,11 +379,11 @@ func TestCreate(t *testing.T) {
 
 	testcases := map[string]string{
 		"create missing lpa":   `{"lpas":[{"actor":"12ad81a9-f89d-4804-99f5-7c0c8669ac9b","dob":"1960-06-05"}]}`,
-		"create missing actor": `{"lpas":[{"lpa":"M-3J8F-86JF-9UDA","dob":"1960-06-05"}]}`,
-		"create missing dob":   `{"lpas":[{"lpa":"M-3J8F-86JF-9UDA","actor":"12ad81a9-f89d-4804-99f5-7c0c8669ac9b"}]}`,
+		"create missing actor": `{"lpas":[{"lpa":"M-1234-1234-1234","dob":"1960-06-05"}]}`,
+		"create missing dob":   `{"lpas":[{"lpa":"M-1234-1234-1234","actor":"12ad81a9-f89d-4804-99f5-7c0c8669ac9b"}]}`,
 		"create empty lpa":     `{"lpas":[{"lpa":"","actor":"12ad81a9-f89d-4804-99f5-7c0c8669ac9b","dob":"1960-06-05"}]}`,
-		"create empty actor":   `{"lpas":[{"lpa":"M-3J8F-86JF-9UDA","actor":"","dob":"1960-06-05"}]}`,
-		"create empty dob":     `{"lpas":[{"lpa":"M-3J8F-86JF-9UDA","actor":"12ad81a9-f89d-4804-99f5-7c0c8669ac9b","dob":""}]}`,
+		"create empty actor":   `{"lpas":[{"lpa":"M-1234-1234-1234","actor":"","dob":"1960-06-05"}]}`,
+		"create empty dob":     `{"lpas":[{"lpa":"M-1234-1234-1234","actor":"12ad81a9-f89d-4804-99f5-7c0c8669ac9b","dob":""}]}`,
 	}
 
 	for name, lambdaBody := range testcases {
