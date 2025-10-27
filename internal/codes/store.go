@@ -50,7 +50,7 @@ func NewStore(dynamo *dynamodb.Client, tableName string) *Store {
 // and error if a unique code cannot be generated.
 func (s *Store) GenerateCode(ctx context.Context) (string, error) {
 	for range 10 {
-		newCode := randomCode()
+		newCode := randomActivationCode()
 
 		_, err := s.Code(ctx, newCode)
 		if err != nil {
@@ -157,6 +157,9 @@ func (s *Store) SetStatusDetailsForKey(ctx context.Context, key Key, statusDetai
 		"active":         false,
 		"status_details": statusDetails,
 	})
+	if err != nil {
+		return 0, err
+	}
 
 	slog.Info(fmt.Sprintf("%d rows updated for LPA/Actor", updated))
 	return updated, nil
@@ -179,6 +182,9 @@ func (s *Store) SetStatusDetailsForCode(ctx context.Context, code, statusDetails
 		"active":         false,
 		"status_details": statusDetails,
 	})
+	if err != nil {
+		return 0, err
+	}
 
 	slog.Info(fmt.Sprintf("%d rows updated for LPA/Actor", updated))
 	return updated, nil
@@ -203,7 +209,7 @@ func (s *Store) InsertNewCode(ctx context.Context, key Key, dateOfBirth, code st
 		return Item{}, err
 	}
 
-	if _, err = s.dynamo.PutItem(ctx, &dynamodb.PutItemInput{
+	if _, err := s.dynamo.PutItem(ctx, &dynamodb.PutItemInput{
 		TableName: aws.String(s.tableName),
 		Item:      data,
 	}); err != nil {
