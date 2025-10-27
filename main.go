@@ -46,14 +46,24 @@ func run(ctx context.Context, event events.APIGatewayProxyRequest) (events.APIGa
 	return handler.RespondNotFound(event.Path)
 }
 
+func parseSlogLevel(s string) slog.Level {
+	var level slog.Level
+	if err := level.UnmarshalText([]byte(s)); err != nil {
+		return slog.LevelInfo
+	}
+
+	return level
+}
+
 func main() {
 	var (
 		ctx         = context.Background()
+		loggerLevel = parseSlogLevel(os.Getenv("LOGGER_LEVEL"))
 		localURL    = os.Getenv("LOCAL_URL")
 		environment = os.Getenv("ENVIRONMENT")
 	)
 
-	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: loggerLevel}))
 	slog.SetDefault(logger)
 
 	var err error

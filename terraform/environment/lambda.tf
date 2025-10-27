@@ -10,7 +10,6 @@ module "lamdba_lpa_codes_v1" {
   account              = local.account
   dynamodb_table       = aws_dynamodb_table.lpa_codes
   codes_dynamodb_table = aws_dynamodb_table.codes
-  package_type         = "Image"
   image_uri            = "${data.aws_ecr_repository.lpa_codes.repository_url}:${var.image_tag}"
   ecr_arn              = data.aws_ecr_repository.lpa_codes.arn
 }
