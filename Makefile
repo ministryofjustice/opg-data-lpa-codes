@@ -13,7 +13,7 @@ reset-database:
 	@curl --fail http://localhost:8080/reset-database
 
 test: up
-	EXCLUDE_PYTHON=1 go test -count 1 .
+	EXCLUDE_PYTHON=1 go test -count 1 $(TEST_FLAGS) ./...
 
 test-both: up up-python
 	go test -count 1 .
