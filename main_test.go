@@ -348,7 +348,6 @@ func TestCreate(t *testing.T) {
 				assertCode(t, Row{
 					Active:          false,
 					Actor:           "12ad81a9-f89d-4804-99f5-7c0c8669ac9b",
-					ExpiryDate:      int64(1<<63 - 1),
 					GeneratedDate:   time.Now().Format(time.DateOnly),
 					LastUpdatedDate: time.Now().Format(time.DateOnly),
 					LPA:             "M-1234-1234-1234",
@@ -636,7 +635,6 @@ func TestPaperVerificationCode(t *testing.T) {
 				assertCode(t, Row{
 					Active:          true,
 					Actor:           "9a619d46-8712-4bfb-a49f-c14914ff319d",
-					ExpiryDate:      int64(1<<63 - 1),
 					GeneratedDate:   time.Now().Format(time.DateOnly),
 					LastUpdatedDate: time.Now().Format(time.DateOnly),
 					LPA:             "M-1234-1234-1234",
@@ -684,7 +682,6 @@ func TestPaperVerificationCode(t *testing.T) {
 				assertCode(t, Row{
 					Active:          false,
 					Actor:           "12ad81a9-f89d-4804-99f5-7c0c8669ac9b",
-					ExpiryDate:      int64(1<<63 - 1),
 					GeneratedDate:   time.Now().Format(time.DateOnly),
 					LastUpdatedDate: time.Now().Format(time.DateOnly),
 					LPA:             "M-1234-1234-1234",
@@ -694,7 +691,6 @@ func TestPaperVerificationCode(t *testing.T) {
 				assertCode(t, Row{
 					Active:          true,
 					Actor:           "12ad81a9-f89d-4804-99f5-7c0c8669ac9b",
-					ExpiryDate:      int64(1<<63 - 1),
 					GeneratedDate:   time.Now().Format(time.DateOnly),
 					LastUpdatedDate: time.Now().Format(time.DateOnly),
 					LPA:             "M-1234-1234-1234",
