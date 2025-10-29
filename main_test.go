@@ -358,7 +358,7 @@ func TestCreate(t *testing.T) {
 		}
 	})
 
-	runBoth(t, "create modernise revokes previous paper verification code", func(t *testing.T, fn lambdaFn) {
+	runBoth(t, "create modernise sets expiry of previous paper verification code", func(t *testing.T, fn lambdaFn) {
 		oldPaperCode := createPaperCode()
 
 		resp, err := fn(http.MethodPost, "/v1/create", createCodeModernise)
@@ -373,12 +373,13 @@ func TestCreate(t *testing.T) {
 				assert.Equal(t, "M-1234-1234-1234", codes["codes"][0]["lpa"])
 
 				assertCode(t, Row{
-					Active:          false,
+					Active:          true,
 					Actor:           "12ad81a9-f89d-4804-99f5-7c0c8669ac9b",
+					ExpiryDate:      time.Now().AddDate(0, 0, 30).Unix(),
 					GeneratedDate:   time.Now().Format(time.DateOnly),
 					LastUpdatedDate: time.Now().Format(time.DateOnly),
 					LPA:             "M-1234-1234-1234",
-					StatusDetails:   "Superseded",
+					StatusDetails:   "Generated",
 				}, oldPaperCode)
 
 				assertCode(t, Row{
@@ -678,7 +679,7 @@ func TestPaperVerificationCode(t *testing.T) {
 			}
 		})
 
-		t.Run("create revokes previous access code/golang", func(t *testing.T) {
+		t.Run("create does not revoke previous access code/golang", func(t *testing.T) {
 			resetDynamo()
 
 			oldAccessCode := createCode(callLambda(golangURL), createCodeModernise)
@@ -695,14 +696,14 @@ func TestPaperVerificationCode(t *testing.T) {
 				assert.Equal(t, "M-1234-1234-1234", body["lpa"])
 
 				assertCode(t, Row{
-					Active:          false,
+					Active:          true,
 					Actor:           "12ad81a9-f89d-4804-99f5-7c0c8669ac9b",
 					DateOfBirth:     "1960-06-05",
 					ExpiryDate:      time.Now().AddDate(1, 0, 0).Unix(),
 					GeneratedDate:   time.Now().Format(time.DateOnly),
 					LastUpdatedDate: time.Now().Format(time.DateOnly),
 					LPA:             "M-1234-1234-1234",
-					StatusDetails:   "Superseded",
+					StatusDetails:   "Generated",
 				}, oldAccessCode)
 
 				assertCode(t, Row{
