@@ -33,7 +33,7 @@ type Item struct {
 	GeneratedDate   string `json:"generated_date" dynamodbav:"generated_date"`
 	LastUpdatedDate string `json:"last_updated_date" dynamodbav:"last_updated_date"`
 	LPA             string `json:"lpa" dynamodbav:"lpa"`
-	StatusDetails   string `json:"status_details" dynamodbav:"status_details"`
+	StatusDetails   status `json:"status_details" dynamodbav:"status_details"`
 }
 
 type Store struct {
@@ -50,7 +50,7 @@ func NewStore(dynamo *dynamodb.Client, tableName string) *Store {
 // and error if a unique code cannot be generated.
 func (s *Store) GenerateCode(ctx context.Context) (string, error) {
 	for range 10 {
-		newCode := randomCode()
+		newCode := randomAccessCode()
 
 		_, err := s.Code(ctx, newCode)
 		if err != nil {
@@ -64,6 +64,26 @@ func (s *Store) GenerateCode(ctx context.Context) (string, error) {
 
 	slog.Error("Unable to generate unique code - failed after 10 attempts")
 	return "", errors.New("generate code reached max attempts")
+}
+
+// GeneratePaperVerificationCode returns a formatted alphanumeric code
+// containing no ambiguous characters. It should be unique at the time of
+// generating, we try 10 times and error if a unique code cannot be generated.
+func (s *Store) GeneratePaperVerificationCode(ctx context.Context) (string, error) {
+	for range 10 {
+		newCode := randomPaperVerificationCode()
+
+		_, err := s.Code(ctx, newCode)
+		if err != nil {
+			if errors.Is(err, ErrNotFound) {
+				return newCode, nil
+			}
+
+			return "", err
+		}
+	}
+
+	return "", errors.New("generate paper verification code reached max attempts")
 }
 
 // Code gets the details for the given code, checking that it is not expired. If
@@ -140,9 +160,9 @@ func (s *Store) CodesByKey(ctx context.Context, key Key) ([]Item, error) {
 	return v, nil
 }
 
-// SetStatusDetailsForKey updates the codes for the given key with the status
+// SupersedeCodes updates the codes for the given key with the status
 // details, and makes the codes inactive.
-func (s *Store) SetStatusDetailsForKey(ctx context.Context, key Key, statusDetails string) (int, error) {
+func (s *Store) SupersedeCodes(ctx context.Context, key Key) (int, error) {
 	entries, err := s.CodesByKey(ctx, key)
 	if err != nil {
 		return 0, err
@@ -155,16 +175,15 @@ func (s *Store) SetStatusDetailsForKey(ctx context.Context, key Key, statusDetai
 
 	updated, err := s.updateEntries(ctx, entries, map[string]any{
 		"active":         false,
-		"status_details": statusDetails,
+		"status_details": statusSuperseded,
 	})
 
 	slog.Info(fmt.Sprintf("%d rows updated for LPA/Actor", updated))
 	return updated, nil
 }
 
-// SetStatusDetailsForCode updates the codes with the given status details, and makes the codes
-// inactive.
-func (s *Store) SetStatusDetailsForCode(ctx context.Context, code, statusDetails string) (int, error) {
+// RevokeCode makes the code inactive and sets its status to revoked.
+func (s *Store) RevokeCode(ctx context.Context, code string) (int, error) {
 	item, err := s.Code(ctx, code)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
@@ -177,7 +196,7 @@ func (s *Store) SetStatusDetailsForCode(ctx context.Context, code, statusDetails
 
 	updated, err := s.updateEntries(ctx, []Item{item}, map[string]any{
 		"active":         false,
-		"status_details": statusDetails,
+		"status_details": statusRevoked,
 	})
 
 	slog.Info(fmt.Sprintf("%d rows updated for LPA/Actor", updated))
@@ -195,7 +214,37 @@ func (s *Store) InsertNewCode(ctx context.Context, key Key, dateOfBirth, code st
 		DateOfBirth:     dateOfBirth,
 		GeneratedDate:   time.Now().Format(time.DateOnly),
 		ExpiryDate:      time.Now().AddDate(1, 0, 0).Unix(),
-		StatusDetails:   "Generated",
+		StatusDetails:   statusGenerated,
+	}
+
+	data, err := attributevalue.MarshalMap(item)
+	if err != nil {
+		return Item{}, err
+	}
+
+	if _, err = s.dynamo.PutItem(ctx, &dynamodb.PutItemInput{
+		TableName: aws.String(s.tableName),
+		Item:      data,
+	}); err != nil {
+		return Item{}, err
+	}
+
+	return item, nil
+}
+
+// InsertNewPaperVerificationCode puts a new code and returns the created Item, once it is inserted.
+func (s *Store) InsertNewPaperVerificationCode(ctx context.Context, key Key, code string) (Item, error) {
+	item := Item{
+		LPA:             key.LPA,
+		Actor:           key.Actor,
+		Code:            code,
+		Active:          true,
+		LastUpdatedDate: time.Now().Format(time.DateOnly),
+		GeneratedDate:   time.Now().Format(time.DateOnly),
+		// set expiry into the far future so that we can continue to use this field
+		// when querying
+		ExpiryDate:    int64(1<<63 - 1),
+		StatusDetails: statusGenerated,
 	}
 
 	data, err := attributevalue.MarshalMap(item)
