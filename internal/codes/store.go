@@ -131,11 +131,12 @@ func (s *Store) CodesByKey(ctx context.Context, key Key) ([]Item, error) {
 		IndexName:              aws.String("key_index"),
 		TableName:              aws.String(s.tableName),
 		KeyConditionExpression: aws.String("#lpa = :lpa and #actor = :actor"),
-		FilterExpression:       aws.String("#expiry_date > :ttl_cutoff"),
+		FilterExpression:       aws.String("#expiry_date = :zero or #expiry_date > :ttl_cutoff"),
 		ExpressionAttributeValues: map[string]types.AttributeValue{
 			":lpa":        &types.AttributeValueMemberS{Value: key.LPA},
 			":actor":      &types.AttributeValueMemberS{Value: key.Actor},
 			":ttl_cutoff": &types.AttributeValueMemberN{Value: strconv.FormatInt(ttlCutoff, 10)},
+			":zero":       &types.AttributeValueMemberN{Value: "0"},
 		},
 		ExpressionAttributeNames: map[string]string{
 			"#lpa":         "lpa",
@@ -277,10 +278,7 @@ func (s *Store) InsertNewPaperVerificationCode(ctx context.Context, key Key, cod
 		Active:          true,
 		LastUpdatedDate: time.Now().Format(time.DateOnly),
 		GeneratedDate:   time.Now().Format(time.DateOnly),
-		// set expiry into the far future so that we can continue to use this field
-		// when querying
-		ExpiryDate:    int64(1<<63 - 1),
-		StatusDetails: statusGenerated,
+		StatusDetails:   statusGenerated,
 	}
 
 	data, err := attributevalue.MarshalMap(item)
