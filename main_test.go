@@ -147,6 +147,33 @@ func createCode(fn lambdaFn, body string) string {
 	return codes.Codes[0].Code
 }
 
+func createPaperCode() string {
+	resp, err := callLambda(golangURL)(http.MethodPost, "/v1/paper-verification-code", `{"lpa":"M-1234-1234-1234","actor":"12ad81a9-f89d-4804-99f5-7c0c8669ac9b"}`)
+	if err != nil {
+		return ""
+	}
+
+	var codes struct {
+		Code string `json:"code"`
+	}
+	json.Unmarshal([]byte(resp.Body), &codes)
+
+	if len(codes.Code) == 0 {
+		log.Printf("create code got: %d", resp.StatusCode)
+		return ""
+	}
+
+	for range 5 {
+		time.Sleep(100 * time.Millisecond)
+
+		if getCode(codes.Code) != nil {
+			break
+		}
+	}
+
+	return codes.Code
+}
+
 func TestCreate(t *testing.T) {
 	runBoth(t, "create", func(t *testing.T, fn lambdaFn) {
 		resp, err := fn(http.MethodPost, "/v1/create", createCodeLegacy)
@@ -160,23 +187,16 @@ func TestCreate(t *testing.T) {
 				assert.Regexp(t, "^[0-9A-Z]{12}$", codes["codes"][0]["code"])
 				assert.Equal(t, "700000000001", codes["codes"][0]["lpa"])
 
-				row := getCode(codes["codes"][0]["code"])
-				if row == nil {
-					assert.Fail(t, "code not found")
-					return
-				}
-
-				assert.True(t, row.Active)
-				assert.Equal(t, "700000000002", row.Actor)
-				assert.Equal(t, "1960-06-05", row.DateOfBirth)
-				assertEqualEither(t,
-					time.Now().AddDate(1, 0, 0).Unix(),
-					time.Now().AddDate(1, 0, 0).Unix()-1,
-					row.ExpiryDate)
-				assert.Equal(t, time.Now().Format(time.DateOnly), row.GeneratedDate)
-				assert.Equal(t, time.Now().Format(time.DateOnly), row.LastUpdatedDate)
-				assert.Equal(t, "700000000001", row.LPA)
-				assert.Equal(t, "Generated", row.StatusDetails)
+				assertCode(t, Row{
+					Active:          true,
+					Actor:           "700000000002",
+					DateOfBirth:     "1960-06-05",
+					ExpiryDate:      time.Now().AddDate(1, 0, 0).Unix(),
+					GeneratedDate:   time.Now().Format(time.DateOnly),
+					LastUpdatedDate: time.Now().Format(time.DateOnly),
+					LPA:             "700000000001",
+					StatusDetails:   "Generated",
+				}, codes["codes"][0]["code"])
 			}
 		}
 	})
@@ -193,45 +213,31 @@ func TestCreate(t *testing.T) {
 				assert.Regexp(t, "^[0-9A-Z]{12}$", codes["codes"][0]["code"])
 				assert.Equal(t, "700000000001", codes["codes"][0]["lpa"])
 
-				row := getCode(codes["codes"][0]["code"])
-				if row == nil {
-					assert.Fail(t, "code not found")
-					return
-				}
-
-				assert.True(t, row.Active)
-				assert.Equal(t, "700000000002", row.Actor)
-				assert.Equal(t, "1960-06-05", row.DateOfBirth)
-				assertEqualEither(t,
-					time.Now().AddDate(1, 0, 0).Unix(),
-					time.Now().AddDate(1, 0, 0).Unix()-1,
-					row.ExpiryDate)
-				assert.Equal(t, time.Now().Format(time.DateOnly), row.GeneratedDate)
-				assert.Equal(t, time.Now().Format(time.DateOnly), row.LastUpdatedDate)
-				assert.Equal(t, "700000000001", row.LPA)
-				assert.Equal(t, "Generated", row.StatusDetails)
+				assertCode(t, Row{
+					Active:          true,
+					Actor:           "700000000002",
+					DateOfBirth:     "1960-06-05",
+					ExpiryDate:      time.Now().AddDate(1, 0, 0).Unix(),
+					GeneratedDate:   time.Now().Format(time.DateOnly),
+					LastUpdatedDate: time.Now().Format(time.DateOnly),
+					LPA:             "700000000001",
+					StatusDetails:   "Generated",
+				}, codes["codes"][0]["code"])
 
 				assert.Equal(t, "700000000004", codes["codes"][1]["actor"])
 				assert.Regexp(t, "^[0-9A-Z]{12}$", codes["codes"][1]["code"])
 				assert.Equal(t, "700000000003", codes["codes"][1]["lpa"])
 
-				row = getCode(codes["codes"][1]["code"])
-				if row == nil {
-					assert.Fail(t, "code not found")
-					return
-				}
-
-				assert.True(t, row.Active)
-				assert.Equal(t, "700000000004", row.Actor)
-				assert.Equal(t, "1960-06-06", row.DateOfBirth)
-				assertEqualEither(t,
-					time.Now().AddDate(1, 0, 0).Unix(),
-					time.Now().AddDate(1, 0, 0).Unix()-1,
-					row.ExpiryDate)
-				assert.Equal(t, time.Now().Format(time.DateOnly), row.GeneratedDate)
-				assert.Equal(t, time.Now().Format(time.DateOnly), row.LastUpdatedDate)
-				assert.Equal(t, "700000000003", row.LPA)
-				assert.Equal(t, "Generated", row.StatusDetails)
+				assertCode(t, Row{
+					Active:          true,
+					Actor:           "700000000004",
+					DateOfBirth:     "1960-06-06",
+					ExpiryDate:      time.Now().AddDate(1, 0, 0).Unix(),
+					GeneratedDate:   time.Now().Format(time.DateOnly),
+					LastUpdatedDate: time.Now().Format(time.DateOnly),
+					LPA:             "700000000003",
+					StatusDetails:   "Generated",
+				}, codes["codes"][1]["code"])
 			}
 		}
 	})
@@ -256,36 +262,27 @@ func TestCreate(t *testing.T) {
 					return
 				}
 
-				assert.False(t, oldRow.Active)
-				assert.Equal(t, "700000000002", oldRow.Actor)
-				assert.Equal(t, "1960-06-05", oldRow.DateOfBirth)
-				assertEqualEither(t,
-					time.Now().AddDate(1, 0, 0).Unix(),
-					time.Now().AddDate(1, 0, 0).Unix()-1,
-					oldRow.ExpiryDate)
-				assert.Equal(t, time.Now().Format(time.DateOnly), oldRow.GeneratedDate)
-				assert.Equal(t, time.Now().Format(time.DateOnly), oldRow.LastUpdatedDate)
-				assert.Equal(t, "700000000001", oldRow.LPA)
-				assert.Equal(t, "Superseded", oldRow.StatusDetails)
+				assertCode(t, Row{
+					Active:          false,
+					Actor:           "700000000002",
+					DateOfBirth:     "1960-06-05",
+					ExpiryDate:      time.Now().AddDate(1, 0, 0).Unix(),
+					GeneratedDate:   time.Now().Format(time.DateOnly),
+					LastUpdatedDate: time.Now().Format(time.DateOnly),
+					LPA:             "700000000001",
+					StatusDetails:   "Superseded",
+				}, oldCode)
 
-				row := getCode(codes["codes"][0]["code"])
-				if row == nil {
-					assert.Fail(t, "code not found")
-					return
-				}
-
-				assert.True(t, row.Active)
-				assert.Equal(t, "700000000002", row.Actor)
-				assert.Equal(t, "1960-06-05", row.DateOfBirth)
-				assertEqualEither(t,
-					time.Now().AddDate(1, 0, 0).Unix(),
-					time.Now().AddDate(1, 0, 0).Unix()-1,
-					row.ExpiryDate)
-				assert.Equal(t, time.Now().Format(time.DateOnly), row.GeneratedDate)
-				assert.Equal(t, time.Now().Format(time.DateOnly), row.LastUpdatedDate)
-				assert.Equal(t, "700000000001", row.LPA)
-				assert.Equal(t, "Generated", row.StatusDetails)
-
+				assertCode(t, Row{
+					Active:          true,
+					Actor:           "700000000002",
+					DateOfBirth:     "1960-06-05",
+					ExpiryDate:      time.Now().AddDate(1, 0, 0).Unix(),
+					GeneratedDate:   time.Now().Format(time.DateOnly),
+					LastUpdatedDate: time.Now().Format(time.DateOnly),
+					LPA:             "700000000001",
+					StatusDetails:   "Generated",
+				}, codes["codes"][0]["code"])
 			}
 		}
 	})
@@ -308,23 +305,23 @@ func TestCreate(t *testing.T) {
 					return
 				}
 
-				assert.True(t, row.Active)
-				assert.Equal(t, "12ad81a9-f89d-4804-99f5-7c0c8669ac9b", row.Actor)
-				assert.Equal(t, "1960-06-05", row.DateOfBirth)
-				assertEqualEither(t,
-					time.Now().AddDate(1, 0, 0).Unix(),
-					time.Now().AddDate(1, 0, 0).Unix()-1,
-					row.ExpiryDate)
-				assert.Equal(t, time.Now().Format(time.DateOnly), row.GeneratedDate)
-				assert.Equal(t, time.Now().Format(time.DateOnly), row.LastUpdatedDate)
-				assert.Equal(t, "M-1234-1234-1234", row.LPA)
-				assert.Equal(t, "Generated", row.StatusDetails)
+				assertCode(t, Row{
+					Active:          true,
+					Actor:           "12ad81a9-f89d-4804-99f5-7c0c8669ac9b",
+					DateOfBirth:     "1960-06-05",
+					ExpiryDate:      time.Now().AddDate(1, 0, 0).Unix(),
+					GeneratedDate:   time.Now().Format(time.DateOnly),
+					LastUpdatedDate: time.Now().Format(time.DateOnly),
+					LPA:             "M-1234-1234-1234",
+					StatusDetails:   "Generated",
+				}, codes["codes"][0]["code"])
 			}
 		}
 	})
 
 	runBoth(t, "create modernise revokes previous", func(t *testing.T, fn lambdaFn) {
-		oldCode := createCode(fn, createCodeModernise)
+		oldAccessCode := createCode(fn, createCodeModernise)
+		oldPaperCode := createPaperCode()
 
 		resp, err := fn(http.MethodPost, "/v1/create", createCodeModernise)
 		if assert.Nil(t, err) {
@@ -337,41 +334,36 @@ func TestCreate(t *testing.T) {
 				assert.Regexp(t, "^[0-9A-Z]{12}$", codes["codes"][0]["code"])
 				assert.Equal(t, "M-1234-1234-1234", codes["codes"][0]["lpa"])
 
-				oldRow := getCode(oldCode)
-				if oldRow == nil {
-					assert.Fail(t, "old code not found")
-					return
-				}
+				assertCode(t, Row{
+					Active:          false,
+					Actor:           "12ad81a9-f89d-4804-99f5-7c0c8669ac9b",
+					DateOfBirth:     "1960-06-05",
+					ExpiryDate:      time.Now().AddDate(1, 0, 0).Unix(),
+					GeneratedDate:   time.Now().Format(time.DateOnly),
+					LastUpdatedDate: time.Now().Format(time.DateOnly),
+					LPA:             "M-1234-1234-1234",
+					StatusDetails:   "Superseded",
+				}, oldAccessCode)
 
-				assert.False(t, oldRow.Active)
-				assert.Equal(t, "12ad81a9-f89d-4804-99f5-7c0c8669ac9b", oldRow.Actor)
-				assert.Equal(t, "1960-06-05", oldRow.DateOfBirth)
-				assertEqualEither(t,
-					time.Now().AddDate(1, 0, 0).Unix(),
-					time.Now().AddDate(1, 0, 0).Unix()-1,
-					oldRow.ExpiryDate)
-				assert.Equal(t, time.Now().Format(time.DateOnly), oldRow.GeneratedDate)
-				assert.Equal(t, time.Now().Format(time.DateOnly), oldRow.LastUpdatedDate)
-				assert.Equal(t, "M-1234-1234-1234", oldRow.LPA)
-				assert.Equal(t, "Superseded", oldRow.StatusDetails)
+				assertCode(t, Row{
+					Active:          false,
+					Actor:           "12ad81a9-f89d-4804-99f5-7c0c8669ac9b",
+					GeneratedDate:   time.Now().Format(time.DateOnly),
+					LastUpdatedDate: time.Now().Format(time.DateOnly),
+					LPA:             "M-1234-1234-1234",
+					StatusDetails:   "Superseded",
+				}, oldPaperCode)
 
-				row := getCode(codes["codes"][0]["code"])
-				if row == nil {
-					assert.Fail(t, "code not found")
-					return
-				}
-
-				assert.True(t, row.Active)
-				assert.Equal(t, "12ad81a9-f89d-4804-99f5-7c0c8669ac9b", row.Actor)
-				assert.Equal(t, "1960-06-05", row.DateOfBirth)
-				assertEqualEither(t,
-					time.Now().AddDate(1, 0, 0).Unix(),
-					time.Now().AddDate(1, 0, 0).Unix()-1,
-					row.ExpiryDate)
-				assert.Equal(t, time.Now().Format(time.DateOnly), row.GeneratedDate)
-				assert.Equal(t, time.Now().Format(time.DateOnly), row.LastUpdatedDate)
-				assert.Equal(t, "M-1234-1234-1234", row.LPA)
-				assert.Equal(t, "Generated", row.StatusDetails)
+				assertCode(t, Row{
+					Active:          true,
+					Actor:           "12ad81a9-f89d-4804-99f5-7c0c8669ac9b",
+					DateOfBirth:     "1960-06-05",
+					ExpiryDate:      time.Now().AddDate(1, 0, 0).Unix(),
+					GeneratedDate:   time.Now().Format(time.DateOnly),
+					LastUpdatedDate: time.Now().Format(time.DateOnly),
+					LPA:             "M-1234-1234-1234",
+					StatusDetails:   "Generated",
+				}, codes["codes"][0]["code"])
 			}
 		}
 	})
@@ -508,17 +500,16 @@ func TestRevoke(t *testing.T) {
 				return
 			}
 
-			assert.False(t, row.Active)
-			assert.Equal(t, "700000000002", row.Actor)
-			assert.Equal(t, "1960-06-05", row.DateOfBirth)
-			assertEqualEither(t,
-				time.Now().AddDate(1, 0, 0).Unix(),
-				time.Now().AddDate(1, 0, 0).Unix()-1,
-				row.ExpiryDate)
-			assert.Equal(t, time.Now().Format(time.DateOnly), row.GeneratedDate)
-			assert.Equal(t, time.Now().Format(time.DateOnly), row.LastUpdatedDate)
-			assert.Equal(t, "700000000001", row.LPA)
-			assert.Equal(t, "Revoked", row.StatusDetails)
+			assertCode(t, Row{
+				Active:          false,
+				Actor:           "700000000002",
+				DateOfBirth:     "1960-06-05",
+				ExpiryDate:      time.Now().AddDate(1, 0, 0).Unix(),
+				GeneratedDate:   time.Now().Format(time.DateOnly),
+				LastUpdatedDate: time.Now().Format(time.DateOnly),
+				LPA:             "700000000001",
+				StatusDetails:   "Revoked",
+			}, code)
 		}
 	})
 
@@ -620,13 +611,112 @@ func TestValidate(t *testing.T) {
 }
 
 func TestPaperVerificationCode(t *testing.T) {
-	runBoth(t, "create", func(t *testing.T, fn lambdaFn) {
-		resp, err := fn(http.MethodPost, "/v1/paper-verification-code", `{}`)
-		if assert.Nil(t, err) {
-			assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)
-			assert.Equal(t, ``, resp.Body)
+	if os.Getenv("EXCLUDE_PYTHON") != "1" {
+		t.Run("create/python", func(t *testing.T) {
+			resp, err := callLambda(pythonURL)(http.MethodPost, "/v1/paper-verification-code", `{}`)
+			if assert.Nil(t, err) {
+				assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)
+				assert.Equal(t, ``, resp.Body)
+			}
+		})
+	}
+
+	if os.Getenv("EXCLUDE_GOLANG") != "1" {
+		t.Run("create/golang", func(t *testing.T) {
+			resetDynamo()
+
+			resp, err := callLambda(golangURL)(http.MethodPost, "/v1/paper-verification-code", `{"lpa":"M-1234-1234-1234","actor":"9a619d46-8712-4bfb-a49f-c14914ff319d"}`)
+			if assert.Nil(t, err) {
+				assert.Equal(t, http.StatusOK, resp.StatusCode)
+
+				var body map[string]string
+				json.Unmarshal([]byte(resp.Body), &body)
+
+				assertCode(t, Row{
+					Active:          true,
+					Actor:           "9a619d46-8712-4bfb-a49f-c14914ff319d",
+					GeneratedDate:   time.Now().Format(time.DateOnly),
+					LastUpdatedDate: time.Now().Format(time.DateOnly),
+					LPA:             "M-1234-1234-1234",
+					StatusDetails:   "Generated",
+				}, body["code"])
+
+				assert.Regexp(t, "^P(-[0-9A-Z]{4}){3}-[A-Z0-9]{2}$", body["code"])
+
+				delete(body, "code")
+				assert.Equal(t, map[string]string{
+					"lpa":   "M-1234-1234-1234",
+					"actor": "9a619d46-8712-4bfb-a49f-c14914ff319d",
+				}, body)
+			}
+		})
+
+		t.Run("create revokes previous/golang", func(t *testing.T) {
+			resetDynamo()
+
+			oldAccessCode := createCode(callLambda(golangURL), createCodeModernise)
+			oldPaperCode := createPaperCode()
+
+			resp, err := callLambda(golangURL)(http.MethodPost, "/v1/paper-verification-code", `{"lpa":"M-1234-1234-1234","actor":"12ad81a9-f89d-4804-99f5-7c0c8669ac9b"}`)
+			if assert.Nil(t, err) {
+				assert.Equal(t, http.StatusOK, resp.StatusCode)
+
+				var body map[string]string
+				json.Unmarshal([]byte(resp.Body), &body)
+
+				assert.Equal(t, "12ad81a9-f89d-4804-99f5-7c0c8669ac9b", body["actor"])
+				assert.Regexp(t, "^P(-[0-9A-Z]{4}){3}-[A-Z0-9]{2}$", body["code"])
+				assert.Equal(t, "M-1234-1234-1234", body["lpa"])
+
+				assertCode(t, Row{
+					Active:          false,
+					Actor:           "12ad81a9-f89d-4804-99f5-7c0c8669ac9b",
+					DateOfBirth:     "1960-06-05",
+					ExpiryDate:      time.Now().AddDate(1, 0, 0).Unix(),
+					GeneratedDate:   time.Now().Format(time.DateOnly),
+					LastUpdatedDate: time.Now().Format(time.DateOnly),
+					LPA:             "M-1234-1234-1234",
+					StatusDetails:   "Superseded",
+				}, oldAccessCode)
+
+				assertCode(t, Row{
+					Active:          false,
+					Actor:           "12ad81a9-f89d-4804-99f5-7c0c8669ac9b",
+					GeneratedDate:   time.Now().Format(time.DateOnly),
+					LastUpdatedDate: time.Now().Format(time.DateOnly),
+					LPA:             "M-1234-1234-1234",
+					StatusDetails:   "Superseded",
+				}, oldPaperCode)
+
+				assertCode(t, Row{
+					Active:          true,
+					Actor:           "12ad81a9-f89d-4804-99f5-7c0c8669ac9b",
+					GeneratedDate:   time.Now().Format(time.DateOnly),
+					LastUpdatedDate: time.Now().Format(time.DateOnly),
+					LPA:             "M-1234-1234-1234",
+					StatusDetails:   "Generated",
+				}, body["code"])
+			}
+		})
+
+		testcases := map[string]string{
+			"create missing lpa":   `{"actor":"12ad81a9-f89d-4804-99f5-7c0c8669ac9b"}`,
+			"create missing actor": `{"lpa":"M-1234-1234-1234"}`,
+			"create empty lpa":     `{"lpa":"","actor":"12ad81a9-f89d-4804-99f5-7c0c8669ac9b"}`,
+			"create empty actor":   `{"lpa":"M-1234-1234-1234","actor":""}`,
 		}
-	})
+
+		for name, lambdaBody := range testcases {
+			t.Run(name, func(t *testing.T) {
+				resp, err := callLambda(golangURL)(http.MethodPost, "/v1/paper-verification-code", lambdaBody)
+				if assert.Nil(t, err) {
+					assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
+
+					assert.JSONEq(t, `{"body":{"error":{"code":"Bad Request","message":"Bad payload"}},"headers":{"Content-Type": "application/json"},"isBase64Encoded":false,"statusCode":400}`, resp.Body)
+				}
+			})
+		}
+	}
 }
 
 func TestPaperVerificationCodeValidate(t *testing.T) {
@@ -797,4 +887,25 @@ func getCode(code string) *Row {
 	var v Row
 	attributevalue.UnmarshalMap(output.Item, &v)
 	return &v
+}
+
+func assertCode(t *testing.T, expected Row, code string) bool {
+	row := getCode(code)
+	if row == nil {
+		assert.Failf(t, "code not found: %s", code)
+		return false
+	}
+
+	// don't worry about providing the code for asserting
+	expected.Code = code
+	// do the minus case, to account for the passing of time, first so we get the
+	// error from the "normal" assertion
+	expected.ExpiryDate -= 1
+
+	if assert.ObjectsAreEqual(expected, *row) {
+		return true
+	}
+
+	expected.ExpiryDate += 1
+	return assert.Equal(t, expected, *row)
 }
