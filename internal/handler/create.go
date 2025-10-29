@@ -47,7 +47,7 @@ func Create(ctx context.Context, codesStore *codes.Store, event events.APIGatewa
 		key := codes.Key{LPA: entry.LPA, Actor: entry.Actor}
 
 		// 1. expire all existing codes for LPA/Actor combo
-		if _, err := codesStore.SetStatusDetailsForKey(ctx, key, "Superseded"); err != nil {
+		if _, err := codesStore.SupersedeActivationCodes(ctx, key); err != nil {
 			return respondInternalServerError(fmt.Errorf("update codes: %w", err))
 		}
 
