@@ -33,7 +33,7 @@ type Item struct {
 	GeneratedDate   string `json:"generated_date" dynamodbav:"generated_date"`
 	LastUpdatedDate string `json:"last_updated_date" dynamodbav:"last_updated_date"`
 	LPA             string `json:"lpa" dynamodbav:"lpa"`
-	StatusDetails   string `json:"status_details" dynamodbav:"status_details"`
+	StatusDetails   status `json:"status_details" dynamodbav:"status_details"`
 }
 
 type Store struct {
@@ -50,7 +50,7 @@ func NewStore(dynamo *dynamodb.Client, tableName string) *Store {
 // and error if a unique code cannot be generated.
 func (s *Store) GenerateCode(ctx context.Context) (string, error) {
 	for range 10 {
-		newCode := randomCode()
+		newCode := randomAccessCode()
 
 		_, err := s.Code(ctx, newCode)
 		if err != nil {
@@ -64,6 +64,26 @@ func (s *Store) GenerateCode(ctx context.Context) (string, error) {
 
 	slog.Error("Unable to generate unique code - failed after 10 attempts")
 	return "", errors.New("generate code reached max attempts")
+}
+
+// GeneratePaperVerificationCode returns a formatted alphanumeric code
+// containing no ambiguous characters. It should be unique at the time of
+// generating, we try 10 times and error if a unique code cannot be generated.
+func (s *Store) GeneratePaperVerificationCode(ctx context.Context) (string, error) {
+	for range 10 {
+		newCode := randomPaperVerificationCode()
+
+		_, err := s.Code(ctx, newCode)
+		if err != nil {
+			if errors.Is(err, ErrNotFound) {
+				return newCode, nil
+			}
+
+			return "", err
+		}
+	}
+
+	return "", errors.New("generate paper verification code reached max attempts")
 }
 
 // Code gets the details for the given code, checking that it is not expired. If
@@ -111,11 +131,12 @@ func (s *Store) CodesByKey(ctx context.Context, key Key) ([]Item, error) {
 		IndexName:              aws.String("key_index"),
 		TableName:              aws.String(s.tableName),
 		KeyConditionExpression: aws.String("#lpa = :lpa and #actor = :actor"),
-		FilterExpression:       aws.String("#expiry_date > :ttl_cutoff"),
+		FilterExpression:       aws.String("#expiry_date = :zero or #expiry_date > :ttl_cutoff"),
 		ExpressionAttributeValues: map[string]types.AttributeValue{
 			":lpa":        &types.AttributeValueMemberS{Value: key.LPA},
 			":actor":      &types.AttributeValueMemberS{Value: key.Actor},
 			":ttl_cutoff": &types.AttributeValueMemberN{Value: strconv.FormatInt(ttlCutoff, 10)},
+			":zero":       &types.AttributeValueMemberN{Value: "0"},
 		},
 		ExpressionAttributeNames: map[string]string{
 			"#lpa":         "lpa",
@@ -140,9 +161,10 @@ func (s *Store) CodesByKey(ctx context.Context, key Key) ([]Item, error) {
 	return v, nil
 }
 
-// SetStatusDetailsForKey updates the codes for the given key with the status
-// details, and makes the codes inactive.
-func (s *Store) SetStatusDetailsForKey(ctx context.Context, key Key, statusDetails string) (int, error) {
+// SupersedeCodes marks other access codes for the given key as superseded and
+// makes the codes inactive, for paper verification codes it sets the expiry for
+// 30 days in the future.
+func (s *Store) SupersedeCodes(ctx context.Context, key Key) (int, error) {
 	entries, err := s.CodesByKey(ctx, key)
 	if err != nil {
 		return 0, err
@@ -153,18 +175,73 @@ func (s *Store) SetStatusDetailsForKey(ctx context.Context, key Key, statusDetai
 		return 0, nil
 	}
 
-	updated, err := s.updateEntries(ctx, entries, map[string]any{
-		"active":         false,
-		"status_details": statusDetails,
-	})
+	var accessCodes, paperVerificationCodes []Item
+	for _, code := range entries {
+		if len(code.Code) == accessCodeSize {
+			accessCodes = append(accessCodes, code)
+		} else {
+			paperVerificationCodes = append(paperVerificationCodes, code)
+		}
+	}
+
+	updated, err := s.writeTransaction(ctx,
+		transactionItem{
+			entries: accessCodes,
+			fields: map[string]any{
+				"active":         false,
+				"status_details": statusSuperseded,
+			},
+		},
+		transactionItem{
+			entries: paperVerificationCodes,
+			fields: map[string]any{
+				"expiry_date": time.Now().AddDate(0, 0, 30).Unix(),
+			},
+		},
+	)
 
 	slog.Info(fmt.Sprintf("%d rows updated for LPA/Actor", updated))
 	return updated, nil
 }
 
-// SetStatusDetailsForCode updates the codes with the given status details, and makes the codes
-// inactive.
-func (s *Store) SetStatusDetailsForCode(ctx context.Context, code, statusDetails string) (int, error) {
+// SupersedePaperVerificationCodes marks other paper verification codes for the
+// given key as superseded and makes the codes inactive. Access codes are not
+// affected.
+func (s *Store) SupersedePaperVerificationCodes(ctx context.Context, key Key) (int, error) {
+	entries, err := s.CodesByKey(ctx, key)
+	if err != nil {
+		return 0, err
+	}
+
+	if len(entries) == 0 {
+		slog.Info("0 rows updated for LPA/Actor")
+		return 0, nil
+	}
+
+	var paperVerificationCodes []Item
+	for _, code := range entries {
+		if len(code.Code) == paperVerificationCodeSize {
+			paperVerificationCodes = append(paperVerificationCodes, code)
+		}
+	}
+
+	updated, err := s.writeTransaction(ctx, transactionItem{
+		entries: paperVerificationCodes,
+		fields: map[string]any{
+			"active":         false,
+			"status_details": statusSuperseded,
+		},
+	})
+	if err != nil {
+		return 0, err
+	}
+
+	slog.Info(fmt.Sprintf("%d rows updated for LPA/Actor", updated))
+	return updated, nil
+}
+
+// RevokeCode makes the code inactive and sets its status to revoked.
+func (s *Store) RevokeCode(ctx context.Context, code string) (int, error) {
 	item, err := s.Code(ctx, code)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
@@ -175,9 +252,12 @@ func (s *Store) SetStatusDetailsForCode(ctx context.Context, code, statusDetails
 		return 0, err
 	}
 
-	updated, err := s.updateEntries(ctx, []Item{item}, map[string]any{
-		"active":         false,
-		"status_details": statusDetails,
+	updated, err := s.writeTransaction(ctx, transactionItem{
+		entries: []Item{item},
+		fields: map[string]any{
+			"active":         false,
+			"status_details": statusRevoked,
+		},
 	})
 
 	slog.Info(fmt.Sprintf("%d rows updated for LPA/Actor", updated))
@@ -195,7 +275,7 @@ func (s *Store) InsertNewCode(ctx context.Context, key Key, dateOfBirth, code st
 		DateOfBirth:     dateOfBirth,
 		GeneratedDate:   time.Now().Format(time.DateOnly),
 		ExpiryDate:      time.Now().AddDate(1, 0, 0).Unix(),
-		StatusDetails:   "Generated",
+		StatusDetails:   statusGenerated,
 	}
 
 	data, err := attributevalue.MarshalMap(item)
@@ -213,37 +293,88 @@ func (s *Store) InsertNewCode(ctx context.Context, key Key, dateOfBirth, code st
 	return item, nil
 }
 
-func (s *Store) updateEntries(ctx context.Context, entries []Item, fields map[string]any) (int, error) {
-	var (
-		attributeNames  = map[string]string{}
-		attributeValues = map[string]types.AttributeValue{}
-		expression      = []string{}
-	)
-
-	fields["last_update_date"] = time.Now().Format(time.DateOnly)
-
-	for i, k := range slices.Sorted(maps.Keys(fields)) {
-		attributeNames[fmt.Sprintf("#Field%d", i)] = k
-		attributeValues[fmt.Sprintf(":Value%d", i)], _ = attributevalue.Marshal(fields[k])
-		expression = append(expression, fmt.Sprintf("#Field%d = :Value%d", i, i))
+// InsertNewPaperVerificationCode puts a new code and returns the created Item, once it is inserted.
+func (s *Store) InsertNewPaperVerificationCode(ctx context.Context, key Key, code string) (Item, error) {
+	item := Item{
+		LPA:             key.LPA,
+		Actor:           key.Actor,
+		Code:            code,
+		Active:          true,
+		LastUpdatedDate: time.Now().Format(time.DateOnly),
+		GeneratedDate:   time.Now().Format(time.DateOnly),
+		StatusDetails:   statusGenerated,
 	}
 
-	var items []types.TransactWriteItem
+	data, err := attributevalue.MarshalMap(item)
+	if err != nil {
+		return Item{}, err
+	}
 
-	for _, entry := range entries {
-		if entry.Active {
-			items = append(items, types.TransactWriteItem{
-				Update: &types.Update{
-					TableName: aws.String(s.tableName),
-					Key: map[string]types.AttributeValue{
-						"code": &types.AttributeValueMemberS{Value: entry.Code},
-					},
-					UpdateExpression:          aws.String("SET " + strings.Join(expression, ", ")),
-					ExpressionAttributeValues: attributeValues,
-					ExpressionAttributeNames:  attributeNames,
-				},
-			})
+	if _, err = s.dynamo.PutItem(ctx, &dynamodb.PutItemInput{
+		TableName: aws.String(s.tableName),
+		Item:      data,
+	}); err != nil {
+		return Item{}, err
+	}
+
+	return item, nil
+}
+
+type transactionItem struct {
+	entries []Item
+	fields  map[string]any
+}
+
+// writeTransaction executes a TransactionWriteItems call. It expects that each
+// transactionItem contains distinct entries. Only active entries are modified
+// and the last_update_date for the entry will be updated.
+func (s *Store) writeTransaction(ctx context.Context, ts ...transactionItem) (int, error) {
+	var items []types.TransactWriteItem
+	for _, t := range ts {
+		if len(t.entries) == 0 {
+			continue
 		}
+
+		var (
+			attributeNames = map[string]string{
+				"#active": "active",
+			}
+			attributeValues = map[string]types.AttributeValue{
+				":true": &types.AttributeValueMemberBOOL{Value: true},
+			}
+			expression = []string{}
+		)
+
+		t.fields["last_update_date"] = time.Now().Format(time.DateOnly)
+
+		for i, k := range slices.Sorted(maps.Keys(t.fields)) {
+			attributeNames[fmt.Sprintf("#Field%d", i)] = k
+			attributeValues[fmt.Sprintf(":Value%d", i)], _ = attributevalue.Marshal(t.fields[k])
+			expression = append(expression, fmt.Sprintf("#Field%d = :Value%d", i, i))
+		}
+
+		for _, entry := range t.entries {
+			if entry.Active {
+				items = append(items, types.TransactWriteItem{
+					Update: &types.Update{
+						TableName: aws.String(s.tableName),
+						Key: map[string]types.AttributeValue{
+							"code": &types.AttributeValueMemberS{Value: entry.Code},
+						},
+						UpdateExpression:          aws.String("SET " + strings.Join(expression, ", ")),
+						ExpressionAttributeValues: attributeValues,
+						ExpressionAttributeNames:  attributeNames,
+						// assert active=true, then this transaction will fail if the entry
+						// has been modified by another call
+						ConditionExpression: aws.String("#active = :true"),
+					},
+				})
+			}
+		}
+	}
+
+	if len(items) == 0 {
+		return 0, nil
 	}
 
 	_, err := s.dynamo.TransactWriteItems(ctx, &dynamodb.TransactWriteItemsInput{
