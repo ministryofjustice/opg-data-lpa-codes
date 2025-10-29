@@ -319,9 +319,8 @@ func TestCreate(t *testing.T) {
 		}
 	})
 
-	runBoth(t, "create modernise revokes previous", func(t *testing.T, fn lambdaFn) {
+	runBoth(t, "create modernise revokes previous access code", func(t *testing.T, fn lambdaFn) {
 		oldAccessCode := createCode(fn, createCodeModernise)
-		oldPaperCode := createPaperCode()
 
 		resp, err := fn(http.MethodPost, "/v1/create", createCodeModernise)
 		if assert.Nil(t, err) {
@@ -344,6 +343,34 @@ func TestCreate(t *testing.T) {
 					LPA:             "M-1234-1234-1234",
 					StatusDetails:   "Superseded",
 				}, oldAccessCode)
+
+				assertCode(t, Row{
+					Active:          true,
+					Actor:           "12ad81a9-f89d-4804-99f5-7c0c8669ac9b",
+					DateOfBirth:     "1960-06-05",
+					ExpiryDate:      time.Now().AddDate(1, 0, 0).Unix(),
+					GeneratedDate:   time.Now().Format(time.DateOnly),
+					LastUpdatedDate: time.Now().Format(time.DateOnly),
+					LPA:             "M-1234-1234-1234",
+					StatusDetails:   "Generated",
+				}, codes["codes"][0]["code"])
+			}
+		}
+	})
+
+	runBoth(t, "create modernise revokes previous paper verification code", func(t *testing.T, fn lambdaFn) {
+		oldPaperCode := createPaperCode()
+
+		resp, err := fn(http.MethodPost, "/v1/create", createCodeModernise)
+		if assert.Nil(t, err) {
+			assert.Equal(t, http.StatusOK, resp.StatusCode)
+
+			var codes map[string][]map[string]string
+			json.Unmarshal([]byte(resp.Body), &codes)
+			if assert.Len(t, codes["codes"], 1) {
+				assert.Equal(t, "12ad81a9-f89d-4804-99f5-7c0c8669ac9b", codes["codes"][0]["actor"])
+				assert.Regexp(t, "^[0-9A-Z]{12}$", codes["codes"][0]["code"])
+				assert.Equal(t, "M-1234-1234-1234", codes["codes"][0]["lpa"])
 
 				assertCode(t, Row{
 					Active:          false,
@@ -651,11 +678,10 @@ func TestPaperVerificationCode(t *testing.T) {
 			}
 		})
 
-		t.Run("create revokes previous/golang", func(t *testing.T) {
+		t.Run("create revokes previous access code/golang", func(t *testing.T) {
 			resetDynamo()
 
 			oldAccessCode := createCode(callLambda(golangURL), createCodeModernise)
-			oldPaperCode := createPaperCode()
 
 			resp, err := callLambda(golangURL)(http.MethodPost, "/v1/paper-verification-code", `{"lpa":"M-1234-1234-1234","actor":"12ad81a9-f89d-4804-99f5-7c0c8669ac9b"}`)
 			if assert.Nil(t, err) {
@@ -678,6 +704,33 @@ func TestPaperVerificationCode(t *testing.T) {
 					LPA:             "M-1234-1234-1234",
 					StatusDetails:   "Superseded",
 				}, oldAccessCode)
+
+				assertCode(t, Row{
+					Active:          true,
+					Actor:           "12ad81a9-f89d-4804-99f5-7c0c8669ac9b",
+					GeneratedDate:   time.Now().Format(time.DateOnly),
+					LastUpdatedDate: time.Now().Format(time.DateOnly),
+					LPA:             "M-1234-1234-1234",
+					StatusDetails:   "Generated",
+				}, body["code"])
+			}
+		})
+
+		t.Run("create revokes previous paper verification code/golang", func(t *testing.T) {
+			resetDynamo()
+
+			oldPaperCode := createPaperCode()
+
+			resp, err := callLambda(golangURL)(http.MethodPost, "/v1/paper-verification-code", `{"lpa":"M-1234-1234-1234","actor":"12ad81a9-f89d-4804-99f5-7c0c8669ac9b"}`)
+			if assert.Nil(t, err) {
+				assert.Equal(t, http.StatusOK, resp.StatusCode)
+
+				var body map[string]string
+				json.Unmarshal([]byte(resp.Body), &body)
+
+				assert.Equal(t, "12ad81a9-f89d-4804-99f5-7c0c8669ac9b", body["actor"])
+				assert.Regexp(t, "^P(-[0-9A-Z]{4}){3}-[A-Z0-9]{2}$", body["code"])
+				assert.Equal(t, "M-1234-1234-1234", body["lpa"])
 
 				assertCode(t, Row{
 					Active:          false,
