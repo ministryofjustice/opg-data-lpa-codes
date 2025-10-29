@@ -35,7 +35,7 @@ func PaperVerificationCode(ctx context.Context, codesStore *codes.Store, event e
 
 	key := codes.Key{LPA: data.LPA, Actor: data.Actor}
 
-	if _, err := codesStore.SupersedeCodes(ctx, key); err != nil {
+	if _, err := codesStore.SupersedePaperVerificationCodes(ctx, key); err != nil {
 		return respondInternalServerError(fmt.Errorf("update codes: %w", err))
 	}
 

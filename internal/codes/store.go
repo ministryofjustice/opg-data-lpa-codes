@@ -161,8 +161,9 @@ func (s *Store) CodesByKey(ctx context.Context, key Key) ([]Item, error) {
 	return v, nil
 }
 
-// SupersedeCodes updates the codes for the given key with the status
-// details, and makes the codes inactive.
+// SupersedeCodes marks other access codes for the given key as superseded and
+// makes the codes inactive, for paper verification codes it sets the expiry for
+// 30 days in the future.
 func (s *Store) SupersedeCodes(ctx context.Context, key Key) (int, error) {
 	entries, err := s.CodesByKey(ctx, key)
 	if err != nil {
@@ -174,10 +175,66 @@ func (s *Store) SupersedeCodes(ctx context.Context, key Key) (int, error) {
 		return 0, nil
 	}
 
-	updated, err := s.updateEntries(ctx, entries, map[string]any{
-		"active":         false,
-		"status_details": statusSuperseded,
+	var accessCodes, paperVerificationCodes []Item
+	for _, code := range entries {
+		if len(code.Code) == accessCodeSize {
+			accessCodes = append(accessCodes, code)
+		} else {
+			paperVerificationCodes = append(paperVerificationCodes, code)
+		}
+	}
+
+	updated, err := s.writeTransaction(ctx,
+		transactionItem{
+			entries: accessCodes,
+			fields: map[string]any{
+				"active":         false,
+				"status_details": statusSuperseded,
+			},
+		},
+		transactionItem{
+			entries: paperVerificationCodes,
+			fields: map[string]any{
+				"expiry_date": time.Now().AddDate(0, 0, 30).Unix(),
+			},
+		},
+	)
+
+	slog.Info(fmt.Sprintf("%d rows updated for LPA/Actor", updated))
+	return updated, nil
+}
+
+// SupersedePaperVerificationCodes marks other paper verification codes for the
+// given key as superseded and makes the codes inactive. Access codes are not
+// affected.
+func (s *Store) SupersedePaperVerificationCodes(ctx context.Context, key Key) (int, error) {
+	entries, err := s.CodesByKey(ctx, key)
+	if err != nil {
+		return 0, err
+	}
+
+	if len(entries) == 0 {
+		slog.Info("0 rows updated for LPA/Actor")
+		return 0, nil
+	}
+
+	var paperVerificationCodes []Item
+	for _, code := range entries {
+		if len(code.Code) == paperVerificationCodeSize {
+			paperVerificationCodes = append(paperVerificationCodes, code)
+		}
+	}
+
+	updated, err := s.writeTransaction(ctx, transactionItem{
+		entries: paperVerificationCodes,
+		fields: map[string]any{
+			"active":         false,
+			"status_details": statusSuperseded,
+		},
 	})
+	if err != nil {
+		return 0, err
+	}
 
 	slog.Info(fmt.Sprintf("%d rows updated for LPA/Actor", updated))
 	return updated, nil
@@ -195,9 +252,12 @@ func (s *Store) RevokeCode(ctx context.Context, code string) (int, error) {
 		return 0, err
 	}
 
-	updated, err := s.updateEntries(ctx, []Item{item}, map[string]any{
-		"active":         false,
-		"status_details": statusRevoked,
+	updated, err := s.writeTransaction(ctx, transactionItem{
+		entries: []Item{item},
+		fields: map[string]any{
+			"active":         false,
+			"status_details": statusRevoked,
+		},
 	})
 
 	slog.Info(fmt.Sprintf("%d rows updated for LPA/Actor", updated))
@@ -260,37 +320,61 @@ func (s *Store) InsertNewPaperVerificationCode(ctx context.Context, key Key, cod
 	return item, nil
 }
 
-func (s *Store) updateEntries(ctx context.Context, entries []Item, fields map[string]any) (int, error) {
-	var (
-		attributeNames  = map[string]string{}
-		attributeValues = map[string]types.AttributeValue{}
-		expression      = []string{}
-	)
+type transactionItem struct {
+	entries []Item
+	fields  map[string]any
+}
 
-	fields["last_update_date"] = time.Now().Format(time.DateOnly)
+// writeTransaction executes a TransactionWriteItems call. It expects that each
+// transactionItem contains distinct entries. Only active entries are modified
+// and the last_update_date for the entry will be updated.
+func (s *Store) writeTransaction(ctx context.Context, ts ...transactionItem) (int, error) {
+	var items []types.TransactWriteItem
+	for _, t := range ts {
+		if len(t.entries) == 0 {
+			continue
+		}
 
-	for i, k := range slices.Sorted(maps.Keys(fields)) {
-		attributeNames[fmt.Sprintf("#Field%d", i)] = k
-		attributeValues[fmt.Sprintf(":Value%d", i)], _ = attributevalue.Marshal(fields[k])
-		expression = append(expression, fmt.Sprintf("#Field%d = :Value%d", i, i))
+		var (
+			attributeNames = map[string]string{
+				"#active": "active",
+			}
+			attributeValues = map[string]types.AttributeValue{
+				":true": &types.AttributeValueMemberBOOL{Value: true},
+			}
+			expression = []string{}
+		)
+
+		t.fields["last_update_date"] = time.Now().Format(time.DateOnly)
+
+		for i, k := range slices.Sorted(maps.Keys(t.fields)) {
+			attributeNames[fmt.Sprintf("#Field%d", i)] = k
+			attributeValues[fmt.Sprintf(":Value%d", i)], _ = attributevalue.Marshal(t.fields[k])
+			expression = append(expression, fmt.Sprintf("#Field%d = :Value%d", i, i))
+		}
+
+		for _, entry := range t.entries {
+			if entry.Active {
+				items = append(items, types.TransactWriteItem{
+					Update: &types.Update{
+						TableName: aws.String(s.tableName),
+						Key: map[string]types.AttributeValue{
+							"code": &types.AttributeValueMemberS{Value: entry.Code},
+						},
+						UpdateExpression:          aws.String("SET " + strings.Join(expression, ", ")),
+						ExpressionAttributeValues: attributeValues,
+						ExpressionAttributeNames:  attributeNames,
+						// assert active=true, then this transaction will fail if the entry
+						// has been modified by another call
+						ConditionExpression: aws.String("#active = :true"),
+					},
+				})
+			}
+		}
 	}
 
-	var items []types.TransactWriteItem
-
-	for _, entry := range entries {
-		if entry.Active {
-			items = append(items, types.TransactWriteItem{
-				Update: &types.Update{
-					TableName: aws.String(s.tableName),
-					Key: map[string]types.AttributeValue{
-						"code": &types.AttributeValueMemberS{Value: entry.Code},
-					},
-					UpdateExpression:          aws.String("SET " + strings.Join(expression, ", ")),
-					ExpressionAttributeValues: attributeValues,
-					ExpressionAttributeNames:  attributeNames,
-				},
-			})
-		}
+	if len(items) == 0 {
+		return 0, nil
 	}
 
 	_, err := s.dynamo.TransactWriteItems(ctx, &dynamodb.TransactWriteItemsInput{
