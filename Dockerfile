@@ -1,4 +1,4 @@
-FROM golang:1.24.6 AS build-env
+FROM golang:1.25.3 AS build-env
 
 WORKDIR /app
 
@@ -10,7 +10,7 @@ COPY --link internal internal
 
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -o /go/bin/main .
 
-FROM public.ecr.aws/lambda/provided:al2023.2025.10.22.12
+FROM public.ecr.aws/lambda/provided:al2023.2025.10.29.20
 
 COPY --from=build-env /go/bin/main ./main
 
