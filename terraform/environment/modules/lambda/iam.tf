@@ -94,6 +94,9 @@ data "aws_iam_policy_document" "lambda" {
       var.dynamodb_table.arn,
       "${var.dynamodb_table.arn}/index/*",
       var.dynamodb_table.stream_arn,
+      var.codes_dynamodb_table.arn,
+      "${var.codes_dynamodb_table.arn}/index/*",
+      var.codes_dynamodb_table.stream_arn,
     ]
   }
 }
