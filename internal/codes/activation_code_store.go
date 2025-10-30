@@ -17,8 +17,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 )
 
-var ErrNotFound = errors.New("code not found")
-
 type Key struct {
 	LPA   string
 	Actor string
@@ -33,24 +31,26 @@ type Item struct {
 	GeneratedDate   string `json:"generated_date" dynamodbav:"generated_date"`
 	LastUpdatedDate string `json:"last_updated_date" dynamodbav:"last_updated_date"`
 	LPA             string `json:"lpa" dynamodbav:"lpa"`
-	StatusDetails   string `json:"status_details" dynamodbav:"status_details"`
+	StatusDetails   status `json:"status_details" dynamodbav:"status_details"`
 }
 
-type Store struct {
+// An ActivationCodeStore contains Item type records. In the future we will
+// hopefully be able to move this data to be in the other table.
+type ActivationCodeStore struct {
 	dynamo    *dynamodb.Client
 	tableName string
 }
 
-func NewStore(dynamo *dynamodb.Client, tableName string) *Store {
-	return &Store{dynamo: dynamo, tableName: tableName}
+func NewActivationCodeStore(dynamo *dynamodb.Client, tableName string) *ActivationCodeStore {
+	return &ActivationCodeStore{dynamo: dynamo, tableName: tableName}
 }
 
 // GenerateCode returns a 12-digit alphanumeric code containing no ambiguous
 // characters. It should be unique at the time of generating, we try 10 times
 // and error if a unique code cannot be generated.
-func (s *Store) GenerateCode(ctx context.Context) (string, error) {
+func (s *ActivationCodeStore) GenerateCode(ctx context.Context) (string, error) {
 	for range 10 {
-		newCode := randomCode()
+		newCode := randomActivationCode()
 
 		_, err := s.Code(ctx, newCode)
 		if err != nil {
@@ -68,7 +68,7 @@ func (s *Store) GenerateCode(ctx context.Context) (string, error) {
 
 // Code gets the details for the given code, checking that it is not expired. If
 // the code does not exist or is expired an ErrNotFound error is returned.
-func (s *Store) Code(ctx context.Context, code string) (Item, error) {
+func (s *ActivationCodeStore) Code(ctx context.Context, code string) (Item, error) {
 	output, err := s.dynamo.GetItem(ctx, &dynamodb.GetItemInput{
 		Key: map[string]types.AttributeValue{
 			"code": &types.AttributeValueMemberS{Value: code},
@@ -104,18 +104,19 @@ func (s *Store) Code(ctx context.Context, code string) (Item, error) {
 
 // CodesByKey returns all codes for the given key, checking that the code is not
 // yet expired.
-func (s *Store) CodesByKey(ctx context.Context, key Key) ([]Item, error) {
+func (s *ActivationCodeStore) CodesByKey(ctx context.Context, key Key) ([]Item, error) {
 	ttlCutoff := time.Now().Truncate(24 * time.Hour).Unix()
 
 	output, err := s.dynamo.Query(ctx, &dynamodb.QueryInput{
 		IndexName:              aws.String("key_index"),
 		TableName:              aws.String(s.tableName),
 		KeyConditionExpression: aws.String("#lpa = :lpa and #actor = :actor"),
-		FilterExpression:       aws.String("#expiry_date > :ttl_cutoff"),
+		FilterExpression:       aws.String("#expiry_date = :zero or #expiry_date > :ttl_cutoff"),
 		ExpressionAttributeValues: map[string]types.AttributeValue{
 			":lpa":        &types.AttributeValueMemberS{Value: key.LPA},
 			":actor":      &types.AttributeValueMemberS{Value: key.Actor},
 			":ttl_cutoff": &types.AttributeValueMemberN{Value: strconv.FormatInt(ttlCutoff, 10)},
+			":zero":       &types.AttributeValueMemberN{Value: "0"},
 		},
 		ExpressionAttributeNames: map[string]string{
 			"#lpa":         "lpa",
@@ -140,12 +141,19 @@ func (s *Store) CodesByKey(ctx context.Context, key Key) ([]Item, error) {
 	return v, nil
 }
 
-// SetStatusDetailsForKey updates the codes for the given key with the status
+// SupersedeActivationCodes updates the codes for the given key with the status
 // details, and makes the codes inactive.
-func (s *Store) SetStatusDetailsForKey(ctx context.Context, key Key, statusDetails string) (int, error) {
+func (s *ActivationCodeStore) SupersedeActivationCodes(ctx context.Context, key Key) (int, error) {
 	entries, err := s.CodesByKey(ctx, key)
 	if err != nil {
 		return 0, err
+	}
+
+	var toUpdate []Item
+	for _, entry := range entries {
+		if len(entry.Code) == activationCodeSize {
+			toUpdate = append(toUpdate, entry)
+		}
 	}
 
 	if len(entries) == 0 {
@@ -153,18 +161,17 @@ func (s *Store) SetStatusDetailsForKey(ctx context.Context, key Key, statusDetai
 		return 0, nil
 	}
 
-	updated, err := s.updateEntries(ctx, entries, map[string]any{
+	updated, err := s.updateEntries(ctx, toUpdate, map[string]any{
 		"active":         false,
-		"status_details": statusDetails,
+		"status_details": statusSuperseded,
 	})
 
 	slog.Info(fmt.Sprintf("%d rows updated for LPA/Actor", updated))
 	return updated, nil
 }
 
-// SetStatusDetailsForCode updates the codes with the given status details, and makes the codes
-// inactive.
-func (s *Store) SetStatusDetailsForCode(ctx context.Context, code, statusDetails string) (int, error) {
+// RevokeCode makes the code inactive and sets its status to revoked.
+func (s *ActivationCodeStore) RevokeCode(ctx context.Context, code string) (int, error) {
 	item, err := s.Code(ctx, code)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
@@ -177,7 +184,7 @@ func (s *Store) SetStatusDetailsForCode(ctx context.Context, code, statusDetails
 
 	updated, err := s.updateEntries(ctx, []Item{item}, map[string]any{
 		"active":         false,
-		"status_details": statusDetails,
+		"status_details": statusRevoked,
 	})
 
 	slog.Info(fmt.Sprintf("%d rows updated for LPA/Actor", updated))
@@ -185,7 +192,7 @@ func (s *Store) SetStatusDetailsForCode(ctx context.Context, code, statusDetails
 }
 
 // InsertNewCode puts a new code and returns the created Item, once it is inserted.
-func (s *Store) InsertNewCode(ctx context.Context, key Key, dateOfBirth, code string) (Item, error) {
+func (s *ActivationCodeStore) InsertNewCode(ctx context.Context, key Key, dateOfBirth, code string) (Item, error) {
 	item := Item{
 		LPA:             key.LPA,
 		Actor:           key.Actor,
@@ -195,7 +202,7 @@ func (s *Store) InsertNewCode(ctx context.Context, key Key, dateOfBirth, code st
 		DateOfBirth:     dateOfBirth,
 		GeneratedDate:   time.Now().Format(time.DateOnly),
 		ExpiryDate:      time.Now().AddDate(1, 0, 0).Unix(),
-		StatusDetails:   "Generated",
+		StatusDetails:   statusGenerated,
 	}
 
 	data, err := attributevalue.MarshalMap(item)
@@ -213,7 +220,7 @@ func (s *Store) InsertNewCode(ctx context.Context, key Key, dateOfBirth, code st
 	return item, nil
 }
 
-func (s *Store) updateEntries(ctx context.Context, entries []Item, fields map[string]any) (int, error) {
+func (s *ActivationCodeStore) updateEntries(ctx context.Context, entries []Item, fields map[string]any) (int, error) {
 	var (
 		attributeNames  = map[string]string{}
 		attributeValues = map[string]types.AttributeValue{}
