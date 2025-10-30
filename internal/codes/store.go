@@ -50,7 +50,7 @@ func NewStore(dynamo *dynamodb.Client, tableName string) *Store {
 // and error if a unique code cannot be generated.
 func (s *Store) GenerateCode(ctx context.Context) (string, error) {
 	for range 10 {
-		newCode := randomCode()
+		newCode := randomActivationCode()
 
 		_, err := s.Code(ctx, newCode)
 		if err != nil {
