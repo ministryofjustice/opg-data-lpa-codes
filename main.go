@@ -16,8 +16,9 @@ import (
 )
 
 var (
-	cfg        aws.Config
-	codesStore *codes.Store
+	cfg                        aws.Config
+	activationCodeStore        *codes.ActivationCodeStore
+	paperVerificationCodeStore *codes.PaperVerificationCodeStore
 )
 
 func run(ctx context.Context, event events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
@@ -27,16 +28,18 @@ func run(ctx context.Context, event events.APIGatewayProxyRequest) (events.APIGa
 	case "/v1/healthcheck":
 		return handler.Healthcheck(ctx, event)
 	case "/v1/create":
-		return handler.Create(ctx, codesStore, event)
+		return handler.Create(ctx, activationCodeStore, event)
 	case "/v1/exists":
-		return handler.Exists(ctx, codesStore, event)
+		return handler.Exists(ctx, activationCodeStore, event)
 	case "/v1/revoke":
-		return handler.Revoke(ctx, codesStore, event)
+		return handler.Revoke(ctx, activationCodeStore, event)
 	case "/v1/validate":
-		return handler.Validate(ctx, codesStore, event)
+		return handler.Validate(ctx, activationCodeStore, event)
 	case "/v1/code":
-		return handler.Code(ctx, codesStore, event)
-	case "/v1/paper-verification-code", "/v1/paper-verification-code/validate", "/v1/paper-verification-code/expire":
+		return handler.Code(ctx, activationCodeStore, event)
+	case "/v1/paper-verification-code":
+		return handler.PaperVerificationCode(ctx, paperVerificationCodeStore, event)
+	case "/v1/paper-verification-code/validate", "/v1/paper-verification-code/expire":
 		return handler.TODO(ctx, event)
 	}
 
@@ -64,7 +67,8 @@ func main() {
 		cfg.BaseEndpoint = aws.String(cmp.Or(localURL, "http://localhost:8000"))
 	}
 
-	codesStore = codes.NewStore(dynamodb.NewFromConfig(cfg), "lpa-codes-"+environment)
+	activationCodeStore = codes.NewActivationCodeStore(dynamodb.NewFromConfig(cfg), "lpa-codes-"+environment)
+	paperVerificationCodeStore = codes.NewPaperVerificationCodeStore(dynamodb.NewFromConfig(cfg), "codes-"+environment)
 
 	lambda.Start(run)
 }
