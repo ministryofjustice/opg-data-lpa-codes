@@ -10,7 +10,7 @@ import (
 	"github.com/ministryofjustice/opg-data-lpa-codes/internal/codes"
 )
 
-func Revoke(ctx context.Context, codesStore *codes.Store, event events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+func Revoke(ctx context.Context, codesStore *codes.ActivationCodeStore, event events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	if event.HTTPMethod != http.MethodPost {
 		return respondMethodNotAllowed()
 	}
@@ -26,7 +26,7 @@ func Revoke(ctx context.Context, codesStore *codes.Store, event events.APIGatewa
 		return respondBadRequest()
 	}
 
-	updated, err := codesStore.SetStatusDetailsForCode(ctx, v.Code, "Revoked")
+	updated, err := codesStore.RevokeCode(ctx, v.Code)
 	if err != nil {
 		return respondInternalServerError(fmt.Errorf("update codes: %w", err))
 	}
