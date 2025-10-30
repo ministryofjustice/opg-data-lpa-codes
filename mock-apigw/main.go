@@ -132,6 +132,45 @@ func resetDatabase(ctx context.Context) error {
 		return err
 	}
 
+	if _, err := db.DeleteTable(ctx, &dynamodb.DeleteTableInput{
+		TableName: aws.String("codes-local"),
+	}); err != nil {
+		var exception *types.ResourceNotFoundException
+		if !errors.As(err, &exception) {
+			return err
+		}
+	}
+
+	if _, err := db.CreateTable(ctx, &dynamodb.CreateTableInput{
+		TableName: aws.String("codes-local"),
+		AttributeDefinitions: []types.AttributeDefinition{
+			{AttributeName: aws.String("PK"), AttributeType: types.ScalarAttributeTypeS},
+			{AttributeName: aws.String("SK"), AttributeType: types.ScalarAttributeTypeS},
+		},
+		KeySchema: []types.KeySchemaElement{
+			{AttributeName: aws.String("PK"), KeyType: types.KeyTypeHash},
+			{AttributeName: aws.String("SK"), KeyType: types.KeyTypeRange},
+		},
+		GlobalSecondaryIndexes: []types.GlobalSecondaryIndex{{
+			IndexName: aws.String("ReverseIndex"),
+			KeySchema: []types.KeySchemaElement{
+				{AttributeName: aws.String("SK"), KeyType: types.KeyTypeHash},
+				{AttributeName: aws.String("PK"), KeyType: types.KeyTypeRange},
+			},
+			Projection: &types.Projection{ProjectionType: types.ProjectionTypeAll},
+			ProvisionedThroughput: &types.ProvisionedThroughput{
+				ReadCapacityUnits:  aws.Int64(5),
+				WriteCapacityUnits: aws.Int64(5),
+			},
+		}},
+		ProvisionedThroughput: &types.ProvisionedThroughput{
+			ReadCapacityUnits:  aws.Int64(5),
+			WriteCapacityUnits: aws.Int64(5),
+		},
+	}); err != nil {
+		return err
+	}
+
 	return nil
 }
 
