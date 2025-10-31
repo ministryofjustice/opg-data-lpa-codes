@@ -11,7 +11,7 @@ import (
 	"github.com/ministryofjustice/opg-data-lpa-codes/internal/codes"
 )
 
-func Code(ctx context.Context, codesStore *codes.Store, event events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+func Code(ctx context.Context, codesStore *codes.ActivationCodeStore, event events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	if event.HTTPMethod != http.MethodPost {
 		return respondMethodNotAllowed()
 	}
@@ -36,5 +36,5 @@ func Code(ctx context.Context, codesStore *codes.Store, event events.APIGatewayP
 		return respondInternalServerError(fmt.Errorf("get codes: %w", err))
 	}
 
-	return respondOK([]codes.Item{item})
+	return respondOK([]codes.ActivationCode{item})
 }
