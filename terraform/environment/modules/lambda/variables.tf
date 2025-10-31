@@ -53,14 +53,16 @@ variable "dynamodb_table" {
   })
 }
 
-variable "image_uri" {
-  description = "The image uri for main function in ECR"
-  type        = string
-  default     = null
+variable "codes_dynamodb_table" {
+  description = "The dynamodb table that the lambda should access for paper verification codes"
+  type = object({
+    arn        = string
+    stream_arn = string
+  })
 }
 
-variable "dbstream_image_uri" {
-  description = "The image uri for dbstream in ECR"
+variable "image_uri" {
+  description = "The image uri for main function in ECR"
   type        = string
   default     = null
 }
@@ -73,12 +75,6 @@ variable "runtime" {
 
 variable "handler" {
   description = "handler"
-  type        = string
-  default     = null
-}
-
-variable "dbstream_handler" {
-  description = "dbstream handler"
   type        = string
   default     = null
 }

@@ -10,7 +10,7 @@ import (
 	"github.com/ministryofjustice/opg-data-lpa-codes/internal/codes"
 )
 
-func Exists(ctx context.Context, codesStore *codes.Store, event events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+func Exists(ctx context.Context, codesStore *codes.ActivationCodeStore, event events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	if event.HTTPMethod != http.MethodPost {
 		return respondMethodNotAllowed()
 	}
