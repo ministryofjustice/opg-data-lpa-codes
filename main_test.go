@@ -1066,7 +1066,7 @@ func getPaperVerificationCode(pk string) (*PaperRow, error) {
 		ExpressionAttributeValues: map[string]types.AttributeValue{
 			":PK": &types.AttributeValueMemberS{Value: pk},
 		},
-		TableName: aws.String("codes-local"),
+		TableName: aws.String("data-lpa-codes-local"),
 		Limit:     aws.Int32(1),
 	})
 	if err != nil {
@@ -1086,7 +1086,7 @@ func getPaperVerificationCode(pk string) (*PaperRow, error) {
 
 func setPaperVerificationCodeExpiry(code string, at time.Time, reason string) error {
 	_, err := db.UpdateItem(ctx, &dynamodb.UpdateItemInput{
-		TableName: aws.String("codes-local"),
+		TableName: aws.String("data-lpa-codes-local"),
 		Key: map[string]types.AttributeValue{
 			"PK": &types.AttributeValueMemberS{Value: "PAPER#" + code},
 		},
