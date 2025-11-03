@@ -67,28 +67,10 @@ variable "image_uri" {
   default     = null
 }
 
-variable "runtime" {
-  description = "python runtime version"
-  type        = string
-  default     = null
-}
-
-variable "handler" {
-  description = "handler"
-  type        = string
-  default     = null
-}
-
 variable "ecr_arn" {
   description = "The ECR arn for lambda image"
   type        = string
   default     = null
-}
-
-variable "package_type" {
-  description = "The Lambda deployment package type"
-  type        = string
-  default     = "Image"
 }
 
 variable "timeout" {
