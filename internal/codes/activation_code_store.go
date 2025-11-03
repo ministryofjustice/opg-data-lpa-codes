@@ -233,6 +233,10 @@ func (s *ActivationCodeStore) updateEntries(ctx context.Context, entries []Activ
 		}
 	}
 
+	if len(items) == 0 {
+		return 0, nil
+	}
+
 	_, err := s.dynamo.TransactWriteItems(ctx, &dynamodb.TransactWriteItemsInput{
 		TransactItems: items,
 	})
