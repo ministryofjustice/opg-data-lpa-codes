@@ -59,7 +59,7 @@ resource "aws_dynamodb_table" "codes" {
 
   ttl {
     attribute_name = "ExpiresAt"
-    enabled        = true
+    enabled        = false
   }
 
   global_secondary_index {
