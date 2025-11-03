@@ -8,10 +8,11 @@ import (
 const paperKeyPrefix = "PAPER#"
 
 type PaperVerificationCode struct {
-	PK        string
-	ActorLPA  string
-	UpdatedAt time.Time
-	ExpiresAt time.Time
+	PK           string
+	ActorLPA     string
+	UpdatedAt    time.Time
+	ExpiresAt    time.Time
+	ExpiryReason string
 }
 
 func (c PaperVerificationCode) Code() string {
