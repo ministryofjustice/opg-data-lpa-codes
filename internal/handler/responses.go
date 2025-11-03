@@ -15,6 +15,13 @@ func RespondNotFound(path string) (events.APIGatewayProxyResponse, error) {
 	}, nil
 }
 
+func respondCodeNotFound() (events.APIGatewayProxyResponse, error) {
+	return events.APIGatewayProxyResponse{
+		StatusCode: http.StatusNotFound,
+		Body:       `{"errors":[{"code":"OPGDATA-API-NOTFOUND","title":"Code not found"}]}`,
+	}, nil
+}
+
 func respondBadRequest() (events.APIGatewayProxyResponse, error) {
 	return events.APIGatewayProxyResponse{
 		StatusCode: http.StatusBadRequest,
