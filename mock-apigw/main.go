@@ -133,7 +133,7 @@ func resetDatabase(ctx context.Context) error {
 	}
 
 	if _, err := db.DeleteTable(ctx, &dynamodb.DeleteTableInput{
-		TableName: aws.String("codes-local"),
+		TableName: aws.String("data-lpa-codes-local"),
 	}); err != nil {
 		var exception *types.ResourceNotFoundException
 		if !errors.As(err, &exception) {
@@ -142,7 +142,7 @@ func resetDatabase(ctx context.Context) error {
 	}
 
 	if _, err := db.CreateTable(ctx, &dynamodb.CreateTableInput{
-		TableName: aws.String("codes-local"),
+		TableName: aws.String("data-lpa-codes-local"),
 		AttributeDefinitions: []types.AttributeDefinition{
 			{AttributeName: aws.String("PK"), AttributeType: types.ScalarAttributeTypeS},
 			{AttributeName: aws.String("ActorLPA"), AttributeType: types.ScalarAttributeTypeS},

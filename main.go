@@ -80,7 +80,7 @@ func main() {
 	}
 
 	activationCodeStore = codes.NewActivationCodeStore(dynamodb.NewFromConfig(cfg), "lpa-codes-"+environment)
-	paperVerificationCodeStore = codes.NewPaperVerificationCodeStore(dynamodb.NewFromConfig(cfg), "codes-"+environment)
+	paperVerificationCodeStore = codes.NewPaperVerificationCodeStore(dynamodb.NewFromConfig(cfg), "data-lpa-codes-"+environment)
 
 	lambda.Start(run)
 }
