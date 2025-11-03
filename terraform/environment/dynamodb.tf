@@ -40,12 +40,11 @@ resource "aws_dynamodb_table" "lpa_codes" {
 }
 
 resource "aws_dynamodb_table" "codes" {
-  name                        = "codes-${local.environment}"
-  billing_mode                = "PAY_PER_REQUEST"
-  deletion_protection_enabled = local.account.is_production
-  hash_key                    = "PK"
-  stream_enabled              = true
-  stream_view_type            = "NEW_AND_OLD_IMAGES"
+  name             = "codes-${local.environment}"
+  billing_mode     = "PAY_PER_REQUEST"
+  hash_key         = "PK"
+  stream_enabled   = true
+  stream_view_type = "NEW_AND_OLD_IMAGES"
 
   attribute {
     name = "PK"
