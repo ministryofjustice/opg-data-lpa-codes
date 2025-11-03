@@ -39,12 +39,13 @@ resource "aws_dynamodb_table" "lpa_codes" {
   tags = local.default_tags
 }
 
-resource "aws_dynamodb_table" "codes" {
-  name             = "codes-${local.environment}"
-  billing_mode     = "PAY_PER_REQUEST"
-  hash_key         = "PK"
-  stream_enabled   = true
-  stream_view_type = "NEW_AND_OLD_IMAGES"
+resource "aws_dynamodb_table" "data_lpa_codes" {
+  name                        = "data-lpa-codes-${local.environment}"
+  billing_mode                = "PAY_PER_REQUEST"
+  deletion_protection_enabled = local.account.is_production
+  hash_key                    = "PK"
+  stream_enabled              = true
+  stream_view_type            = "NEW_AND_OLD_IMAGES"
 
   attribute {
     name = "PK"
@@ -57,7 +58,7 @@ resource "aws_dynamodb_table" "codes" {
   }
 
   ttl {
-    attribute_name = "ExpiresAt"
+    attribute_name = "TTL"
     enabled        = true
   }
 
