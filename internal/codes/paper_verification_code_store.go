@@ -23,6 +23,29 @@ func NewPaperVerificationCodeStore(dynamo *dynamodb.Client, tableName string) *P
 	return &PaperVerificationCodeStore{dynamo: dynamo, tableName: tableName}
 }
 
+func (s *PaperVerificationCodeStore) Code(ctx context.Context, code string) (PaperVerificationCode, error) {
+	output, err := s.dynamo.GetItem(ctx, &dynamodb.GetItemInput{
+		TableName: aws.String(s.tableName),
+		Key: map[string]types.AttributeValue{
+			"PK": &types.AttributeValueMemberS{Value: paperKeyPrefix + code},
+		},
+	})
+	if err != nil {
+		return PaperVerificationCode{}, err
+	}
+
+	if output.Item == nil {
+		return PaperVerificationCode{}, ErrNotFound
+	}
+
+	var v PaperVerificationCode
+	if err := attributevalue.UnmarshalMap(output.Item, &v); err != nil {
+		return PaperVerificationCode{}, err
+	}
+
+	return v, nil
+}
+
 // CodesByKey returns all unexpired codes for the given key.
 func (s *PaperVerificationCodeStore) CodesByKey(ctx context.Context, key Key) ([]PaperVerificationCode, error) {
 	output, err := s.dynamo.Query(ctx, &dynamodb.QueryInput{
