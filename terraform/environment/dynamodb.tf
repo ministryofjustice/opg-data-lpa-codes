@@ -57,11 +57,6 @@ resource "aws_dynamodb_table" "codes" {
     type = "S"
   }
 
-  ttl {
-    attribute_name = "ExpiresAt"
-    enabled        = true
-  }
-
   global_secondary_index {
     name            = "ActorLPAIndex"
     hash_key        = "ActorLPA"
