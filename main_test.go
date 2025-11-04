@@ -741,10 +741,144 @@ func TestPaperVerificationCodeValidate(t *testing.T) {
 }
 
 func TestPaperVerificationCodeExpire(t *testing.T) {
-	resp, err := callLambda(http.MethodPost, "/v1/paper-verification-code/expire", `{}`)
-	if assert.Nil(t, err) {
-		assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)
-		assert.Equal(t, ``, resp.Body)
+	runTest(t, "first time use", func(t *testing.T) {
+		code := createPaperCode()
+
+		resp, err := callLambda(http.MethodPost, "/v1/paper-verification-code/expire", `{"code":"`+code+`","expiry_reason":"first_time_use"}`)
+		if assert.Nil(t, err) {
+			assert.Equal(t, http.StatusOK, resp.StatusCode)
+
+			assert.JSONEq(t, `{"expiry_date":"`+time.Now().AddDate(2, 0, 0).Format(time.DateOnly)+`"}`, resp.Body)
+
+			assertPaperVerificationCode(t, PaperRow{
+				PK:           "PAPER#" + code,
+				UpdatedAt:    time.Now(),
+				ActorLPA:     "12ad81a9-f89d-4804-99f5-7c0c8669ac9b#M-1234-1234-1234",
+				ExpiresAt:    time.Now().AddDate(2, 0, 0),
+				ExpiryReason: "first_time_use",
+			})
+		}
+	})
+
+	runTest(t, "paper to digital", func(t *testing.T) {
+		code := createPaperCode()
+
+		resp, err := callLambda(http.MethodPost, "/v1/paper-verification-code/expire", `{"code":"`+code+`","expiry_reason":"paper_to_digital"}`)
+		if assert.Nil(t, err) {
+			assert.Equal(t, http.StatusOK, resp.StatusCode)
+
+			assert.JSONEq(t, `{"expiry_date":"`+time.Now().AddDate(0, 0, 30).Format(time.DateOnly)+`"}`, resp.Body)
+
+			assertPaperVerificationCode(t, PaperRow{
+				PK:           "PAPER#" + code,
+				UpdatedAt:    time.Now(),
+				ActorLPA:     "12ad81a9-f89d-4804-99f5-7c0c8669ac9b#M-1234-1234-1234",
+				ExpiresAt:    time.Now().AddDate(0, 0, 30),
+				ExpiryReason: "paper_to_digital",
+			})
+		}
+	})
+
+	runTest(t, "cancelled", func(t *testing.T) {
+		code := createPaperCode()
+
+		resp, err := callLambda(http.MethodPost, "/v1/paper-verification-code/expire", `{"code":"`+code+`","expiry_reason":"cancelled"}`)
+		if assert.Nil(t, err) {
+			assert.Equal(t, http.StatusOK, resp.StatusCode)
+
+			assert.JSONEq(t, `{"expiry_date":"`+time.Now().Format(time.DateOnly)+`"}`, resp.Body)
+
+			assertPaperVerificationCode(t, PaperRow{
+				PK:           "PAPER#" + code,
+				UpdatedAt:    time.Now(),
+				ActorLPA:     "12ad81a9-f89d-4804-99f5-7c0c8669ac9b#M-1234-1234-1234",
+				ExpiresAt:    time.Now(),
+				ExpiryReason: "cancelled",
+			})
+		}
+	})
+
+	runTest(t, "can reduce expiry", func(t *testing.T) {
+		code := createPaperCode()
+
+		resp, err := callLambda(http.MethodPost, "/v1/paper-verification-code/expire", `{"code":"`+code+`","expiry_reason":"first_time_use"}`)
+		if assert.Nil(t, err) {
+			assert.Equal(t, http.StatusOK, resp.StatusCode)
+
+			assert.JSONEq(t, `{"expiry_date":"`+time.Now().AddDate(2, 0, 0).Format(time.DateOnly)+`"}`, resp.Body)
+
+			assertPaperVerificationCode(t, PaperRow{
+				PK:           "PAPER#" + code,
+				UpdatedAt:    time.Now(),
+				ActorLPA:     "12ad81a9-f89d-4804-99f5-7c0c8669ac9b#M-1234-1234-1234",
+				ExpiresAt:    time.Now().AddDate(2, 0, 0),
+				ExpiryReason: "first_time_use",
+			})
+
+			resp, err := callLambda(http.MethodPost, "/v1/paper-verification-code/expire", `{"code":"`+code+`","expiry_reason":"cancelled"}`)
+			if assert.Nil(t, err) {
+				assert.Equal(t, http.StatusOK, resp.StatusCode)
+
+				assert.JSONEq(t, `{"expiry_date":"`+time.Now().Format(time.DateOnly)+`"}`, resp.Body)
+
+				assertPaperVerificationCode(t, PaperRow{
+					PK:           "PAPER#" + code,
+					UpdatedAt:    time.Now(),
+					ActorLPA:     "12ad81a9-f89d-4804-99f5-7c0c8669ac9b#M-1234-1234-1234",
+					ExpiresAt:    time.Now(),
+					ExpiryReason: "cancelled",
+				})
+			}
+		}
+	})
+
+	runTest(t, "cannot increase expiry", func(t *testing.T) {
+		code := createPaperCode()
+
+		resp, err := callLambda(http.MethodPost, "/v1/paper-verification-code/expire", `{"code":"`+code+`","expiry_reason":"cancelled"}`)
+		if assert.Nil(t, err) {
+			assert.Equal(t, http.StatusOK, resp.StatusCode)
+
+			assert.JSONEq(t, `{"expiry_date":"`+time.Now().Format(time.DateOnly)+`"}`, resp.Body)
+
+			expectedCancelledRow := PaperRow{
+				PK:           "PAPER#" + code,
+				UpdatedAt:    time.Now(),
+				ActorLPA:     "12ad81a9-f89d-4804-99f5-7c0c8669ac9b#M-1234-1234-1234",
+				ExpiresAt:    time.Now(),
+				ExpiryReason: "cancelled",
+			}
+
+			assertPaperVerificationCode(t, expectedCancelledRow)
+
+			resp, err := callLambda(http.MethodPost, "/v1/paper-verification-code/expire", `{"code":"`+code+`","expiry_reason":"first_time_use"}`)
+			if assert.Nil(t, err) {
+				assert.Equal(t, http.StatusOK, resp.StatusCode)
+
+				assert.JSONEq(t, `{"expiry_date":"`+time.Now().Format(time.DateOnly)+`"}`, resp.Body)
+
+				assertPaperVerificationCode(t, expectedCancelledRow)
+			}
+		}
+	})
+
+	testcases := map[string]string{
+		"create missing code":   `{"expiry_reason":"cancelled"}`,
+		"create missing reason": `{"code":"P-1234-1234-1234-12"}`,
+		"create empty code":     `{"code":"","expiry_reason":"cancelled"}`,
+		"create empty reason":   `{"code":"P-1234-1234-1234-12","expiry_reason":""}`,
+		"create unknown reason": `{"code":"P-1234-1234-1234-12","expiry_reason":"what"}`,
+	}
+
+	for name, lambdaBody := range testcases {
+		t.Run(name, func(t *testing.T) {
+			resp, err := callLambda(http.MethodPost, "/v1/paper-verification-code/expire", lambdaBody)
+			if assert.Nil(t, err) {
+				assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
+
+				assert.JSONEq(t, `{"body":{"error":{"code":"Bad Request","message":"Bad payload"}},"headers":{"Content-Type": "application/json"},"isBase64Encoded":false,"statusCode":400}`, resp.Body)
+			}
+		})
 	}
 }
 
@@ -918,10 +1052,11 @@ func assertCode(t *testing.T, expected Row, code string) bool {
 }
 
 type PaperRow struct {
-	PK        string
-	ActorLPA  string
-	UpdatedAt time.Time
-	ExpiresAt time.Time
+	PK           string
+	ActorLPA     string
+	UpdatedAt    time.Time
+	ExpiresAt    time.Time
+	ExpiryReason string
 }
 
 func getPaperVerificationCode(pk string) (*PaperRow, error) {
@@ -931,7 +1066,7 @@ func getPaperVerificationCode(pk string) (*PaperRow, error) {
 		ExpressionAttributeValues: map[string]types.AttributeValue{
 			":PK": &types.AttributeValueMemberS{Value: pk},
 		},
-		TableName: aws.String("codes-local"),
+		TableName: aws.String("data-lpa-codes-local"),
 		Limit:     aws.Int32(1),
 	})
 	if err != nil {
@@ -951,7 +1086,7 @@ func getPaperVerificationCode(pk string) (*PaperRow, error) {
 
 func setPaperVerificationCodeExpiry(code string, at time.Time, reason string) error {
 	_, err := db.UpdateItem(ctx, &dynamodb.UpdateItemInput{
-		TableName: aws.String("codes-local"),
+		TableName: aws.String("data-lpa-codes-local"),
 		Key: map[string]types.AttributeValue{
 			"PK": &types.AttributeValueMemberS{Value: "PAPER#" + code},
 		},

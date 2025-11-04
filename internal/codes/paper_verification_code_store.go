@@ -15,12 +15,17 @@ import (
 
 // A PaperVerificationCodeStore contains PaperVerificationCode type records.
 type PaperVerificationCodeStore struct {
-	dynamo    *dynamodb.Client
-	tableName string
+	dynamo       *dynamodb.Client
+	tableName    string
+	generateCode func() string
 }
 
 func NewPaperVerificationCodeStore(dynamo *dynamodb.Client, tableName string) *PaperVerificationCodeStore {
-	return &PaperVerificationCodeStore{dynamo: dynamo, tableName: tableName}
+	return &PaperVerificationCodeStore{
+		dynamo:       dynamo,
+		tableName:    tableName,
+		generateCode: randomPaperVerificationCode,
+	}
 }
 
 func (s *PaperVerificationCodeStore) Code(ctx context.Context, code string) (PaperVerificationCode, error) {
@@ -140,8 +145,8 @@ func (s *PaperVerificationCodeStore) Create(ctx context.Context, key Key) (code 
 	for range 10 {
 		code, err = s.tryCreate(ctx, key)
 		if err != nil {
-			var ccfe types.ConditionalCheckFailedException
-			if errors.Is(err, &ccfe) {
+			var ccfe *types.ConditionalCheckFailedException
+			if errors.As(err, &ccfe) {
 				continue
 			}
 
@@ -157,7 +162,7 @@ func (s *PaperVerificationCodeStore) Create(ctx context.Context, key Key) (code 
 // tryCreate generates and puts a new code, if it doesn't already exist,
 // returning the created PaperVerificationCode.
 func (s *PaperVerificationCodeStore) tryCreate(ctx context.Context, key Key) (PaperVerificationCode, error) {
-	newCode := randomPaperVerificationCode()
+	newCode := s.generateCode()
 
 	item := PaperVerificationCode{
 		PK:        paperKeyPrefix + newCode,
@@ -179,4 +184,42 @@ func (s *PaperVerificationCodeStore) tryCreate(ctx context.Context, key Key) (Pa
 	}
 
 	return item, nil
+}
+
+func (s *PaperVerificationCodeStore) SetExpiry(ctx context.Context, code string, expiryReason ExpiryReason) (time.Time, error) {
+	expiresAt := expiryReason.ExpiresAt()
+
+	_, err := s.dynamo.UpdateItem(ctx, &dynamodb.UpdateItemInput{
+		TableName: aws.String(s.tableName),
+		Key: map[string]types.AttributeValue{
+			"PK": &types.AttributeValueMemberS{Value: "PAPER#" + code},
+		},
+		UpdateExpression:    aws.String("SET #ExpiresAt = :ExpiresAt, #ExpiryReason = :ExpiryReason, #UpdatedAt = :UpdatedAt"),
+		ConditionExpression: aws.String("#ExpiresAt = :Zero OR #ExpiresAt > :ExpiresAt"),
+		ExpressionAttributeValues: map[string]types.AttributeValue{
+			":ExpiresAt":    &types.AttributeValueMemberS{Value: expiresAt.Format(time.RFC3339Nano)},
+			":ExpiryReason": &types.AttributeValueMemberS{Value: expiryReason.String()},
+			":UpdatedAt":    &types.AttributeValueMemberS{Value: time.Now().Format(time.RFC3339Nano)},
+			":Zero":         &types.AttributeValueMemberS{Value: time.Time{}.Format(time.RFC3339Nano)},
+		},
+		ExpressionAttributeNames: map[string]string{
+			"#ExpiresAt":    "ExpiresAt",
+			"#ExpiryReason": "ExpiryReason",
+			"#UpdatedAt":    "UpdatedAt",
+		},
+		ReturnValuesOnConditionCheckFailure: types.ReturnValuesOnConditionCheckFailureAllOld,
+	})
+
+	if err != nil {
+		var ccfe *types.ConditionalCheckFailedException
+		if !errors.As(err, &ccfe) {
+			return time.Time{}, err
+		}
+
+		if err := attributevalue.Unmarshal(ccfe.Item["ExpiresAt"], &expiresAt); err != nil {
+			return time.Time{}, err
+		}
+	}
+
+	return expiresAt, nil
 }

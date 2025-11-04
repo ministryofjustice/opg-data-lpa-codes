@@ -19,12 +19,17 @@ import (
 
 // An ActivationCodeStore contains Item type records.
 type ActivationCodeStore struct {
-	dynamo    *dynamodb.Client
-	tableName string
+	dynamo       *dynamodb.Client
+	tableName    string
+	generateCode func() string
 }
 
 func NewActivationCodeStore(dynamo *dynamodb.Client, tableName string) *ActivationCodeStore {
-	return &ActivationCodeStore{dynamo: dynamo, tableName: tableName}
+	return &ActivationCodeStore{
+		dynamo:       dynamo,
+		tableName:    tableName,
+		generateCode: randomActivationCode,
+	}
 }
 
 // GenerateCode returns a 12-digit alphanumeric code containing no ambiguous
@@ -32,7 +37,7 @@ func NewActivationCodeStore(dynamo *dynamodb.Client, tableName string) *Activati
 // and error if a unique code cannot be generated.
 func (s *ActivationCodeStore) GenerateCode(ctx context.Context) (string, error) {
 	for range 10 {
-		newCode := randomActivationCode()
+		newCode := s.generateCode()
 
 		_, err := s.Code(ctx, newCode)
 		if err != nil {
