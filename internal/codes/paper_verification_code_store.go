@@ -15,12 +15,17 @@ import (
 
 // A PaperVerificationCodeStore contains PaperVerificationCode type records.
 type PaperVerificationCodeStore struct {
-	dynamo    *dynamodb.Client
-	tableName string
+	dynamo       *dynamodb.Client
+	tableName    string
+	generateCode func() string
 }
 
 func NewPaperVerificationCodeStore(dynamo *dynamodb.Client, tableName string) *PaperVerificationCodeStore {
-	return &PaperVerificationCodeStore{dynamo: dynamo, tableName: tableName}
+	return &PaperVerificationCodeStore{
+		dynamo:       dynamo,
+		tableName:    tableName,
+		generateCode: randomPaperVerificationCode,
+	}
 }
 
 func (s *PaperVerificationCodeStore) Code(ctx context.Context, code string) (PaperVerificationCode, error) {
@@ -157,7 +162,7 @@ func (s *PaperVerificationCodeStore) Create(ctx context.Context, key Key) (code 
 // tryCreate generates and puts a new code, if it doesn't already exist,
 // returning the created PaperVerificationCode.
 func (s *PaperVerificationCodeStore) tryCreate(ctx context.Context, key Key) (PaperVerificationCode, error) {
-	newCode := randomPaperVerificationCode()
+	newCode := s.generateCode()
 
 	item := PaperVerificationCode{
 		PK:        paperKeyPrefix + newCode,
