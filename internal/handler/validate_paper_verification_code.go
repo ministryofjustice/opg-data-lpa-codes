@@ -12,10 +12,10 @@ import (
 )
 
 type validatePaperVerificationCodeResponse struct {
-	LPA          string `json:"lpa"`
-	Actor        string `json:"actor"`
-	ExpiryDate   string `json:"expiry_date,omitempty"`
-	ExpiryReason string `json:"expiry_reason,omitempty"`
+	LPA          string             `json:"lpa"`
+	Actor        string             `json:"actor"`
+	ExpiryDate   string             `json:"expiry_date,omitempty"`
+	ExpiryReason codes.ExpiryReason `json:"expiry_reason,omitempty"`
 }
 
 func ValidatePaperVerificationCode(ctx context.Context, codesStore *codes.PaperVerificationCodeStore, event events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
