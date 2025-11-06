@@ -1056,7 +1056,8 @@ func getCode(code string) *Row {
 		Key: map[string]types.AttributeValue{
 			"code": &types.AttributeValueMemberS{Value: code},
 		},
-		TableName: aws.String("lpa-codes-local"),
+		TableName:      aws.String("lpa-codes-local"),
+		ConsistentRead: aws.Bool(true),
 	})
 	if err != nil || output.Item == nil {
 		return nil
@@ -1103,8 +1104,9 @@ func getPaperVerificationCode(pk string) (*PaperRow, error) {
 		ExpressionAttributeValues: map[string]types.AttributeValue{
 			":PK": &types.AttributeValueMemberS{Value: pk},
 		},
-		TableName: aws.String("data-lpa-codes-local"),
-		Limit:     aws.Int32(1),
+		TableName:      aws.String("data-lpa-codes-local"),
+		ConsistentRead: aws.Bool(true),
+		Limit:          aws.Int32(1),
 	})
 	if err != nil {
 		return nil, err
