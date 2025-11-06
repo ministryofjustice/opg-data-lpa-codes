@@ -93,12 +93,17 @@ func resetDatabase(ctx context.Context) error {
 
 	db := dynamodb.NewFromConfig(cfg)
 
-	if _, err := db.DeleteTable(ctx, &dynamodb.DeleteTableInput{
-		TableName: aws.String("lpa-codes-local"),
-	}); err != nil {
-		var exception *types.ResourceNotFoundException
-		if !errors.As(err, &exception) {
+	for _, tableName := range []string{"lpa-codes-local", "data-lpa-codes-local"} {
+		if err := retryError[*types.ResourceInUseException](100*time.Millisecond, 20, func() error {
+			_, err := db.DeleteTable(ctx, &dynamodb.DeleteTableInput{
+				TableName: aws.String(tableName),
+			})
 			return err
+		}); err != nil {
+			var notFound *types.ResourceNotFoundException
+			if !errors.As(err, &notFound) {
+				return fmt.Errorf("deleting %s: %w", tableName, err)
+			}
 		}
 	}
 
@@ -129,16 +134,7 @@ func resetDatabase(ctx context.Context) error {
 			WriteCapacityUnits: aws.Int64(5),
 		},
 	}); err != nil {
-		return err
-	}
-
-	if _, err := db.DeleteTable(ctx, &dynamodb.DeleteTableInput{
-		TableName: aws.String("data-lpa-codes-local"),
-	}); err != nil {
-		var exception *types.ResourceNotFoundException
-		if !errors.As(err, &exception) {
-			return err
-		}
+		return fmt.Errorf("creating lpa-codes-local: %w", err)
 	}
 
 	if _, err := db.CreateTable(ctx, &dynamodb.CreateTableInput{
@@ -167,7 +163,16 @@ func resetDatabase(ctx context.Context) error {
 			WriteCapacityUnits: aws.Int64(5),
 		},
 	}); err != nil {
-		return err
+		return fmt.Errorf("creating data-lpa-codes-local: %w", err)
+	}
+
+	for _, tableName := range []string{"lpa-codes-local", "data-lpa-codes-local"} {
+		if err := retryError[*types.ResourceNotFoundException](100*time.Millisecond, 20, func() error {
+			_, err := db.DescribeTable(ctx, &dynamodb.DescribeTableInput{TableName: aws.String(tableName)})
+			return err
+		}); err != nil {
+			return fmt.Errorf("checking %s: %w", tableName, err)
+		}
 	}
 
 	return nil
@@ -185,4 +190,22 @@ func main() {
 	}
 
 	log.Println("running on port 8080")
+}
+
+func retryError[RetryOn error](dur time.Duration, max int, fn func() error) error {
+	var (
+		err       error
+		retryable RetryOn
+	)
+
+	for i := range max {
+		if err = fn(); errors.As(err, &retryable) && i < max {
+			time.Sleep(dur)
+			continue
+		}
+
+		break
+	}
+
+	return err
 }
