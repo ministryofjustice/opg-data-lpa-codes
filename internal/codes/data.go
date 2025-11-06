@@ -12,7 +12,7 @@ type PaperVerificationCode struct {
 	ActorLPA     string
 	UpdatedAt    time.Time
 	ExpiresAt    time.Time
-	ExpiryReason string
+	ExpiryReason ExpiryReason
 }
 
 func (c PaperVerificationCode) Code() string {
