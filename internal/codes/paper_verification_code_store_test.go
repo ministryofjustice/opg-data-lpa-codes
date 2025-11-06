@@ -2,10 +2,12 @@ package codes
 
 import (
 	"context"
+	"errors"
 	"io"
 	"net/http"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -50,6 +52,20 @@ func TestPaperVerificationCodeStore_Create(t *testing.T) {
 	created, err := store.Create(ctx, Key{Actor: "test", LPA: "test"})
 	assert.NoError(t, err)
 	assert.Equal(t, "P-1234-1234-1234-12", created.Code())
+
+	for i := range 10 {
+		if _, err := store.Code(ctx, created.Code()); err != nil {
+			if errors.Is(err, ErrNotFound) && i < 9 {
+				time.Sleep(100 * time.Millisecond)
+				continue
+			}
+
+			assert.NoError(t, err)
+			return
+		}
+
+		break
+	}
 
 	_, err = store.Create(ctx, Key{Actor: "test", LPA: "test"})
 	var ccfe *types.ConditionalCheckFailedException
