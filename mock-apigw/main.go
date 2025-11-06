@@ -85,7 +85,6 @@ func handler(w http.ResponseWriter, r *http.Request) {
 }
 
 func resetDatabase(ctx context.Context) error {
-
 	cfg, err := config.LoadDefaultConfig(ctx)
 	if err != nil {
 		return err
@@ -123,7 +122,6 @@ func resetDatabase(ctx context.Context) error {
 		}
 
 		if len(output.TableNames) == 0 {
-			log.Printf("we have tables: %v", output.TableNames)
 			break
 		}
 
@@ -132,78 +130,75 @@ func resetDatabase(ctx context.Context) error {
 		}
 	}
 
-	if _, err := db.CreateTable(ctx, &dynamodb.CreateTableInput{
-		TableName: aws.String("lpa-codes-local"),
-		AttributeDefinitions: []types.AttributeDefinition{
-			{AttributeName: aws.String("code"), AttributeType: types.ScalarAttributeTypeS},
-			{AttributeName: aws.String("lpa"), AttributeType: types.ScalarAttributeTypeS},
-			{AttributeName: aws.String("actor"), AttributeType: types.ScalarAttributeTypeS},
-		},
-		KeySchema: []types.KeySchemaElement{
-			{AttributeName: aws.String("code"), KeyType: types.KeyTypeHash},
-		},
-		GlobalSecondaryIndexes: []types.GlobalSecondaryIndex{{
-			IndexName: aws.String("key_index"),
-			KeySchema: []types.KeySchemaElement{
-				{AttributeName: aws.String("lpa"), KeyType: types.KeyTypeHash},
-				{AttributeName: aws.String("actor"), KeyType: types.KeyTypeRange},
-			},
-			Projection: &types.Projection{ProjectionType: types.ProjectionTypeAll},
-			ProvisionedThroughput: &types.ProvisionedThroughput{
-				ReadCapacityUnits:  aws.Int64(5),
-				WriteCapacityUnits: aws.Int64(5),
-			},
-		}},
-		ProvisionedThroughput: &types.ProvisionedThroughput{
-			ReadCapacityUnits:  aws.Int64(5),
-			WriteCapacityUnits: aws.Int64(5),
-		},
-	}); err != nil {
-		return fmt.Errorf("creating lpa-codes-local: %w", err)
-	}
-
-	if _, err := db.CreateTable(ctx, &dynamodb.CreateTableInput{
-		TableName: aws.String("data-lpa-codes-local"),
-		AttributeDefinitions: []types.AttributeDefinition{
-			{AttributeName: aws.String("PK"), AttributeType: types.ScalarAttributeTypeS},
-			{AttributeName: aws.String("ActorLPA"), AttributeType: types.ScalarAttributeTypeS},
-		},
-		KeySchema: []types.KeySchemaElement{
-			{AttributeName: aws.String("PK"), KeyType: types.KeyTypeHash},
-		},
-		GlobalSecondaryIndexes: []types.GlobalSecondaryIndex{{
-			IndexName: aws.String("ActorLPAIndex"),
-			KeySchema: []types.KeySchemaElement{
-				{AttributeName: aws.String("ActorLPA"), KeyType: types.KeyTypeHash},
-				{AttributeName: aws.String("PK"), KeyType: types.KeyTypeRange},
-			},
-			Projection: &types.Projection{ProjectionType: types.ProjectionTypeAll},
-			ProvisionedThroughput: &types.ProvisionedThroughput{
-				ReadCapacityUnits:  aws.Int64(5),
-				WriteCapacityUnits: aws.Int64(5),
-			},
-		}},
-		ProvisionedThroughput: &types.ProvisionedThroughput{
-			ReadCapacityUnits:  aws.Int64(5),
-			WriteCapacityUnits: aws.Int64(5),
-		},
-	}); err != nil {
-		return fmt.Errorf("creating data-lpa-codes-local: %w", err)
-	}
-
 	for final := range ticker() {
+		_, lpaCodesLocalError := db.CreateTable(ctx, &dynamodb.CreateTableInput{
+			TableName: aws.String("lpa-codes-local"),
+			AttributeDefinitions: []types.AttributeDefinition{
+				{AttributeName: aws.String("code"), AttributeType: types.ScalarAttributeTypeS},
+				{AttributeName: aws.String("lpa"), AttributeType: types.ScalarAttributeTypeS},
+				{AttributeName: aws.String("actor"), AttributeType: types.ScalarAttributeTypeS},
+			},
+			KeySchema: []types.KeySchemaElement{
+				{AttributeName: aws.String("code"), KeyType: types.KeyTypeHash},
+			},
+			GlobalSecondaryIndexes: []types.GlobalSecondaryIndex{{
+				IndexName: aws.String("key_index"),
+				KeySchema: []types.KeySchemaElement{
+					{AttributeName: aws.String("lpa"), KeyType: types.KeyTypeHash},
+					{AttributeName: aws.String("actor"), KeyType: types.KeyTypeRange},
+				},
+				Projection: &types.Projection{ProjectionType: types.ProjectionTypeAll},
+				ProvisionedThroughput: &types.ProvisionedThroughput{
+					ReadCapacityUnits:  aws.Int64(5),
+					WriteCapacityUnits: aws.Int64(5),
+				},
+			}},
+			ProvisionedThroughput: &types.ProvisionedThroughput{
+				ReadCapacityUnits:  aws.Int64(5),
+				WriteCapacityUnits: aws.Int64(5),
+			},
+		})
+
+		_, dataLpaCodesLocalError := db.CreateTable(ctx, &dynamodb.CreateTableInput{
+			TableName: aws.String("data-lpa-codes-local"),
+			AttributeDefinitions: []types.AttributeDefinition{
+				{AttributeName: aws.String("PK"), AttributeType: types.ScalarAttributeTypeS},
+				{AttributeName: aws.String("ActorLPA"), AttributeType: types.ScalarAttributeTypeS},
+			},
+			KeySchema: []types.KeySchemaElement{
+				{AttributeName: aws.String("PK"), KeyType: types.KeyTypeHash},
+			},
+			GlobalSecondaryIndexes: []types.GlobalSecondaryIndex{{
+				IndexName: aws.String("ActorLPAIndex"),
+				KeySchema: []types.KeySchemaElement{
+					{AttributeName: aws.String("ActorLPA"), KeyType: types.KeyTypeHash},
+					{AttributeName: aws.String("PK"), KeyType: types.KeyTypeRange},
+				},
+				Projection: &types.Projection{ProjectionType: types.ProjectionTypeAll},
+				ProvisionedThroughput: &types.ProvisionedThroughput{
+					ReadCapacityUnits:  aws.Int64(5),
+					WriteCapacityUnits: aws.Int64(5),
+				},
+			}},
+			ProvisionedThroughput: &types.ProvisionedThroughput{
+				ReadCapacityUnits:  aws.Int64(5),
+				WriteCapacityUnits: aws.Int64(5),
+			},
+		})
+
 		output, err := db.ListTables(ctx, &dynamodb.ListTablesInput{})
 		if err != nil {
 			return fmt.Errorf("checking created: %w", err)
 		}
 
 		if len(output.TableNames) == 2 {
-			log.Printf("we have tables: %v", output.TableNames)
 			break
 		}
 
 		if final {
-			return fmt.Errorf("tables not created, only have %d", len(output.TableNames))
+			return fmt.Errorf(`tables not created, only have %v:
+lpa-codes-local: %s
+data-lpa-codes-local: %s`, output.TableNames, lpaCodesLocalError, dataLpaCodesLocalError)
 		}
 	}
 
