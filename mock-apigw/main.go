@@ -85,6 +85,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 }
 
 func resetDatabase(ctx context.Context) error {
+	var logs []string
 
 	cfg, err := config.LoadDefaultConfig(ctx)
 	if err != nil {
@@ -106,11 +107,13 @@ func resetDatabase(ctx context.Context) error {
 				TableName: aws.String(tableName),
 			}); err != nil {
 				if errors.As(err, &inUse) && !final {
+					logs = append(logs, tableName+" in use, retrying delete")
 					continue
 				} else if !errors.As(err, &notFound) {
 					return fmt.Errorf("deleting %s: %w", tableName, err)
 				}
 
+				logs = append(logs, tableName+" hopefully deleted")
 				break
 			}
 		}
@@ -123,7 +126,7 @@ func resetDatabase(ctx context.Context) error {
 		}
 
 		if len(output.TableNames) == 0 {
-			log.Printf("we have tables: %v", output.TableNames)
+			logs = append(logs, fmt.Sprintf("we have tables: %v", output.TableNames))
 			break
 		}
 
@@ -159,7 +162,7 @@ func resetDatabase(ctx context.Context) error {
 			WriteCapacityUnits: aws.Int64(5),
 		},
 	}); err != nil {
-		return fmt.Errorf("creating lpa-codes-local: %w", err)
+		return fmt.Errorf("creating lpa-codes-local: %w\n%s", err, strings.Join(logs, "\n"))
 	}
 
 	if _, err := db.CreateTable(ctx, &dynamodb.CreateTableInput{
@@ -198,12 +201,11 @@ func resetDatabase(ctx context.Context) error {
 		}
 
 		if len(output.TableNames) == 2 {
-			log.Printf("we have tables: %v", output.TableNames)
 			break
 		}
 
 		if final {
-			return fmt.Errorf("tables not created, only have %d", len(output.TableNames))
+			return fmt.Errorf("tables not created, only have %v", output.TableNames)
 		}
 	}
 
