@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"iter"
 	"log"
 	"net/http"
 	"os"
@@ -84,6 +85,8 @@ func handler(w http.ResponseWriter, r *http.Request) {
 }
 
 func resetDatabase(ctx context.Context) error {
+	var logs []string
+
 	cfg, err := config.LoadDefaultConfig(ctx)
 	if err != nil {
 		return err
@@ -93,12 +96,42 @@ func resetDatabase(ctx context.Context) error {
 
 	db := dynamodb.NewFromConfig(cfg)
 
-	if _, err := db.DeleteTable(ctx, &dynamodb.DeleteTableInput{
-		TableName: aws.String("lpa-codes-local"),
-	}); err != nil {
-		var exception *types.ResourceNotFoundException
-		if !errors.As(err, &exception) {
-			return err
+	for _, tableName := range []string{"lpa-codes-local", "data-lpa-codes-local"} {
+		for final := range ticker() {
+			var (
+				notFound *types.ResourceNotFoundException
+				inUse    *types.ResourceInUseException
+			)
+
+			if _, err := db.DeleteTable(ctx, &dynamodb.DeleteTableInput{
+				TableName: aws.String(tableName),
+			}); err != nil {
+				if errors.As(err, &inUse) && !final {
+					logs = append(logs, tableName+" in use, retrying delete")
+					continue
+				} else if !errors.As(err, &notFound) {
+					return fmt.Errorf("deleting %s: %w", tableName, err)
+				}
+
+				logs = append(logs, tableName+" hopefully deleted")
+				break
+			}
+		}
+	}
+
+	for final := range ticker() {
+		output, err := db.ListTables(ctx, &dynamodb.ListTablesInput{})
+		if err != nil {
+			return fmt.Errorf("checking deleted: %w", err)
+		}
+
+		if len(output.TableNames) == 0 {
+			logs = append(logs, fmt.Sprintf("we have tables: %v", output.TableNames))
+			break
+		}
+
+		if final {
+			return fmt.Errorf("tables not deleted, still have %d", len(output.TableNames))
 		}
 	}
 
@@ -129,16 +162,7 @@ func resetDatabase(ctx context.Context) error {
 			WriteCapacityUnits: aws.Int64(5),
 		},
 	}); err != nil {
-		return err
-	}
-
-	if _, err := db.DeleteTable(ctx, &dynamodb.DeleteTableInput{
-		TableName: aws.String("data-lpa-codes-local"),
-	}); err != nil {
-		var exception *types.ResourceNotFoundException
-		if !errors.As(err, &exception) {
-			return err
-		}
+		return fmt.Errorf("creating lpa-codes-local: %w\n%s", err, strings.Join(logs, "\n"))
 	}
 
 	if _, err := db.CreateTable(ctx, &dynamodb.CreateTableInput{
@@ -167,7 +191,22 @@ func resetDatabase(ctx context.Context) error {
 			WriteCapacityUnits: aws.Int64(5),
 		},
 	}); err != nil {
-		return err
+		return fmt.Errorf("creating data-lpa-codes-local: %w", err)
+	}
+
+	for final := range ticker() {
+		output, err := db.ListTables(ctx, &dynamodb.ListTablesInput{})
+		if err != nil {
+			return fmt.Errorf("checking created: %w", err)
+		}
+
+		if len(output.TableNames) == 2 {
+			break
+		}
+
+		if final {
+			return fmt.Errorf("tables not created, only have %v", output.TableNames)
+		}
 	}
 
 	return nil
@@ -185,4 +224,23 @@ func main() {
 	}
 
 	log.Println("running on port 8080")
+}
+
+// ticker waits an increasing amount between each iteraction and yields true
+// on the final iteration.
+func ticker() iter.Seq[bool] {
+	const (
+		max = 10
+		dur = 100 * time.Millisecond
+	)
+
+	return func(yield func(bool) bool) {
+		for i := range max {
+			if !yield(i == max-1) {
+				return
+			}
+
+			time.Sleep(dur * time.Duration(i))
+		}
+	}
 }
