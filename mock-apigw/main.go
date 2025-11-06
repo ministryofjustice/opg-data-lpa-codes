@@ -11,6 +11,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"regexp"
 	"strings"
 	"time"
 
@@ -40,9 +41,15 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	var reqBody bytes.Buffer
 	_, _ = io.Copy(&reqBody, r.Body)
 
+	path := r.URL.Path
+	prefix := regexp.MustCompile(`^/v[0-9]+/`)
+	if !prefix.MatchString(r.URL.Path) {
+		path = fmt.Sprintf("/v1%s", r.URL.Path)
+	}
+
 	body := events.APIGatewayProxyRequest{
 		Body:                  reqBody.String(),
-		Path:                  r.URL.Path,
+		Path:                  path,
 		HTTPMethod:            r.Method,
 		MultiValueHeaders:     r.Header,
 		QueryStringParameters: query,
