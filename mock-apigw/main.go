@@ -40,9 +40,14 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	var reqBody bytes.Buffer
 	_, _ = io.Copy(&reqBody, r.Body)
 
+	path := r.URL.Path
+	if !strings.HasPrefix(path, "/v1") {
+		path = "/v1" + path
+	}
+
 	body := events.APIGatewayProxyRequest{
 		Body:                  reqBody.String(),
-		Path:                  r.URL.Path,
+		Path:                  path,
 		HTTPMethod:            r.Method,
 		MultiValueHeaders:     r.Header,
 		QueryStringParameters: query,
