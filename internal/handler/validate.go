@@ -6,21 +6,29 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/ministryofjustice/opg-data-lpa-codes/internal/codes"
 )
 
-func Validate(ctx context.Context, codesStore *codes.ActivationCodeStore, event events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+type validateRequest struct {
+	Code        string `json:"code"`
+	LPA         string `json:"lpa"`
+	DateOfBirth string `json:"dob"`
+}
+
+type validateResponse struct {
+	Actor                    *string `json:"actor"`
+	HasPaperVerificationCode bool    `json:"hasPaperVerificationCode,omitempty"`
+}
+
+func Validate(ctx context.Context, codesStore *codes.ActivationCodeStore, paperStore *codes.PaperVerificationCodeStore, event events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	if event.HTTPMethod != http.MethodPost {
 		return respondMethodNotAllowed()
 	}
 
-	var v struct {
-		Code        string `json:"code"`
-		LPA         string `json:"lpa"`
-		DateOfBirth string `json:"dob"`
-	}
+	var v validateRequest
 	if err := json.Unmarshal([]byte(event.Body), &v); err != nil {
 		return respondInternalServerError(err)
 	}
@@ -32,15 +40,28 @@ func Validate(ctx context.Context, codesStore *codes.ActivationCodeStore, event 
 	item, err := codesStore.Code(ctx, v.Code)
 	if err != nil {
 		if errors.Is(err, codes.ErrNotFound) {
-			return respondOK(map[string]any{"actor": nil})
+			return respondOK(validateResponse{})
 		}
 
 		return respondInternalServerError(fmt.Errorf("get codes: %w", err))
 	}
 
 	if !item.Active || item.DateOfBirth != v.DateOfBirth || item.LPA != v.LPA {
-		return respondOK(map[string]any{"actor": nil})
+		return respondOK(validateResponse{})
 	}
 
-	return respondOK(map[string]any{"actor": item.Actor})
+	response := validateResponse{Actor: &item.Actor}
+
+	if strings.HasPrefix(item.LPA, "M-") {
+		codes, err := paperStore.CodesByKey(ctx, codes.Key{Actor: item.Actor, LPA: item.LPA})
+		if err != nil {
+			return respondInternalServerError(fmt.Errorf("checking for paper codes: %w", err))
+		}
+
+		if len(codes) > 0 {
+			response.HasPaperVerificationCode = true
+		}
+	}
+
+	return respondOK(response)
 }
