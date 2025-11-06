@@ -93,12 +93,22 @@ func resetDatabase(ctx context.Context) error {
 
 	db := dynamodb.NewFromConfig(cfg)
 
-	if _, err := db.DeleteTable(ctx, &dynamodb.DeleteTableInput{
-		TableName: aws.String("lpa-codes-local"),
-	}); err != nil {
-		var exception *types.ResourceNotFoundException
-		if !errors.As(err, &exception) {
-			return err
+	for range 3 {
+		if _, err := db.DeleteTable(ctx, &dynamodb.DeleteTableInput{
+			TableName: aws.String("lpa-codes-local"),
+		}); err != nil {
+			var (
+				notFound *types.ResourceNotFoundException
+				inUse    *types.ResourceInUseException
+			)
+			if errors.As(err, &notFound) {
+				// ignore
+			} else if errors.As(err, &inUse) {
+				time.Sleep(100 * time.Millisecond)
+				continue
+			} else {
+				return err
+			}
 		}
 	}
 
@@ -132,12 +142,22 @@ func resetDatabase(ctx context.Context) error {
 		return err
 	}
 
-	if _, err := db.DeleteTable(ctx, &dynamodb.DeleteTableInput{
-		TableName: aws.String("data-lpa-codes-local"),
-	}); err != nil {
-		var exception *types.ResourceNotFoundException
-		if !errors.As(err, &exception) {
-			return err
+	for range 3 {
+		if _, err := db.DeleteTable(ctx, &dynamodb.DeleteTableInput{
+			TableName: aws.String("data-lpa-codes-local"),
+		}); err != nil {
+			var (
+				notFound *types.ResourceNotFoundException
+				inUse    *types.ResourceInUseException
+			)
+			if errors.As(err, &notFound) {
+				// ignore
+			} else if errors.As(err, &inUse) {
+				time.Sleep(100 * time.Millisecond)
+				continue
+			} else {
+				return err
+			}
 		}
 	}
 
