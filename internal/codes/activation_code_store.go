@@ -60,7 +60,8 @@ func (s *ActivationCodeStore) Code(ctx context.Context, code string) (Activation
 		Key: map[string]types.AttributeValue{
 			"code": &types.AttributeValueMemberS{Value: code},
 		},
-		TableName: aws.String(s.tableName),
+		TableName:      aws.String(s.tableName),
+		ConsistentRead: aws.Bool(true),
 	})
 	if err != nil {
 		return ActivationCode{}, err
