@@ -62,5 +62,7 @@ services:
       - pact_verifier_cli
       - --hostname=api-gateway
       - --port=8080
+      - --base-path=/
       - --broker-url=https://pact-broker.api.opg.service.justice.gov.uk/
       - --provider-name=data-lpa-codes
+      - --state-change-url=http://api-gateway:8080/_pact_state
