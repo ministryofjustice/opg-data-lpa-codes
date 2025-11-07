@@ -2,7 +2,9 @@ package codes
 
 import (
 	"context"
+	"io"
 	"net/http"
+	"os"
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -15,9 +17,13 @@ import (
 func TestPaperVerificationCodeStore_Create(t *testing.T) {
 	ctx := context.Background()
 
-	_, err := http.Post("http://localhost:8080/reset-database", "", nil)
+	resp, err := http.Post("http://localhost:8080/reset-database", "", nil)
 	if err != nil {
 		t.Skip("environment must be running for this test")
+		return
+	}
+	if !assert.Equal(t, http.StatusOK, resp.StatusCode) {
+		io.Copy(os.Stderr, resp.Body)
 		return
 	}
 
