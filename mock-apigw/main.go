@@ -2,10 +2,7 @@ package main
 
 import (
 	"bytes"
-	"cmp"
-	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -15,10 +12,6 @@ import (
 	"time"
 
 	"github.com/aws/aws-lambda-go/events"
-	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/config"
-	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
-	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 )
 
 func handler(w http.ResponseWriter, r *http.Request) {
@@ -81,96 +74,6 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Println("error writing response body:", err)
 	}
-}
-
-func resetDatabase(ctx context.Context) error {
-	cfg, err := config.LoadDefaultConfig(ctx)
-	if err != nil {
-		return err
-	}
-
-	cfg.BaseEndpoint = aws.String(cmp.Or(os.Getenv("LOCAL_URL"), "http://localhost:8000"))
-
-	db := dynamodb.NewFromConfig(cfg)
-
-	if _, err := db.DeleteTable(ctx, &dynamodb.DeleteTableInput{
-		TableName: aws.String("lpa-codes-local"),
-	}); err != nil {
-		var exception *types.ResourceNotFoundException
-		if !errors.As(err, &exception) {
-			return err
-		}
-	}
-
-	if _, err := db.CreateTable(ctx, &dynamodb.CreateTableInput{
-		TableName: aws.String("lpa-codes-local"),
-		AttributeDefinitions: []types.AttributeDefinition{
-			{AttributeName: aws.String("code"), AttributeType: types.ScalarAttributeTypeS},
-			{AttributeName: aws.String("lpa"), AttributeType: types.ScalarAttributeTypeS},
-			{AttributeName: aws.String("actor"), AttributeType: types.ScalarAttributeTypeS},
-		},
-		KeySchema: []types.KeySchemaElement{
-			{AttributeName: aws.String("code"), KeyType: types.KeyTypeHash},
-		},
-		GlobalSecondaryIndexes: []types.GlobalSecondaryIndex{{
-			IndexName: aws.String("key_index"),
-			KeySchema: []types.KeySchemaElement{
-				{AttributeName: aws.String("lpa"), KeyType: types.KeyTypeHash},
-				{AttributeName: aws.String("actor"), KeyType: types.KeyTypeRange},
-			},
-			Projection: &types.Projection{ProjectionType: types.ProjectionTypeAll},
-			ProvisionedThroughput: &types.ProvisionedThroughput{
-				ReadCapacityUnits:  aws.Int64(5),
-				WriteCapacityUnits: aws.Int64(5),
-			},
-		}},
-		ProvisionedThroughput: &types.ProvisionedThroughput{
-			ReadCapacityUnits:  aws.Int64(5),
-			WriteCapacityUnits: aws.Int64(5),
-		},
-	}); err != nil {
-		return err
-	}
-
-	if _, err := db.DeleteTable(ctx, &dynamodb.DeleteTableInput{
-		TableName: aws.String("data-lpa-codes-local"),
-	}); err != nil {
-		var exception *types.ResourceNotFoundException
-		if !errors.As(err, &exception) {
-			return err
-		}
-	}
-
-	if _, err := db.CreateTable(ctx, &dynamodb.CreateTableInput{
-		TableName: aws.String("data-lpa-codes-local"),
-		AttributeDefinitions: []types.AttributeDefinition{
-			{AttributeName: aws.String("PK"), AttributeType: types.ScalarAttributeTypeS},
-			{AttributeName: aws.String("ActorLPA"), AttributeType: types.ScalarAttributeTypeS},
-		},
-		KeySchema: []types.KeySchemaElement{
-			{AttributeName: aws.String("PK"), KeyType: types.KeyTypeHash},
-		},
-		GlobalSecondaryIndexes: []types.GlobalSecondaryIndex{{
-			IndexName: aws.String("ActorLPAIndex"),
-			KeySchema: []types.KeySchemaElement{
-				{AttributeName: aws.String("ActorLPA"), KeyType: types.KeyTypeHash},
-				{AttributeName: aws.String("PK"), KeyType: types.KeyTypeRange},
-			},
-			Projection: &types.Projection{ProjectionType: types.ProjectionTypeAll},
-			ProvisionedThroughput: &types.ProvisionedThroughput{
-				ReadCapacityUnits:  aws.Int64(5),
-				WriteCapacityUnits: aws.Int64(5),
-			},
-		}},
-		ProvisionedThroughput: &types.ProvisionedThroughput{
-			ReadCapacityUnits:  aws.Int64(5),
-			WriteCapacityUnits: aws.Int64(5),
-		},
-	}); err != nil {
-		return err
-	}
-
-	return nil
 }
 
 func main() {
