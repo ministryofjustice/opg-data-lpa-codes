@@ -35,7 +35,7 @@ func respondMethodNotAllowed() (events.APIGatewayProxyResponse, error) {
 	return events.APIGatewayProxyResponse{
 		StatusCode: http.StatusMethodNotAllowed,
 		Headers:    map[string]string{"Content-Type": "application/vnd.opg-data.v1+json"},
-		Body:       `{"errors":[{"code":"OPGDATA-API-METHODNOTALLOWED","title":"Method not supported"}}]}`,
+		Body:       `{"errors":[{"code":"OPGDATA-API-METHODNOTALLOWED","title":"Method not supported"}]}`,
 	}, nil
 }
 
