@@ -30,7 +30,7 @@ func Code(ctx context.Context, codesStore *codes.ActivationCodeStore, event even
 	item, err := codesStore.Code(ctx, v.Code)
 	if err != nil {
 		if errors.Is(err, codes.ErrNotFound) {
-			return RespondNotFound(event.Path)
+			return respondCodeNotFound()
 		}
 
 		return respondInternalServerError(fmt.Errorf("get codes: %w", err))
