@@ -2,8 +2,12 @@ package codes
 
 import (
 	"context"
+	"errors"
+	"io"
 	"net/http"
+	"os"
 	"testing"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -15,9 +19,13 @@ import (
 func TestPaperVerificationCodeStore_Create(t *testing.T) {
 	ctx := context.Background()
 
-	_, err := http.Post("http://localhost:8080/reset-database", "", nil)
+	resp, err := http.Post("http://localhost:8080/reset-database", "", nil)
 	if err != nil {
 		t.Skip("environment must be running for this test")
+		return
+	}
+	if !assert.Equal(t, http.StatusOK, resp.StatusCode) {
+		io.Copy(os.Stderr, resp.Body)
 		return
 	}
 
@@ -44,6 +52,20 @@ func TestPaperVerificationCodeStore_Create(t *testing.T) {
 	created, err := store.Create(ctx, Key{Actor: "test", LPA: "test"})
 	assert.NoError(t, err)
 	assert.Equal(t, "P-1234-1234-1234-12", created.Code())
+
+	for range 5 {
+		if _, err := store.Code(ctx, created.Code()); err != nil {
+			if errors.Is(err, ErrNotFound) {
+				time.Sleep(100 * time.Millisecond)
+				continue
+			}
+
+			assert.NoError(t, err)
+			return
+		}
+
+		break
+	}
 
 	_, err = store.Create(ctx, Key{Actor: "test", LPA: "test"})
 	var ccfe *types.ConditionalCheckFailedException

@@ -34,7 +34,7 @@ func run(ctx context.Context, event events.APIGatewayProxyRequest) (events.APIGa
 	case "/v1/revoke":
 		return handler.Revoke(ctx, activationCodeStore, event)
 	case "/v1/validate":
-		return handler.Validate(ctx, activationCodeStore, event)
+		return handler.Validate(ctx, activationCodeStore, paperVerificationCodeStore, event)
 	case "/v1/code":
 		return handler.Code(ctx, activationCodeStore, event)
 	case "/v1/paper-verification-code":
