@@ -10,7 +10,7 @@ reset-database:
 	@curl --fail http://localhost:8080/reset-database
 
 test: up
-	go test -count 1 $(TEST_FLAGS) ./...
+	go test -p 1 -count 1 $(TEST_FLAGS) ./...
 
 test-pact:
 	docker compose run --rm --remove-orphans pact-verifier
