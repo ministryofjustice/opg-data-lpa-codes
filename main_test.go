@@ -109,27 +109,30 @@ func createCode(body string) string {
 		return ""
 	}
 
-	var codes struct {
+	var v struct {
 		Codes []struct {
 			Code string `json:"code"`
 		} `json:"codes"`
 	}
-	json.Unmarshal([]byte(resp.Body), &codes)
+	json.Unmarshal([]byte(resp.Body), &v)
 
-	if len(codes.Codes) == 0 {
+	if len(v.Codes) == 0 {
 		log.Printf("create code got: %d", resp.StatusCode)
 		return ""
 	}
 
-	for range 5 {
-		time.Sleep(100 * time.Millisecond)
+	code := v.Codes[0].Code
 
-		if getCode(codes.Codes[0].Code) != nil {
-			break
+	for range 10 {
+		if getCode(code) != nil {
+			return code
 		}
+
+		time.Sleep(100 * time.Millisecond)
 	}
 
-	return codes.Codes[0].Code
+	log.Printf("gave up finding created code: %s", code)
+	return code
 }
 
 func createPaperCode() string {
@@ -138,25 +141,26 @@ func createPaperCode() string {
 		return ""
 	}
 
-	var codes struct {
+	var v struct {
 		Code string `json:"code"`
 	}
-	json.Unmarshal([]byte(resp.Body), &codes)
+	json.Unmarshal([]byte(resp.Body), &v)
 
-	if len(codes.Code) == 0 {
-		log.Printf("create code got: %d", resp.StatusCode)
+	if len(v.Code) == 0 {
+		log.Printf("create paper verification code got: %d", resp.StatusCode)
 		return ""
 	}
 
-	for range 5 {
-		time.Sleep(100 * time.Millisecond)
-
-		if getCode(codes.Code) != nil {
-			break
+	for range 10 {
+		if row, _ := getPaperVerificationCode("PAPER#" + v.Code); row != nil {
+			return v.Code
 		}
+
+		time.Sleep(100 * time.Millisecond)
 	}
 
-	return codes.Code
+	log.Printf("gave up finding created paper verification code: %s", v.Code)
+	return v.Code
 }
 
 func TestCreate(t *testing.T) {
@@ -512,6 +516,39 @@ func TestValidate(t *testing.T) {
 		}
 	})
 
+	runTest(t, "validate modern", func(t *testing.T) {
+		code := createCode(createCodeModernise)
+
+		resp, err := callLambda(http.MethodPost, "/v1/validate", `{"code":"`+code+`","lpa":"M-1234-1234-1234","dob":"1960-06-05"}`)
+		if assert.Nil(t, err) {
+			assert.Equal(t, http.StatusOK, resp.StatusCode)
+			assert.JSONEq(t, `{"actor":"12ad81a9-f89d-4804-99f5-7c0c8669ac9b"}`, resp.Body)
+		}
+	})
+
+	runTest(t, "validate when has paper verification code", func(t *testing.T) {
+		code := createCode(createCodeModernise)
+		_ = createPaperCode()
+
+		resp, err := callLambda(http.MethodPost, "/v1/validate", `{"code":"`+code+`","lpa":"M-1234-1234-1234","dob":"1960-06-05"}`)
+		if assert.Nil(t, err) {
+			assert.Equal(t, http.StatusOK, resp.StatusCode)
+			assert.JSONEq(t, `{"actor":"12ad81a9-f89d-4804-99f5-7c0c8669ac9b", "hasPaperVerificationCode": true}`, resp.Body)
+		}
+	})
+
+	runTest(t, "validate when has expired paper verification code", func(t *testing.T) {
+		code := createCode(createCodeModernise)
+		paperCode := createPaperCode()
+		_ = setPaperVerificationCodeExpiry(paperCode, time.Now(), "cancelled")
+
+		resp, err := callLambda(http.MethodPost, "/v1/validate", `{"code":"`+code+`","lpa":"M-1234-1234-1234","dob":"1960-06-05"}`)
+		if assert.Nil(t, err) {
+			assert.Equal(t, http.StatusOK, resp.StatusCode)
+			assert.JSONEq(t, `{"actor":"12ad81a9-f89d-4804-99f5-7c0c8669ac9b"}`, resp.Body)
+		}
+	})
+
 	runTest(t, "wrong code", func(t *testing.T) {
 		resp, err := callLambda(http.MethodPost, "/v1/validate", `{"code":"whatever","lpa":"700000000001","dob":"1960-06-05"}`)
 		if assert.Nil(t, err) {
@@ -690,7 +727,7 @@ func TestPaperVerificationCodeValidate(t *testing.T) {
 			assert.JSONEq(t, `{
 					"lpa": "M-1234-1234-1234",
 					"actor": "12ad81a9-f89d-4804-99f5-7c0c8669ac9b",
-          "expiry_date": "`+time.Now().AddDate(0, 1, 0).Format(time.DateOnly)+`"
+					"expiry_date": "`+time.Now().AddDate(0, 1, 0).Format(time.DateOnly)+`"
 				}`, resp.Body)
 		}
 	})
@@ -709,8 +746,8 @@ func TestPaperVerificationCodeValidate(t *testing.T) {
 			assert.JSONEq(t, `{
 					"lpa": "M-1234-1234-1234",
 					"actor": "12ad81a9-f89d-4804-99f5-7c0c8669ac9b",
-          "expiry_date": "`+expiresAt.Format(time.DateOnly)+`",
-          "expiry_reason": "cancelled"
+					"expiry_date": "`+expiresAt.Format(time.DateOnly)+`",
+					"expiry_reason": "cancelled"
 				}`, resp.Body)
 		}
 	})
@@ -1010,7 +1047,7 @@ func resetDynamo() {
 
 	if resp.StatusCode != http.StatusOK {
 		body, _ := io.ReadAll(resp.Body)
-		panic(body)
+		panic(string(body))
 	}
 }
 
@@ -1019,7 +1056,8 @@ func getCode(code string) *Row {
 		Key: map[string]types.AttributeValue{
 			"code": &types.AttributeValueMemberS{Value: code},
 		},
-		TableName: aws.String("lpa-codes-local"),
+		TableName:      aws.String("lpa-codes-local"),
+		ConsistentRead: aws.Bool(true),
 	})
 	if err != nil || output.Item == nil {
 		return nil
@@ -1066,8 +1104,9 @@ func getPaperVerificationCode(pk string) (*PaperRow, error) {
 		ExpressionAttributeValues: map[string]types.AttributeValue{
 			":PK": &types.AttributeValueMemberS{Value: pk},
 		},
-		TableName: aws.String("data-lpa-codes-local"),
-		Limit:     aws.Int32(1),
+		TableName:      aws.String("data-lpa-codes-local"),
+		ConsistentRead: aws.Bool(true),
+		Limit:          aws.Int32(1),
 	})
 	if err != nil {
 		return nil, err
