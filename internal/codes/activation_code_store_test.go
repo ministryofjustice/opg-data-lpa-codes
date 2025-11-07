@@ -2,8 +2,12 @@ package codes
 
 import (
 	"context"
+	"errors"
+	"io"
 	"net/http"
+	"os"
 	"testing"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -14,9 +18,13 @@ import (
 func TestActivationCodeStore_GenerateCode(t *testing.T) {
 	ctx := context.Background()
 
-	_, err := http.Post("http://localhost:8080/reset-database", "", nil)
+	resp, err := http.Post("http://localhost:8080/reset-database", "", nil)
 	if err != nil {
 		t.Skip("environment must be running for this test")
+		return
+	}
+	if !assert.Equal(t, http.StatusOK, resp.StatusCode) {
+		io.Copy(os.Stderr, resp.Body)
 		return
 	}
 
@@ -44,6 +52,20 @@ func TestActivationCodeStore_GenerateCode(t *testing.T) {
 	assert.NoError(t, err)
 	_, err = store.InsertNewCode(ctx, Key{Actor: "test", LPA: "test"}, "1970-01-01", code)
 	assert.NoError(t, err)
+
+	for i := range 10 {
+		if _, err := store.Code(ctx, code); err != nil {
+			if errors.Is(err, ErrNotFound) && i < 9 {
+				time.Sleep(100 * time.Millisecond)
+				continue
+			}
+
+			assert.NoError(t, err)
+			return
+		}
+
+		break
+	}
 
 	_, err = store.GenerateCode(ctx)
 	assert.ErrorContains(t, err, "generate code reached max attempts")
