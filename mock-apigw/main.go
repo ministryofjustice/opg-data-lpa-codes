@@ -242,7 +242,20 @@ func handlePactState(r *http.Request) error {
 			}
 			break
 		case "does not exist":
-			break
+			key, err := attributevalue.Marshal(paperKeyPrefix + code)
+			if err != nil {
+				return err
+			}
+
+			if _, err := db.DeleteItem(r.Context(), &dynamodb.DeleteItemInput{
+				Key: map[string]types.AttributeValue{
+					"PK": key,
+				},
+				TableName: aws.String("data-lpa-codes-local"),
+			}); err != nil {
+				return nil
+			}
+			return nil
 		}
 
 		if item.PK == "" {
