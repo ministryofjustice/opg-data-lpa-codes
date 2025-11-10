@@ -17,7 +17,7 @@ import (
 func TestPaperVerificationCodeStore_Create(t *testing.T) {
 	ctx := context.Background()
 
-	resp, err := http.Post("http://localhost:8080/reset-database", "", nil)
+	resp, err := http.Post("http://localhost:8080/_reset_database", "", nil)
 	if err != nil {
 		t.Skip("environment must be running for this test")
 		return
