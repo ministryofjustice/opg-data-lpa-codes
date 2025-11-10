@@ -71,7 +71,7 @@ func TestNotFound(t *testing.T) {
 	resp, err := callLambda(http.MethodPost, "/v1/not-found", `{}`)
 	if assert.Nil(t, err) {
 		assert.Equal(t, http.StatusNotFound, resp.StatusCode)
-		assert.JSONEq(t, `{"body":{"error":{"code":"Not Found","message":"Not found url https://dev.lpa-codes.api.opg.service.justice.gov.uk/v1/not-found"}},"headers":{"Content-Type":"application/json"},"isBase64Encoded":false,"statusCode":404}`, resp.Body)
+		assert.JSONEq(t, `{"errors":[{"code":"OPGDATA-API-NOTFOUND","title":"Not found","detail":"Not found url https://dev.lpa-codes.api.opg.service.justice.gov.uk/v1/not-found"}]}`, resp.Body)
 	}
 }
 
@@ -92,7 +92,7 @@ func TestMethodNotAllowed(t *testing.T) {
 			resp, err := callLambda(http.MethodGet, url, `{}`)
 			if assert.Nil(t, err) {
 				assert.Equal(t, http.StatusMethodNotAllowed, resp.StatusCode)
-				assert.JSONEq(t, `{"body":{"error":{"code":"Method Not Allowed","message":"Method not supported"}},"headers":{"Content-Type":"application/json"},"isBase64Encoded":false,"statusCode":405}`, resp.Body)
+				assert.JSONEq(t, `{"errors":[{"code":"OPGDATA-API-METHODNOTALLOWED","title":"Method not supported"}]}`, resp.Body)
 			}
 		})
 	}
@@ -357,7 +357,7 @@ func TestCreate(t *testing.T) {
 			if assert.Nil(t, err) {
 				assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
 
-				assert.JSONEq(t, `{"body":{"error":{"code":"Bad Request","message":"Bad payload"}},"headers":{"Content-Type": "application/json"},"isBase64Encoded":false,"statusCode":400}`, resp.Body)
+				assert.JSONEq(t, `{"errors":[{"code":"OPGDATA-API-INVALIDREQUEST","title":"Bad payload"}]}`, resp.Body)
 			}
 		})
 	}
@@ -385,7 +385,7 @@ func TestCode(t *testing.T) {
 		if assert.Nil(t, err) {
 			assert.Equal(t, http.StatusNotFound, resp.StatusCode)
 
-			assert.Equal(t, `{"body":{"error":{"code":"Not Found","message":"Not found url https://dev.lpa-codes.api.opg.service.justice.gov.uk/v1/code"}},"headers":{"Content-Type":"application/json"},"isBase64Encoded":false,"statusCode":404}`, resp.Body)
+			assert.Equal(t, `{"errors":[{"code":"OPGDATA-API-NOTFOUND","title":"Code not found"}]}`, resp.Body)
 		}
 	})
 
@@ -400,7 +400,7 @@ func TestCode(t *testing.T) {
 			if assert.Nil(t, err) {
 				assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
 
-				assert.Equal(t, `{"body":{"error":{"code":"Bad Request","message":"Bad payload"}},"headers":{"Content-Type":"application/json"},"isBase64Encoded":false,"statusCode":400}`, resp.Body)
+				assert.Equal(t, `{"errors":[{"code":"OPGDATA-API-INVALIDREQUEST","title":"Bad payload"}]}`, resp.Body)
 			}
 		})
 	}
@@ -453,7 +453,7 @@ func TestExists(t *testing.T) {
 			if assert.Nil(t, err) {
 				assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
 
-				assert.JSONEq(t, `{"body":{"error":{"code":"Bad Request","message":"Bad payload"}},"headers":{"Content-Type":"application/json"},"isBase64Encoded":false,"statusCode":400}`, resp.Body)
+				assert.JSONEq(t, `{"errors":[{"code":"OPGDATA-API-INVALIDREQUEST","title":"Bad payload"}]}`, resp.Body)
 			}
 		})
 	}
@@ -499,7 +499,7 @@ func TestRevoke(t *testing.T) {
 			resp, err := callLambda(http.MethodPost, "/v1/revoke", lambdaBody)
 			if assert.Nil(t, err) {
 				assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
-				assert.JSONEq(t, `{"body":{"error":{"code":"Bad Request","message":"Bad payload"}},"headers":{"Content-Type":"application/json"},"isBase64Encoded":false,"statusCode":400}`, resp.Body)
+				assert.JSONEq(t, `{"errors":[{"code":"OPGDATA-API-INVALIDREQUEST","title":"Bad payload"}]}`, resp.Body)
 			}
 		})
 	}
@@ -605,7 +605,7 @@ func TestValidate(t *testing.T) {
 			resp, err := callLambda(http.MethodPost, "/v1/validate", lambdaBody)
 			if assert.Nil(t, err) {
 				assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
-				assert.JSONEq(t, `{"body":{"error":{"code":"Bad Request","message":"Bad payload"}},"headers":{"Content-Type":"application/json"},"isBase64Encoded":false,"statusCode":400}`, resp.Body)
+				assert.JSONEq(t, `{"errors":[{"code":"OPGDATA-API-INVALIDREQUEST","title":"Bad payload"}]}`, resp.Body)
 			}
 		})
 	}
@@ -694,7 +694,7 @@ func TestPaperVerificationCode(t *testing.T) {
 			if assert.Nil(t, err) {
 				assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
 
-				assert.JSONEq(t, `{"body":{"error":{"code":"Bad Request","message":"Bad payload"}},"headers":{"Content-Type": "application/json"},"isBase64Encoded":false,"statusCode":400}`, resp.Body)
+				assert.JSONEq(t, `{"errors":[{"code":"OPGDATA-API-INVALIDREQUEST","title":"Bad payload"}]}`, resp.Body)
 			}
 		})
 	}
@@ -771,7 +771,7 @@ func TestPaperVerificationCodeValidate(t *testing.T) {
 			if assert.Nil(t, err) {
 				assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
 
-				assert.JSONEq(t, `{"body":{"error":{"code":"Bad Request","message":"Bad payload"}},"headers":{"Content-Type": "application/json"},"isBase64Encoded":false,"statusCode":400}`, resp.Body)
+				assert.JSONEq(t, `{"errors":[{"code":"OPGDATA-API-INVALIDREQUEST","title":"Bad payload"}]}`, resp.Body)
 			}
 		})
 	}
@@ -913,7 +913,7 @@ func TestPaperVerificationCodeExpire(t *testing.T) {
 			if assert.Nil(t, err) {
 				assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
 
-				assert.JSONEq(t, `{"body":{"error":{"code":"Bad Request","message":"Bad payload"}},"headers":{"Content-Type": "application/json"},"isBase64Encoded":false,"statusCode":400}`, resp.Body)
+				assert.JSONEq(t, `{"errors":[{"code":"OPGDATA-API-INVALIDREQUEST","title":"Bad payload"}]}`, resp.Body)
 			}
 		})
 	}
@@ -1039,7 +1039,7 @@ type Row struct {
 }
 
 func resetDynamo() {
-	resp, err := http.Post("http://localhost:8080/reset-database", "", nil)
+	resp, err := http.Post("http://localhost:8080/_reset_database", "", nil)
 	if err != nil {
 		panic(err)
 	}
