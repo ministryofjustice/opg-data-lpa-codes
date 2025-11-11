@@ -7,7 +7,7 @@ up:
 	docker compose up --build -d --wait --remove-orphans api-gateway
 
 reset-database:
-	@curl --fail http://localhost:8080/reset-database
+	@curl --fail http://localhost:8080/_reset_database
 
 test: up
 	go test -p 1 -count 1 $(TEST_FLAGS) ./...
