@@ -20,7 +20,7 @@ type validateRequest struct {
 
 type validateResponse struct {
 	Actor                    *string `json:"actor"`
-	HasPaperVerificationCode bool    `json:"hasPaperVerificationCode,omitempty"`
+	HasPaperVerificationCode bool    `json:"has_paper_verification_code,omitempty"`
 }
 
 func Validate(ctx context.Context, codesStore *codes.ActivationCodeStore, paperStore *codes.PaperVerificationCodeStore, event events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
