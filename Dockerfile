@@ -10,7 +10,7 @@ COPY --link internal internal
 
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -o /go/bin/main .
 
-FROM public.ecr.aws/lambda/provided:al2023.2025.10.29.20
+FROM public.ecr.aws/lambda/provided:al2023.2025.11.11.00
 
 COPY --from=build-env /go/bin/main ./main
 
