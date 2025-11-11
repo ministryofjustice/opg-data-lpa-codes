@@ -533,7 +533,7 @@ func TestValidate(t *testing.T) {
 		resp, err := callLambda(http.MethodPost, "/v1/validate", `{"code":"`+code+`","lpa":"M-1234-1234-1234","dob":"1960-06-05"}`)
 		if assert.Nil(t, err) {
 			assert.Equal(t, http.StatusOK, resp.StatusCode)
-			assert.JSONEq(t, `{"actor":"12ad81a9-f89d-4804-99f5-7c0c8669ac9b", "hasPaperVerificationCode": true}`, resp.Body)
+			assert.JSONEq(t, `{"actor":"12ad81a9-f89d-4804-99f5-7c0c8669ac9b", "has_paper_verification_code": true}`, resp.Body)
 		}
 	})
 
