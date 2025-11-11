@@ -267,7 +267,7 @@ func handlePactState(r *http.Request) error {
 		}
 
 		// just blindly overwrite. as fixtures is fixtures
-		if err := savePaperVerificationCodeFixture(r.Context(), item); err != nil {
+		if err := saveFixture(r.Context(), paperVerificationCodeTable, item); err != nil {
 			return err
 		}
 	}
@@ -301,7 +301,7 @@ func handlePactState(r *http.Request) error {
 				UpdatedAt: time.Now(),
 			}
 
-			if err := savePaperVerificationCodeFixture(r.Context(), pvc); err != nil {
+			if err := saveFixture(r.Context(), paperVerificationCodeTable, pvc); err != nil {
 				return err
 			}
 		default:
@@ -310,7 +310,7 @@ func handlePactState(r *http.Request) error {
 		}
 
 		// just blindly overwrite. as fixtures is fixtures
-		if err := saveActivationKeyFixture(r.Context(), item); err != nil {
+		if err := saveFixture(r.Context(), activationKeyTable, item); err != nil {
 			return err
 		}
 	}
@@ -318,30 +318,14 @@ func handlePactState(r *http.Request) error {
 	return nil
 }
 
-func savePaperVerificationCodeFixture(ctx context.Context, item interface{}) error {
+func saveFixture(ctx context.Context, table string, item interface{}) error {
 	data, err := attributevalue.MarshalMap(item)
 	if err != nil {
 		return err
 	}
 
 	if _, err := db.PutItem(ctx, &dynamodb.PutItemInput{
-		TableName: aws.String(paperVerificationCodeTable),
-		Item:      data,
-	}); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func saveActivationKeyFixture(ctx context.Context, item interface{}) error {
-	data, err := attributevalue.MarshalMap(item)
-	if err != nil {
-		return err
-	}
-
-	if _, err := db.PutItem(ctx, &dynamodb.PutItemInput{
-		TableName: aws.String(activationKeyTable),
+		TableName: aws.String(table),
 		Item:      data,
 	}); err != nil {
 		return err
