@@ -24,10 +24,38 @@ import (
 	"github.com/ministryofjustice/opg-data-lpa-codes/internal/codes"
 )
 
-const paperKeyPrefix = "PAPER#"
+const (
+	paperKeyPrefix             = "PAPER#"
+	activationKeyTable         = "lpa-codes-local"
+	paperVerificationCodeTable = "data-lpa-codes-local"
+)
+
+var (
+	db  *dynamodb.Client
+	ctx context.Context
+)
+
+func setupDatabase(requestContext context.Context) error {
+	ctx = requestContext
+
+	cfg, err := config.LoadDefaultConfig(ctx)
+	if err != nil {
+		return err
+	}
+
+	cfg.BaseEndpoint = aws.String(cmp.Or(os.Getenv("LOCAL_URL"), "http://localhost:8000"))
+	db = dynamodb.NewFromConfig(cfg)
+
+	return nil
+}
 
 func handler(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path == "/_reset_database" {
+		if err := setupDatabase(r.Context()); err != nil {
+			http.Error(w, "error setting up database connection", http.StatusInternalServerError)
+			return
+		}
+
 		if err := resetDatabase(r.Context()); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
@@ -36,6 +64,11 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if r.URL.Path == "/_pact_state" {
+		if err := setupDatabase(r.Context()); err != nil {
+			http.Error(w, "error setting up database connection", http.StatusInternalServerError)
+			return
+		}
+
 		if err := handlePactState(r); err != nil {
 			log.Printf("Error setting up state: %s", err.Error())
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -105,17 +138,8 @@ func handler(w http.ResponseWriter, r *http.Request) {
 }
 
 func resetDatabase(ctx context.Context) error {
-	cfg, err := config.LoadDefaultConfig(ctx)
-	if err != nil {
-		return err
-	}
-
-	cfg.BaseEndpoint = aws.String(cmp.Or(os.Getenv("LOCAL_URL"), "http://localhost:8000"))
-
-	db := dynamodb.NewFromConfig(cfg)
-
 	if _, err := db.DeleteTable(ctx, &dynamodb.DeleteTableInput{
-		TableName: aws.String("lpa-codes-local"),
+		TableName: aws.String(activationKeyTable),
 	}); err != nil {
 		var exception *types.ResourceNotFoundException
 		if !errors.As(err, &exception) {
@@ -124,7 +148,7 @@ func resetDatabase(ctx context.Context) error {
 	}
 
 	if _, err := db.CreateTable(ctx, &dynamodb.CreateTableInput{
-		TableName: aws.String("lpa-codes-local"),
+		TableName: aws.String(activationKeyTable),
 		AttributeDefinitions: []types.AttributeDefinition{
 			{AttributeName: aws.String("code"), AttributeType: types.ScalarAttributeTypeS},
 			{AttributeName: aws.String("lpa"), AttributeType: types.ScalarAttributeTypeS},
@@ -154,7 +178,7 @@ func resetDatabase(ctx context.Context) error {
 	}
 
 	if _, err := db.DeleteTable(ctx, &dynamodb.DeleteTableInput{
-		TableName: aws.String("data-lpa-codes-local"),
+		TableName: aws.String(paperVerificationCodeTable),
 	}); err != nil {
 		var exception *types.ResourceNotFoundException
 		if !errors.As(err, &exception) {
@@ -163,7 +187,7 @@ func resetDatabase(ctx context.Context) error {
 	}
 
 	if _, err := db.CreateTable(ctx, &dynamodb.CreateTableInput{
-		TableName: aws.String("data-lpa-codes-local"),
+		TableName: aws.String(paperVerificationCodeTable),
 		AttributeDefinitions: []types.AttributeDefinition{
 			{AttributeName: aws.String("PK"), AttributeType: types.ScalarAttributeTypeS},
 			{AttributeName: aws.String("ActorLPA"), AttributeType: types.ScalarAttributeTypeS},
@@ -203,45 +227,29 @@ func handlePactState(r *http.Request) error {
 		return err
 	}
 
-	cfg, err := config.LoadDefaultConfig(r.Context())
-	if err != nil {
-		return err
-	}
-
-	cfg.BaseEndpoint = aws.String(cmp.Or(os.Getenv("LOCAL_URL"), "http://localhost:8000"))
-	db := dynamodb.NewFromConfig(cfg)
-
-	re := regexp.MustCompile(`^the paper verification code (P(-[A-Z0-9]{4}){3}-[A-Z0-9]{2}) (.*)$`)
+	re := regexp.MustCompile(`^the paper verification code (P(-[A-Z0-9]{4}){3}-[A-Z0-9]{2})(.*)$`)
 	if matches := re.FindStringSubmatch(state.State); len(matches) > 0 {
 		code := matches[1]
 		record := matches[3]
-		key := codes.Key{
+		key := &codes.Key{
 			LPA:   "M-7890-0400-4003",
 			Actor: "ce118b6e-d8e1-11e7-9296-cec278b6b50a",
+		}
+		item := &codes.PaperVerificationCode{
+			PK:        paperKeyPrefix + code,
+			ActorLPA:  key.ToActorLPA(),
+			UpdatedAt: time.Now(),
 		}
 
 		log.Printf("PACT state found code %s with record '%s'", code, record)
 
-		var item codes.PaperVerificationCode
 		switch record {
-		case "is valid and unused":
-		case "has not got an expiry date":
-			item = codes.PaperVerificationCode{
-				PK:        paperKeyPrefix + code,
-				ActorLPA:  key.ToActorLPA(),
-				UpdatedAt: time.Now(),
-			}
-			break
-		case "is valid and was used 1 year ago":
-			item = codes.PaperVerificationCode{
-				PK:           paperKeyPrefix + code,
-				ActorLPA:     key.ToActorLPA(),
-				UpdatedAt:    time.Now(),
-				ExpiresAt:    time.Now().AddDate(-1, 0, 0),
-				ExpiryReason: codes.ExpiryReasonFirstTimeUse,
-			}
-			break
-		case "does not exist":
+		case " is valid and unused":
+		case " has not got an expiry date":
+		case " is valid and was used 1 year ago":
+			item.ExpiresAt = time.Now().AddDate(-1, 0, 0)
+			item.ExpiryReason = codes.ExpiryReasonFirstTimeUse
+		case " does not exist":
 			key, err := attributevalue.Marshal(paperKeyPrefix + code)
 			if err != nil {
 				return err
@@ -251,59 +259,92 @@ func handlePactState(r *http.Request) error {
 				Key: map[string]types.AttributeValue{
 					"PK": key,
 				},
-				TableName: aws.String("data-lpa-codes-local"),
+				TableName: aws.String(paperVerificationCodeTable),
 			}); err != nil {
 				return nil
 			}
 			return nil
 		}
 
-		if item.PK == "" {
-			return nil
-		}
-
-		data, err := attributevalue.MarshalMap(item)
-		if err != nil {
-			return err
-		}
-
 		// just blindly overwrite. as fixtures is fixtures
-		if _, err := db.PutItem(r.Context(), &dynamodb.PutItemInput{
-			TableName: aws.String("data-lpa-codes-local"),
-			Item:      data,
-		}); err != nil {
+		if err := savePaperVerificationCodeFixture(r.Context(), item); err != nil {
 			return err
 		}
 	}
 
-	re = regexp.MustCompile(`^the activation key ([A-Z0-9]{12}) exists$`)
+	re = regexp.MustCompile(`^the activation key ([A-Z0-9]{12}) exists(.*)$`)
 	if matches := re.FindStringSubmatch(state.State); len(matches) > 0 {
 		code := matches[1]
-
-		item := codes.ActivationCode{
+		differentiator := matches[2]
+		item := &codes.ActivationCode{
 			Active:          true,
-			Actor:           "700000000002",
 			Code:            code,
 			DateOfBirth:     "1959-08-10",
 			ExpiryDate:      time.Now().AddDate(1, 0, 0).Unix(),
 			GeneratedDate:   time.Now().Format(time.RFC3339),
 			LastUpdatedDate: time.Now().Format(time.RFC3339),
-			LPA:             "700000000001",
 			StatusDetails:   "Generated",
 		}
 
-		data, err := attributevalue.MarshalMap(item)
-		if err != nil {
-			return err
+		switch differentiator {
+		case " for an actor with a paper verification code":
+			item.Actor = "74673c83-05ba-4886-beb1-daaa36fb7984"
+			item.LPA = "M-1234-1234-1234"
+
+			key := &codes.Key{
+				LPA:   item.LPA,
+				Actor: item.Actor,
+			}
+			pvc := &codes.PaperVerificationCode{
+				PK:        paperKeyPrefix + "P-9876-9876-9876-98",
+				ActorLPA:  key.ToActorLPA(),
+				UpdatedAt: time.Now(),
+			}
+
+			if err := savePaperVerificationCodeFixture(r.Context(), pvc); err != nil {
+				return err
+			}
+		default:
+			item.Actor = "700000000002"
+			item.LPA = "700000000001"
 		}
 
 		// just blindly overwrite. as fixtures is fixtures
-		if _, err := db.PutItem(r.Context(), &dynamodb.PutItemInput{
-			TableName: aws.String("lpa-codes-local"),
-			Item:      data,
-		}); err != nil {
+		if err := saveActivationKeyFixture(r.Context(), item); err != nil {
 			return err
 		}
+	}
+
+	return nil
+}
+
+func savePaperVerificationCodeFixture(ctx context.Context, item interface{}) error {
+	data, err := attributevalue.MarshalMap(item)
+	if err != nil {
+		return err
+	}
+
+	if _, err := db.PutItem(ctx, &dynamodb.PutItemInput{
+		TableName: aws.String(paperVerificationCodeTable),
+		Item:      data,
+	}); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func saveActivationKeyFixture(ctx context.Context, item interface{}) error {
+	data, err := attributevalue.MarshalMap(item)
+	if err != nil {
+		return err
+	}
+
+	if _, err := db.PutItem(ctx, &dynamodb.PutItemInput{
+		TableName: aws.String(activationKeyTable),
+		Item:      data,
+	}); err != nil {
+		return err
 	}
 
 	return nil
