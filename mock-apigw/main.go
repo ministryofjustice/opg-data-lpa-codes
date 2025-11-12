@@ -106,7 +106,7 @@ func handleFixtureRequests(w http.ResponseWriter, r *http.Request) bool {
 
 	switch r.URL.Path {
 	case "/_reset_database":
-		if err := resetDatabase(db, r.Context()); err != nil {
+		if err := resetDatabase(r.Context(), db); err != nil {
 			log.Printf("Error reseting database: %s", err.Error())
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		} else {
@@ -115,7 +115,7 @@ func handleFixtureRequests(w http.ResponseWriter, r *http.Request) bool {
 
 		return true
 	case "/_pact_state":
-		if err := handlePactState(db, r.Context(), r.Body); err != nil {
+		if err := handlePactState(r.Context(), db, r.Body); err != nil {
 			log.Printf("Error setting up state: %s", err.Error())
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		} else {
@@ -128,7 +128,7 @@ func handleFixtureRequests(w http.ResponseWriter, r *http.Request) bool {
 	}
 }
 
-func resetDatabase(db *dynamodb.Client, ctx context.Context) error {
+func resetDatabase(ctx context.Context, db *dynamodb.Client) error {
 	if _, err := db.DeleteTable(ctx, &dynamodb.DeleteTableInput{
 		TableName: aws.String(activationKeyTable),
 	}); err != nil {
@@ -209,7 +209,7 @@ func resetDatabase(db *dynamodb.Client, ctx context.Context) error {
 	return nil
 }
 
-func handlePactState(db *dynamodb.Client, ctx context.Context, body io.ReadCloser) error {
+func handlePactState(ctx context.Context, db *dynamodb.Client, body io.ReadCloser) error {
 	var state struct {
 		State string `json:"state"`
 	}
@@ -258,7 +258,7 @@ func handlePactState(db *dynamodb.Client, ctx context.Context, body io.ReadClose
 		}
 
 		// just blindly overwrite. as fixtures is fixtures
-		if err := saveFixture(db, ctx, paperVerificationCodeTable, item); err != nil {
+		if err := saveFixture(ctx, db, paperVerificationCodeTable, item); err != nil {
 			return err
 		}
 	}
@@ -292,7 +292,7 @@ func handlePactState(db *dynamodb.Client, ctx context.Context, body io.ReadClose
 				UpdatedAt: time.Now(),
 			}
 
-			if err := saveFixture(db, ctx, paperVerificationCodeTable, pvc); err != nil {
+			if err := saveFixture(ctx, db, paperVerificationCodeTable, pvc); err != nil {
 				return err
 			}
 		default:
@@ -301,7 +301,7 @@ func handlePactState(db *dynamodb.Client, ctx context.Context, body io.ReadClose
 		}
 
 		// just blindly overwrite. as fixtures is fixtures
-		if err := saveFixture(db, ctx, activationKeyTable, item); err != nil {
+		if err := saveFixture(ctx, db, activationKeyTable, item); err != nil {
 			return err
 		}
 	}
@@ -309,8 +309,8 @@ func handlePactState(db *dynamodb.Client, ctx context.Context, body io.ReadClose
 	return nil
 }
 
-func setupDatabase(requestContext context.Context) (*dynamodb.Client, error) {
-	cfg, err := config.LoadDefaultConfig(requestContext)
+func setupDatabase(ctx context.Context) (*dynamodb.Client, error) {
+	cfg, err := config.LoadDefaultConfig(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -321,7 +321,7 @@ func setupDatabase(requestContext context.Context) (*dynamodb.Client, error) {
 	return db, nil
 }
 
-func saveFixture(db *dynamodb.Client, ctx context.Context, table string, item interface{}) error {
+func saveFixture(ctx context.Context, db *dynamodb.Client, table string, item interface{}) error {
 	data, err := attributevalue.MarshalMap(item)
 	if err != nil {
 		return err
