@@ -30,52 +30,8 @@ const (
 	paperVerificationCodeTable = "data-lpa-codes-local"
 )
 
-var (
-	db  *dynamodb.Client
-	ctx context.Context
-)
-
-func setupDatabase(requestContext context.Context) error {
-	ctx = requestContext
-
-	cfg, err := config.LoadDefaultConfig(ctx)
-	if err != nil {
-		return err
-	}
-
-	cfg.BaseEndpoint = aws.String(cmp.Or(os.Getenv("LOCAL_URL"), "http://localhost:8000"))
-	db = dynamodb.NewFromConfig(cfg)
-
-	return nil
-}
-
 func handler(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path == "/_reset_database" {
-		if err := setupDatabase(r.Context()); err != nil {
-			http.Error(w, "error setting up database connection", http.StatusInternalServerError)
-			return
-		}
-
-		if err := resetDatabase(r.Context()); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-		}
-
-		return
-	}
-
-	if r.URL.Path == "/_pact_state" {
-		if err := setupDatabase(r.Context()); err != nil {
-			http.Error(w, "error setting up database connection", http.StatusInternalServerError)
-			return
-		}
-
-		if err := handlePactState(r); err != nil {
-			log.Printf("Error setting up state: %s", err.Error())
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-		} else {
-			w.WriteHeader(200)
-		}
-
+	if handleFixtureRequests(w, r) {
 		return
 	}
 
@@ -137,7 +93,42 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func resetDatabase(ctx context.Context) error {
+func handleFixtureRequests(w http.ResponseWriter, r *http.Request) bool {
+	if !strings.HasPrefix(r.URL.Path, "/_") {
+		return false
+	}
+
+	db, err := setupDatabase(r.Context())
+	if err != nil {
+		http.Error(w, "error setting up database connection", http.StatusInternalServerError)
+		return true
+	}
+
+	switch r.URL.Path {
+	case "/_reset_database":
+		if err := resetDatabase(db, r.Context()); err != nil {
+			log.Printf("Error reseting database: %s", err.Error())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		} else {
+			w.WriteHeader(200)
+		}
+
+		return true
+	case "/_pact_state":
+		if err := handlePactState(db, r.Context(), r.Body); err != nil {
+			log.Printf("Error setting up state: %s", err.Error())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		} else {
+			w.WriteHeader(200)
+		}
+
+		return true
+	default:
+		return false
+	}
+}
+
+func resetDatabase(db *dynamodb.Client, ctx context.Context) error {
 	if _, err := db.DeleteTable(ctx, &dynamodb.DeleteTableInput{
 		TableName: aws.String(activationKeyTable),
 	}); err != nil {
@@ -218,12 +209,12 @@ func resetDatabase(ctx context.Context) error {
 	return nil
 }
 
-func handlePactState(r *http.Request) error {
+func handlePactState(db *dynamodb.Client, ctx context.Context, body io.ReadCloser) error {
 	var state struct {
 		State string `json:"state"`
 	}
 
-	if err := json.NewDecoder(r.Body).Decode(&state); err != nil {
+	if err := json.NewDecoder(body).Decode(&state); err != nil {
 		return err
 	}
 
@@ -231,11 +222,11 @@ func handlePactState(r *http.Request) error {
 	if matches := re.FindStringSubmatch(state.State); len(matches) > 0 {
 		code := matches[1]
 		record := matches[3]
-		key := &codes.Key{
+		key := codes.Key{
 			LPA:   "M-7890-0400-4003",
 			Actor: "ce118b6e-d8e1-11e7-9296-cec278b6b50a",
 		}
-		item := &codes.PaperVerificationCode{
+		item := codes.PaperVerificationCode{
 			PK:        paperKeyPrefix + code,
 			ActorLPA:  key.ToActorLPA(),
 			UpdatedAt: time.Now(),
@@ -255,7 +246,7 @@ func handlePactState(r *http.Request) error {
 				return err
 			}
 
-			if _, err := db.DeleteItem(r.Context(), &dynamodb.DeleteItemInput{
+			if _, err := db.DeleteItem(ctx, &dynamodb.DeleteItemInput{
 				Key: map[string]types.AttributeValue{
 					"PK": key,
 				},
@@ -267,7 +258,7 @@ func handlePactState(r *http.Request) error {
 		}
 
 		// just blindly overwrite. as fixtures is fixtures
-		if err := saveFixture(r.Context(), paperVerificationCodeTable, item); err != nil {
+		if err := saveFixture(db, ctx, paperVerificationCodeTable, item); err != nil {
 			return err
 		}
 	}
@@ -276,7 +267,7 @@ func handlePactState(r *http.Request) error {
 	if matches := re.FindStringSubmatch(state.State); len(matches) > 0 {
 		code := matches[1]
 		differentiator := matches[2]
-		item := &codes.ActivationCode{
+		item := codes.ActivationCode{
 			Active:          true,
 			Code:            code,
 			DateOfBirth:     "1959-08-10",
@@ -291,17 +282,17 @@ func handlePactState(r *http.Request) error {
 			item.Actor = "74673c83-05ba-4886-beb1-daaa36fb7984"
 			item.LPA = "M-1234-1234-1234"
 
-			key := &codes.Key{
+			key := codes.Key{
 				LPA:   item.LPA,
 				Actor: item.Actor,
 			}
-			pvc := &codes.PaperVerificationCode{
+			pvc := codes.PaperVerificationCode{
 				PK:        paperKeyPrefix + "P-9876-9876-9876-98",
 				ActorLPA:  key.ToActorLPA(),
 				UpdatedAt: time.Now(),
 			}
 
-			if err := saveFixture(r.Context(), paperVerificationCodeTable, pvc); err != nil {
+			if err := saveFixture(db, ctx, paperVerificationCodeTable, pvc); err != nil {
 				return err
 			}
 		default:
@@ -310,7 +301,7 @@ func handlePactState(r *http.Request) error {
 		}
 
 		// just blindly overwrite. as fixtures is fixtures
-		if err := saveFixture(r.Context(), activationKeyTable, item); err != nil {
+		if err := saveFixture(db, ctx, activationKeyTable, item); err != nil {
 			return err
 		}
 	}
@@ -318,7 +309,19 @@ func handlePactState(r *http.Request) error {
 	return nil
 }
 
-func saveFixture(ctx context.Context, table string, item interface{}) error {
+func setupDatabase(requestContext context.Context) (*dynamodb.Client, error) {
+	cfg, err := config.LoadDefaultConfig(requestContext)
+	if err != nil {
+		return nil, err
+	}
+
+	cfg.BaseEndpoint = aws.String(cmp.Or(os.Getenv("LOCAL_URL"), "http://localhost:8000"))
+	db := dynamodb.NewFromConfig(cfg)
+
+	return db, nil
+}
+
+func saveFixture(db *dynamodb.Client, ctx context.Context, table string, item interface{}) error {
 	data, err := attributevalue.MarshalMap(item)
 	if err != nil {
 		return err
