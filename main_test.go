@@ -16,6 +16,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
+	"github.com/ministryofjustice/opg-data-lpa-codes/internal/codes"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -667,10 +668,11 @@ func TestPaperVerificationCode(t *testing.T) {
 			}, oldActivationCode)
 
 			assertPaperVerificationCode(t, PaperRow{
-				PK:        "PAPER#" + oldPaperCode,
-				UpdatedAt: time.Now(),
-				ExpiresAt: time.Now().AddDate(0, 1, 0),
-				ActorLPA:  "12ad81a9-f89d-4804-99f5-7c0c8669ac9b#M-1234-1234-1234",
+				PK:           "PAPER#" + oldPaperCode,
+				UpdatedAt:    time.Now(),
+				ExpiresAt:    time.Now().AddDate(0, 1, 0),
+				ExpiryReason: codes.ExpiryReasonSuperseded.String(),
+				ActorLPA:     "12ad81a9-f89d-4804-99f5-7c0c8669ac9b#M-1234-1234-1234",
 			})
 
 			assertPaperVerificationCode(t, PaperRow{
@@ -727,7 +729,8 @@ func TestPaperVerificationCodeValidate(t *testing.T) {
 			assert.JSONEq(t, `{
 					"lpa": "M-1234-1234-1234",
 					"actor": "12ad81a9-f89d-4804-99f5-7c0c8669ac9b",
-					"expiry_date": "`+time.Now().AddDate(0, 1, 0).Format(time.DateOnly)+`"
+					"expiry_date": "`+time.Now().AddDate(0, 1, 0).Format(time.DateOnly)+`",
+					"expiry_reason": "superseded"
 				}`, resp.Body)
 		}
 	})
