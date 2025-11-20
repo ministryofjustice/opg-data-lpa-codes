@@ -197,7 +197,7 @@ func (s *PaperVerificationCodeStore) SetExpiry(ctx context.Context, code string,
 			"PK": &types.AttributeValueMemberS{Value: "PAPER#" + code},
 		},
 		UpdateExpression:    aws.String("SET #ExpiresAt = :ExpiresAt, #ExpiryReason = :ExpiryReason, #UpdatedAt = :UpdatedAt"),
-		ConditionExpression: aws.String("#ExpiresAt = :Zero OR #ExpiresAt > :ExpiresAt"),
+		ConditionExpression: aws.String("attribute_exists(PK) AND (#ExpiresAt = :Zero OR #ExpiresAt > :ExpiresAt)"),
 		ExpressionAttributeValues: map[string]types.AttributeValue{
 			":ExpiresAt":    &types.AttributeValueMemberS{Value: expiresAt.Format(time.RFC3339Nano)},
 			":ExpiryReason": &types.AttributeValueMemberS{Value: expiryReason.String()},
@@ -218,8 +218,9 @@ func (s *PaperVerificationCodeStore) SetExpiry(ctx context.Context, code string,
 			return time.Time{}, err
 		}
 
-		if err := attributevalue.Unmarshal(ccfe.Item["ExpiresAt"], &expiresAt); err != nil {
-			return time.Time{}, err
+		err = attributevalue.Unmarshal(ccfe.Item["ExpiresAt"], &expiresAt)
+		if err != nil || expiresAt.IsZero() {
+			return time.Time{}, errors.Join(err, ErrPaperVerificationCodeNotFound)
 		}
 	}
 
