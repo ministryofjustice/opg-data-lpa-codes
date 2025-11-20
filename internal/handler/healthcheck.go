@@ -13,8 +13,7 @@ func Healthcheck(ctx context.Context, event events.APIGatewayProxyRequest) (even
 		return events.APIGatewayProxyResponse{
 			StatusCode: http.StatusOK,
 			Headers:    map[string]string{"Content-Length": "5", "Content-Type": "application/json"},
-			Body: `"OK"
-`,
+			Body:       `"OK"`,
 		}, nil
 
 	case http.MethodHead:

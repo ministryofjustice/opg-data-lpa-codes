@@ -14,6 +14,7 @@ const (
 	ExpiryReasonPaperToDigital
 	ExpiryReasonFirstTimeUse
 	ExpiryReasonCancelled
+	ExpiryReasonSuperseded
 )
 
 func (r ExpiryReason) String() string {
@@ -24,6 +25,8 @@ func (r ExpiryReason) String() string {
 		return "first_time_use"
 	case ExpiryReasonCancelled:
 		return "cancelled"
+	case ExpiryReasonSuperseded:
+		return "superseded"
 	}
 
 	return ""
@@ -37,6 +40,8 @@ func (r ExpiryReason) ExpiresAt() time.Time {
 		return time.Now().AddDate(2, 0, 0)
 	case ExpiryReasonCancelled:
 		return time.Now()
+	case ExpiryReasonSuperseded:
+		return time.Now().AddDate(0, 1, 0)
 	}
 
 	return time.Time{}
@@ -54,6 +59,8 @@ func (r *ExpiryReason) UnmarshalText(text []byte) error {
 		*r = ExpiryReasonFirstTimeUse
 	case "cancelled":
 		*r = ExpiryReasonCancelled
+	case "superseded":
+		*r = ExpiryReasonSuperseded
 	default:
 		*r = ExpiryReasonUnset
 	}
