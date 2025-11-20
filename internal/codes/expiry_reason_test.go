@@ -12,6 +12,7 @@ func TestExpiryReason_MarshalUnmarshalText(t *testing.T) {
 		ExpiryReasonPaperToDigital,
 		ExpiryReasonFirstTimeUse,
 		ExpiryReasonCancelled,
+		ExpiryReasonSuperseded,
 	} {
 		marshalled, _ := val.MarshalText()
 		var unmarshalled ExpiryReason
@@ -27,6 +28,7 @@ func TestExpiryReason_MarshalUnmarshalDynamoDBAttributeValue(t *testing.T) {
 		ExpiryReasonPaperToDigital,
 		ExpiryReasonFirstTimeUse,
 		ExpiryReasonCancelled,
+		ExpiryReasonSuperseded,
 	} {
 		marshalled, _ := val.MarshalDynamoDBAttributeValue()
 		var unmarshalled ExpiryReason
