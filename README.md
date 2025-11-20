@@ -1,10 +1,7 @@
 # opg-data-lpa-codes
-
 LPA Integration with microservice for the generation of registration codes: Managed by opg-org-infra &amp; Terraform
 
-
 ## Development
-
 To start the service locally use `make up`. Then you can call the Lambda:
 
 ```
@@ -30,9 +27,13 @@ Pacts can be verified by running:
 make test-pact
 ```
 
+### For the more GUI inclined
+All the above is set up in GoLand via the commited project definition files. Run/Debug configurations are provided
+for all the above plus there is the ability to breakpoint debug (via delve) the running lambda code.
+
+A `http-requests.http` file is provided in the docs folder that lets you exercise the API and introspect the results.
 
 ## CI Pipeline
-
 When working on a ticket you should name your branch with the jira identifier of the ticket you are working on.
 
 When you push your changes to your branch and create a PR then the Github action will run and create a branch
