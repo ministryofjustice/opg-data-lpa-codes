@@ -16,6 +16,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
+	"github.com/ministryofjustice/opg-data-lpa-codes/internal/codes"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -667,10 +668,11 @@ func TestPaperVerificationCode(t *testing.T) {
 			}, oldActivationCode)
 
 			assertPaperVerificationCode(t, PaperRow{
-				PK:        "PAPER#" + oldPaperCode,
-				UpdatedAt: time.Now(),
-				ExpiresAt: time.Now().AddDate(0, 1, 0),
-				ActorLPA:  "12ad81a9-f89d-4804-99f5-7c0c8669ac9b#M-1234-1234-1234",
+				PK:           "PAPER#" + oldPaperCode,
+				UpdatedAt:    time.Now(),
+				ExpiresAt:    time.Now().AddDate(0, 1, 0),
+				ExpiryReason: codes.ExpiryReasonSuperseded.String(),
+				ActorLPA:     "12ad81a9-f89d-4804-99f5-7c0c8669ac9b#M-1234-1234-1234",
 			})
 
 			assertPaperVerificationCode(t, PaperRow{
@@ -727,7 +729,8 @@ func TestPaperVerificationCodeValidate(t *testing.T) {
 			assert.JSONEq(t, `{
 					"lpa": "M-1234-1234-1234",
 					"actor": "12ad81a9-f89d-4804-99f5-7c0c8669ac9b",
-					"expiry_date": "`+time.Now().AddDate(0, 1, 0).Format(time.DateOnly)+`"
+					"expiry_date": "`+time.Now().AddDate(0, 1, 0).Format(time.DateOnly)+`",
+					"expiry_reason": "superseded"
 				}`, resp.Body)
 		}
 	})
@@ -800,7 +803,7 @@ func TestPaperVerificationCodeExpire(t *testing.T) {
 	runTest(t, "paper to digital", func(t *testing.T) {
 		code := createPaperCode()
 
-		resp, err := callLambda(http.MethodPost, "/v1/paper-verification-code/expire", `{"code":"`+code+`","expiry_reason":"paper_to_digital"}`)
+		resp, err := callLambda(http.MethodPost, "/v1/paper-verification-code/expire", `{"lpa":"M-1234-1234-1234","actor":"12ad81a9-f89d-4804-99f5-7c0c8669ac9b","expiry_reason":"paper_to_digital"}`)
 		if assert.Nil(t, err) {
 			assert.Equal(t, http.StatusOK, resp.StatusCode)
 
@@ -899,12 +902,36 @@ func TestPaperVerificationCodeExpire(t *testing.T) {
 		}
 	})
 
+	runTest(t, "code not found", func(t *testing.T) {
+		_ = createPaperCode()
+
+		resp, err := callLambda(http.MethodPost, "/v1/paper-verification-code/expire", `{"code":"P-9101-9101-9101-91","expiry_reason":"first_time_use"}`)
+		if assert.Nil(t, err) {
+			assert.Equal(t, http.StatusNotFound, resp.StatusCode)
+			assert.JSONEq(t, `{"errors":[{"code":"OPGDATA-API-NOTFOUND","title":"Code not found"}]}`, resp.Body)
+		}
+	})
+
+	runTest(t, "paper to digital not found", func(t *testing.T) {
+		_ = createPaperCode()
+
+		resp, err := callLambda(http.MethodPost, "/v1/paper-verification-code/expire", `{"lpa":"M-5678-5678-5678-56","actor":"12ad81a9-f89d-4804-99f5-7c0c8669ac9b","expiry_reason":"paper_to_digital"}`)
+		if assert.Nil(t, err) {
+			assert.Equal(t, http.StatusNotFound, resp.StatusCode)
+			assert.JSONEq(t, `{"errors":[{"code":"OPGDATA-API-NOTFOUND","title":"Code not found"}]}`, resp.Body)
+		}
+	})
+
 	testcases := map[string]string{
 		"create missing code":   `{"expiry_reason":"cancelled"}`,
 		"create missing reason": `{"code":"P-1234-1234-1234-12"}`,
 		"create empty code":     `{"code":"","expiry_reason":"cancelled"}`,
 		"create empty reason":   `{"code":"P-1234-1234-1234-12","expiry_reason":""}`,
 		"create unknown reason": `{"code":"P-1234-1234-1234-12","expiry_reason":"what"}`,
+		"create missing actor":  `{"lpa":"M-1234-1234-1234","expiry_reason":"cancelled"}`,
+		"create missing lpa":    `{"actor":"9a619d46-8712-4bfb-a49f-c14914ff319d","expiry_reason":"paper_to_digital"}`,
+		"create empty actor":    `{"lpa":"M-1234-1234-1234","actor":"","code":"","expiry_reason":"paper_to_digital"}`,
+		"create empty lpa":      `{"lpa":"","actor":"9a619d46-8712-4bfb-a49f-c14914ff319d","expiry_reason":"paper_to_digital"}`,
 	}
 
 	for name, lambdaBody := range testcases {
