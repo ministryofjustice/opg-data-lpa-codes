@@ -1,11 +1,12 @@
+### Reset Database
 GET http://localhost:8080/_reset_database
 
-### GET healthcheck endpoint
+### Healthcheck
 GET http://localhost:8080/v1/healthcheck
 Authorization: AWS4-HMAC-SHA256 securesecretstring
 Accept: application/vnd.opg-data.v1+json,application/json
 
-### POST code validation
+### Create activation key
 POST http://localhost:8080/v1/create
 Authorization: AWS4-HMAC-SHA256 securesecretstring
 Accept: application/vnd.opg-data.v1+json,application/json
@@ -21,7 +22,9 @@ Content-Type: application/json
   ]
 }
 
-### POST code validation
+> {% client.global.set("code", jsonPath(response.body, "$.codes[0].code")) %}
+
+### Validate activation key
 POST http://localhost:8080/v1/validate
 Authorization: AWS4-HMAC-SHA256 securesecretstring
 Accept: application/vnd.opg-data.v1+json,application/json
@@ -30,20 +33,20 @@ Content-Type: application/json
 {
   "lpa": "700000000526",
   "dob": "1948-11-01",
-  "code": "GX936P9QXMC3"
+  "code": "{{ code }}"
 }
 
-### POST code revoke
+### Revoke activation key
 POST http://localhost:8080/v1/revoke
 Authorization: AWS4-HMAC-SHA256 securesecretstring
 Accept: application/vnd.opg-data.v1+json,application/json
 Content-Type: application/json
 
 {
-  "code": "GX936P9QXMC3"
+  "code": "{{ code }}"
 }
 
-### POST code exists
+### Check activation key exists
 POST http://localhost:8080/v1/exists
 Authorization: AWS4-HMAC-SHA256 securesecretstring
 Accept: application/vnd.opg-data.v1+json,application/json
@@ -65,6 +68,8 @@ Content-Type: application/json
   "actor": "9ac5cb7c-fc75-40c7-8e53-059f36dbbe3d"
 }
 
+> {% client.global.set("pvc", jsonPath(response.body, "$.code")) %}
+
 ### Validate paper verification code
 POST http://localhost:8080/v1/paper-verification-code/validate
 Authorization: AWS4-HMAC-SHA256 securesecretstring
@@ -72,7 +77,7 @@ Accept: application/vnd.opg-data.v1+json,application/json
 Content-Type: application/json
 
 {
-  "code": "P-MBT4-WPHK-JQ7X-FD"
+  "code": "{{ pvc }}"
 }
 
 ### Start paper verification code expiry (720 days)
@@ -82,7 +87,7 @@ Accept: application/vnd.opg-data.v1+json,application/json
 Content-Type: application/json
 
 {
-  "code": "P-MBT4-WPHK-JQ7X-FD",
+  "code": "{{ pvc }}",
   "expiry_reason": "first_time_use"
 }
 
@@ -97,4 +102,15 @@ Content-Type: application/json
   "lpa": "M-7890-0400-4003",
   "actor": "9ac5cb7c-fc75-40c7-8e53-059f36dbbe3d",
   "expiry_reason": "paper_to_digital"
+}
+
+### Cancel paper verification code
+POST http://localhost:8080/v1/paper-verification-code/expire
+Authorization: AWS4-HMAC-SHA256 securesecretstring
+Accept: application/vnd.opg-data.v1+json,application/json
+Content-Type: application/json
+
+{
+  "code": "{{ pvc }}",
+  "expiry_reason": "cancelled"
 }
