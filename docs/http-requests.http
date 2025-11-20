@@ -1,0 +1,100 @@
+GET http://localhost:8080/_reset_database
+
+### GET healthcheck endpoint
+GET http://localhost:8080/v1/healthcheck
+Authorization: AWS4-HMAC-SHA256 securesecretstring
+Accept: application/vnd.opg-data.v1+json,application/json
+
+### POST code validation
+POST http://localhost:8080/v1/create
+Authorization: AWS4-HMAC-SHA256 securesecretstring
+Accept: application/vnd.opg-data.v1+json,application/json
+Content-Type: application/json
+
+{
+  "lpas": [
+    {
+      "lpa": "700000000526",
+      "actor": "700000001805",
+      "dob": "1948-11-01"
+    }
+  ]
+}
+
+### POST code validation
+POST http://localhost:8080/v1/validate
+Authorization: AWS4-HMAC-SHA256 securesecretstring
+Accept: application/vnd.opg-data.v1+json,application/json
+Content-Type: application/json
+
+{
+  "lpa": "700000000526",
+  "dob": "1948-11-01",
+  "code": "GX936P9QXMC3"
+}
+
+### POST code revoke
+POST http://localhost:8080/v1/revoke
+Authorization: AWS4-HMAC-SHA256 securesecretstring
+Accept: application/vnd.opg-data.v1+json,application/json
+Content-Type: application/json
+
+{
+  "code": "GX936P9QXMC3"
+}
+
+### POST code exists
+POST http://localhost:8080/v1/exists
+Authorization: AWS4-HMAC-SHA256 securesecretstring
+Accept: application/vnd.opg-data.v1+json,application/json
+Content-Type: application/json
+
+{
+  "lpa": "700000000526",
+  "actor": "700000001805"
+}
+
+### Create paper verification
+POST http://localhost:8080/v1/paper-verification-code
+Authorization: AWS4-HMAC-SHA256 securesecretstring
+Accept: application/vnd.opg-data.v1+json,application/json
+Content-Type: application/json
+
+{
+  "lpa": "M-7890-0400-4003",
+  "actor": "9ac5cb7c-fc75-40c7-8e53-059f36dbbe3d"
+}
+
+### Validate paper verification code
+POST http://localhost:8080/v1/paper-verification-code/validate
+Authorization: AWS4-HMAC-SHA256 securesecretstring
+Accept: application/vnd.opg-data.v1+json,application/json
+Content-Type: application/json
+
+{
+  "code": "P-MBT4-WPHK-JQ7X-FD"
+}
+
+### Start paper verification code expiry (720 days)
+POST http://localhost:8080/v1/paper-verification-code/expire
+Authorization: AWS4-HMAC-SHA256 securesecretstring
+Accept: application/vnd.opg-data.v1+json,application/json
+Content-Type: application/json
+
+{
+  "code": "P-MBT4-WPHK-JQ7X-FD",
+  "expiry_reason": "first_time_use"
+}
+
+### Convert paper verification code to digital (30 days)
+POST http://localhost:8080/v1/paper-verification-code/expire
+Authorization: AWS4-HMAC-SHA256 securesecretstring
+Accept: application/vnd.opg-data.v1+json,application/json
+Content-Type: application/json
+
+{
+
+  "lpa": "M-7890-0400-4003",
+  "actor": "9ac5cb7c-fc75-40c7-8e53-059f36dbbe3d",
+  "expiry_reason": "paper_to_digital"
+}
