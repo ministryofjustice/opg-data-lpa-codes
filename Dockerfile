@@ -32,3 +32,6 @@ ENTRYPOINT [ "/usr/local/bin/aws-lambda-rie", "./dlv", "exec", "--headless", "--
 
 # Default production image
 FROM base AS production
+
+# not necessary in a production image
+RUN rm /usr/local/bin/aws-lambda-rie
