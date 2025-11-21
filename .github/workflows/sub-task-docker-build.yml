@@ -54,7 +54,7 @@ jobs:
 
       - name: Build Container
         id: build_container
-        run: docker build --tag lpa-codes:latest .
+        run: docker build --tag lpa-codes:latest --target production .
 
       - name: Trivy Image Vulnerability Scanner
         id: trivy_scan
