@@ -29,7 +29,7 @@ func Code(ctx context.Context, codesStore *codes.ActivationCodeStore, event even
 
 	item, err := codesStore.Code(ctx, v.Code)
 	if err != nil {
-		if errors.Is(err, codes.ErrNotFound) {
+		if errors.Is(err, codes.ErrCodeNotFound) {
 			return respondCodeNotFound()
 		}
 

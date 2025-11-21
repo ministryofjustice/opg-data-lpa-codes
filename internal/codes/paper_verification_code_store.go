@@ -13,6 +13,8 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 )
 
+var ErrPaperVerificationCodeNotFound = errors.New("paper verification code not found")
+
 // A PaperVerificationCodeStore contains PaperVerificationCode type records.
 type PaperVerificationCodeStore struct {
 	dynamo       *dynamodb.Client
@@ -40,7 +42,7 @@ func (s *PaperVerificationCodeStore) Code(ctx context.Context, code string) (Pap
 	}
 
 	if output.Item == nil {
-		return PaperVerificationCode{}, ErrNotFound
+		return PaperVerificationCode{}, ErrCodeNotFound
 	}
 
 	var v PaperVerificationCode

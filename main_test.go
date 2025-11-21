@@ -903,8 +903,6 @@ func TestPaperVerificationCodeExpire(t *testing.T) {
 	})
 
 	runTest(t, "code not found", func(t *testing.T) {
-		_ = createPaperCode()
-
 		resp, err := callLambda(http.MethodPost, "/v1/paper-verification-code/expire", `{"code":"P-9101-9101-9101-91","expiry_reason":"first_time_use"}`)
 		if assert.Nil(t, err) {
 			assert.Equal(t, http.StatusNotFound, resp.StatusCode)
@@ -913,8 +911,6 @@ func TestPaperVerificationCodeExpire(t *testing.T) {
 	})
 
 	runTest(t, "paper to digital not found", func(t *testing.T) {
-		_ = createPaperCode()
-
 		resp, err := callLambda(http.MethodPost, "/v1/paper-verification-code/expire", `{"lpa":"M-5678-5678-5678-56","actor":"12ad81a9-f89d-4804-99f5-7c0c8669ac9b","expiry_reason":"paper_to_digital"}`)
 		if assert.Nil(t, err) {
 			assert.Equal(t, http.StatusNotFound, resp.StatusCode)

@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"net/http"
 	"time"
 
@@ -54,7 +53,6 @@ func ExpirePaperVerificationCode(ctx context.Context, codesStore *codes.PaperVer
 
 	expiresAt, err := codesStore.SetExpiry(ctx, data.Code, data.ExpiryReason)
 	if err != nil {
-		fmt.Printf("%+v\n", err)
 		if errors.Is(err, codes.ErrPaperVerificationCodeNotFound) {
 			return respondCodeNotFound()
 		}
