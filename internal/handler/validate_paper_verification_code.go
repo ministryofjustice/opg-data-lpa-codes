@@ -36,7 +36,7 @@ func ValidatePaperVerificationCode(ctx context.Context, codesStore *codes.PaperV
 
 	code, err := codesStore.Code(ctx, data.Code)
 	if err != nil {
-		if errors.Is(err, codes.ErrCodeNotFound) {
+		if errors.Is(err, codes.ErrPaperVerificationCodeNotFound) {
 			return respondCodeNotFound()
 		}
 

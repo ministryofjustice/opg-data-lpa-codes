@@ -42,7 +42,7 @@ func (s *PaperVerificationCodeStore) Code(ctx context.Context, code string) (Pap
 	}
 
 	if output.Item == nil {
-		return PaperVerificationCode{}, ErrCodeNotFound
+		return PaperVerificationCode{}, ErrPaperVerificationCodeNotFound
 	}
 
 	var v PaperVerificationCode
