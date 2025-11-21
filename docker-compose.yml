@@ -17,16 +17,18 @@ services:
       AWS_DEFAULT_REGION: eu-west-1
     healthcheck:
       test: "wget --tries=1 --spider http://localhost:8080/v1/healthcheck"
-      interval: 5s
-      retries: 6
-      timeout: 5s
+      timeout: 2s
+      start_period: 20s
+      start_interval: 2s
 
   lpa-codes:
     build:
       context: .
       dockerfile: Dockerfile
+      target: debug
     ports:
       - "8081:8080"
+      - "4040:4040"
     depends_on:
       dynamodb:
         condition: service_healthy
@@ -38,9 +40,6 @@ services:
       AWS_SECURITY_TOKEN: testing
       AWS_SESSION_TOKEN: testing
       AWS_DEFAULT_REGION: eu-west-1
-    volumes:
-      - "./lambda_functions/.aws-lambda-rie:/aws-lambda"
-    entrypoint: /aws-lambda/aws-lambda-rie /var/task/main
 
   dynamodb:
     image: amazon/dynamodb-local:latest@sha256:7ef4a2c45b58c2901e70a4f28e0953a422c2c631baaaf5e2c15e0805740c7752
@@ -57,7 +56,8 @@ services:
   pact-verifier:
     image: pactfoundation/pact-ref-verifier@sha256:514b680cd0ad2fa95c6df7a541e3b03c8dd1176de26e84e58a349de96e305bce
     depends_on:
-      - api-gateway
+      api-gateway:
+        condition: service_healthy
     entrypoint:
       - pact_verifier_cli
       - --hostname=api-gateway

@@ -5,28 +5,5 @@
 .notes
 .vs
 
-# Virtual Environments
-.venv
-
-# lambda stuff
-lambda*.zip
-
-# Ruby
-*.lock
-
-# IDE & development
-.vscode/
-*.iml
-
 # Mac
 .DS_Store
-
-# Test environment
-*generated.postman_environment.json
-process.yml
-.pytest_cache/
-.coverage
-*pact.log
-
-# Misc
-*crash.log
