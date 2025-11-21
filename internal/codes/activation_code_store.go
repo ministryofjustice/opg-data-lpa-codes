@@ -17,6 +17,8 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 )
 
+var ErrCodeNotFound = errors.New("code not found")
+
 // An ActivationCodeStore contains Item type records.
 type ActivationCodeStore struct {
 	dynamo       *dynamodb.Client
@@ -41,7 +43,7 @@ func (s *ActivationCodeStore) GenerateCode(ctx context.Context) (string, error) 
 
 		_, err := s.Code(ctx, newCode)
 		if err != nil {
-			if errors.Is(err, ErrNotFound) {
+			if errors.Is(err, ErrCodeNotFound) {
 				return newCode, nil
 			}
 
@@ -54,7 +56,7 @@ func (s *ActivationCodeStore) GenerateCode(ctx context.Context) (string, error) 
 }
 
 // Code gets the details for the given code, checking that it is not expired. If
-// the code does not exist or is expired an ErrNotFound error is returned.
+// the code does not exist or is expired an ErrCodeNotFound error is returned.
 func (s *ActivationCodeStore) Code(ctx context.Context, code string) (ActivationCode, error) {
 	output, err := s.dynamo.GetItem(ctx, &dynamodb.GetItemInput{
 		Key: map[string]types.AttributeValue{
@@ -68,7 +70,7 @@ func (s *ActivationCodeStore) Code(ctx context.Context, code string) (Activation
 
 	if output.Item == nil {
 		slog.Info("Code does not exist in database")
-		return ActivationCode{}, ErrNotFound
+		return ActivationCode{}, ErrCodeNotFound
 	}
 
 	var v ActivationCode
@@ -82,7 +84,7 @@ func (s *ActivationCodeStore) Code(ctx context.Context, code string) (Activation
 
 		if expiryDate <= ttlCutoff {
 			slog.Info("Code does not exist in database")
-			return ActivationCode{}, ErrNotFound
+			return ActivationCode{}, ErrCodeNotFound
 		}
 	}
 
@@ -156,7 +158,7 @@ func (s *ActivationCodeStore) SupersedeCodes(ctx context.Context, key Key) (int,
 func (s *ActivationCodeStore) RevokeCode(ctx context.Context, code string) (int, error) {
 	item, err := s.Code(ctx, code)
 	if err != nil {
-		if errors.Is(err, ErrNotFound) {
+		if errors.Is(err, ErrCodeNotFound) {
 			slog.Info("0 rows updated for LPA/Actor")
 			return 0, nil
 		}

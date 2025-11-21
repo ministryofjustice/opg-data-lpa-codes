@@ -39,7 +39,7 @@ func Validate(ctx context.Context, codesStore *codes.ActivationCodeStore, paperS
 
 	item, err := codesStore.Code(ctx, v.Code)
 	if err != nil {
-		if errors.Is(err, codes.ErrNotFound) {
+		if errors.Is(err, codes.ErrCodeNotFound) {
 			return respondOK(validateResponse{})
 		}
 

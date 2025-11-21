@@ -13,6 +13,8 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 )
 
+var ErrPaperVerificationCodeNotFound = errors.New("paper verification code not found")
+
 // A PaperVerificationCodeStore contains PaperVerificationCode type records.
 type PaperVerificationCodeStore struct {
 	dynamo       *dynamodb.Client
@@ -40,7 +42,7 @@ func (s *PaperVerificationCodeStore) Code(ctx context.Context, code string) (Pap
 	}
 
 	if output.Item == nil {
-		return PaperVerificationCode{}, ErrNotFound
+		return PaperVerificationCode{}, ErrCodeNotFound
 	}
 
 	var v PaperVerificationCode
@@ -101,7 +103,7 @@ func (s *PaperVerificationCodeStore) SupersedeCodes(ctx context.Context, key Key
 	now := time.Now()
 
 	for _, entry := range entries {
-		expiresAt := now.AddDate(0, 1, 0)
+		expiresAt := ExpiryReasonSuperseded.ExpiresAt()
 
 		if entry.ExpiresAt.IsZero() || entry.ExpiresAt.After(expiresAt) {
 			items = append(items, types.TransactWriteItem{
@@ -110,16 +112,18 @@ func (s *PaperVerificationCodeStore) SupersedeCodes(ctx context.Context, key Key
 					Key: map[string]types.AttributeValue{
 						"PK": &types.AttributeValueMemberS{Value: entry.PK},
 					},
-					UpdateExpression:    aws.String("SET #ExpiresAt = :ExpiresAt, #UpdatedAt = :UpdatedAt"),
+					UpdateExpression:    aws.String("SET #ExpiresAt = :ExpiresAt, #ExpiryReason = :ExpiryReason, #UpdatedAt = :UpdatedAt"),
 					ConditionExpression: aws.String("#ExpiresAt = :Zero OR #ExpiresAt > :ExpiresAt"),
 					ExpressionAttributeValues: map[string]types.AttributeValue{
-						":ExpiresAt": &types.AttributeValueMemberS{Value: expiresAt.Format(time.RFC3339Nano)},
-						":UpdatedAt": &types.AttributeValueMemberS{Value: now.Format(time.RFC3339Nano)},
-						":Zero":      &types.AttributeValueMemberS{Value: time.Time{}.Format(time.RFC3339Nano)},
+						":ExpiresAt":    &types.AttributeValueMemberS{Value: expiresAt.Format(time.RFC3339Nano)},
+						":ExpiryReason": &types.AttributeValueMemberS{Value: ExpiryReasonSuperseded.String()},
+						":UpdatedAt":    &types.AttributeValueMemberS{Value: now.Format(time.RFC3339Nano)},
+						":Zero":         &types.AttributeValueMemberS{Value: time.Time{}.Format(time.RFC3339Nano)},
 					},
 					ExpressionAttributeNames: map[string]string{
-						"#ExpiresAt": "ExpiresAt",
-						"#UpdatedAt": "UpdatedAt",
+						"#ExpiresAt":    "ExpiresAt",
+						"#ExpiryReason": "ExpiryReason",
+						"#UpdatedAt":    "UpdatedAt",
 					},
 				},
 			})
@@ -195,7 +199,7 @@ func (s *PaperVerificationCodeStore) SetExpiry(ctx context.Context, code string,
 			"PK": &types.AttributeValueMemberS{Value: "PAPER#" + code},
 		},
 		UpdateExpression:    aws.String("SET #ExpiresAt = :ExpiresAt, #ExpiryReason = :ExpiryReason, #UpdatedAt = :UpdatedAt"),
-		ConditionExpression: aws.String("#ExpiresAt = :Zero OR #ExpiresAt > :ExpiresAt"),
+		ConditionExpression: aws.String("attribute_exists(PK) AND (#ExpiresAt = :Zero OR #ExpiresAt > :ExpiresAt)"),
 		ExpressionAttributeValues: map[string]types.AttributeValue{
 			":ExpiresAt":    &types.AttributeValueMemberS{Value: expiresAt.Format(time.RFC3339Nano)},
 			":ExpiryReason": &types.AttributeValueMemberS{Value: expiryReason.String()},
@@ -216,8 +220,9 @@ func (s *PaperVerificationCodeStore) SetExpiry(ctx context.Context, code string,
 			return time.Time{}, err
 		}
 
-		if err := attributevalue.Unmarshal(ccfe.Item["ExpiresAt"], &expiresAt); err != nil {
-			return time.Time{}, err
+		err = attributevalue.Unmarshal(ccfe.Item["ExpiresAt"], &expiresAt)
+		if err != nil || expiresAt.IsZero() {
+			return time.Time{}, errors.Join(err, ErrPaperVerificationCodeNotFound)
 		}
 	}
 
