@@ -29,7 +29,8 @@ jobs:
             --publish \
             --user=admin \
             --password=${{ secrets.PACT_BROKER_PASSWORD }} \
-            --url=${{ github.event.client_payload.pact_url }}
+            --filter-consumer=${{ github.event.client_payload.pact_consumer_name }} \
+            --consumer-version-selectors='{"branch":"${{ github.event.client_payload.pact_consumer_branch }}"}'
 
       - name: Verify pacts, including pending
         if: ${{ github.event_name == 'push' }}
