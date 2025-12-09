@@ -223,7 +223,7 @@ func handlePactState(ctx context.Context, db *dynamodb.Client, body io.ReadClose
 		code := matches[1]
 		record := matches[3]
 		key := codes.Key{
-			LPA:   "M-7890-0400-4003",
+			LPA:   "M-7890-0400-4000",
 			Actor: "ce118b6e-d8e1-11e7-9296-cec278b6b50a",
 		}
 		item := codes.PaperVerificationCode{
