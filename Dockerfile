@@ -1,4 +1,4 @@
-FROM golang:1.25.4@sha256:698183780de28062f4ef46f82a79ec0ae69d2d22f7b160cf69f71ea8d98bf25d AS build-env
+FROM golang:1.25.5@sha256:0ece421d4bb2525b7c0b4cad5791d52be38edf4807582407525ca353a429eccc AS build-env
 
 ARG TARGETOS
 ARG TARGETARCH
@@ -16,7 +16,7 @@ RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -gcflags "all=-N -l
 RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -a -installsuffix cgo -o /go/bin/main .
 
 # Base image
-FROM public.ecr.aws/lambda/provided:al2023.2025.11.11.00@sha256:eaa5988b7e760cdc511de0647a36110af1b453aade2f565eeb8157e16bc97a86 AS base
+FROM public.ecr.aws/lambda/provided:al2023.2025.12.08.23@sha256:7786c6e4948bc524d12c3efea38fb4851a48a5c573f242c0e948a4d2419a5a83 AS base
 
 COPY --from=build-env /go/bin/main ./main
 
