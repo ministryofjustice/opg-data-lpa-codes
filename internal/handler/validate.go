@@ -53,12 +53,12 @@ func Validate(ctx context.Context, codesStore *codes.ActivationCodeStore, paperS
 	response := validateResponse{Actor: &item.Actor}
 
 	if strings.HasPrefix(item.LPA, "M-") {
-		codes, err := paperStore.CodesByKey(ctx, codes.Key{Actor: item.Actor, LPA: item.LPA})
+		pvcCodes, err := paperStore.CodesByKey(ctx, codes.Key{Actor: item.Actor, LPA: item.LPA})
 		if err != nil {
 			return respondInternalServerError(fmt.Errorf("checking for paper codes: %w", err))
 		}
 
-		if len(codes) > 0 {
+		if len(pvcCodes) > 0 {
 			response.HasPaperVerificationCode = true
 		}
 	}
