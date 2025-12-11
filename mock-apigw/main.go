@@ -322,7 +322,9 @@ func setupDatabase(ctx context.Context) (*dynamodb.Client, error) {
 }
 
 func saveFixture(ctx context.Context, db *dynamodb.Client, table string, item interface{}) error {
-	data, err := attributevalue.MarshalMap(item)
+	data, err := attributevalue.MarshalMapWithOptions(item, func(options *attributevalue.EncoderOptions) {
+		options.OmitEmptyTime = true
+	})
 	if err != nil {
 		return err
 	}
