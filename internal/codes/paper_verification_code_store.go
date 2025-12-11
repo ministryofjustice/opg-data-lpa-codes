@@ -59,11 +59,10 @@ func (s *PaperVerificationCodeStore) CodesByKey(ctx context.Context, key Key) ([
 		IndexName:              aws.String("ActorLPAIndex"),
 		TableName:              aws.String(s.tableName),
 		KeyConditionExpression: aws.String("#ActorLPA = :ActorLPA"),
-		FilterExpression:       aws.String("#ExpiresAt = :Zero or #ExpiresAt > :Now"),
+		FilterExpression:       aws.String("attribute_not_exists(#ExpiresAt) or #ExpiresAt > :Now"),
 		ExpressionAttributeValues: map[string]types.AttributeValue{
 			":ActorLPA": &types.AttributeValueMemberS{Value: key.ToActorLPA()},
 			":Now":      &types.AttributeValueMemberS{Value: time.Now().Format(time.RFC3339Nano)},
-			":Zero":     &types.AttributeValueMemberS{Value: time.Time{}.Format(time.RFC3339Nano)},
 		},
 		ExpressionAttributeNames: map[string]string{
 			"#ActorLPA":  "ActorLPA",
@@ -113,12 +112,11 @@ func (s *PaperVerificationCodeStore) SupersedeCodes(ctx context.Context, key Key
 						"PK": &types.AttributeValueMemberS{Value: entry.PK},
 					},
 					UpdateExpression:    aws.String("SET #ExpiresAt = :ExpiresAt, #ExpiryReason = :ExpiryReason, #UpdatedAt = :UpdatedAt"),
-					ConditionExpression: aws.String("#ExpiresAt = :Zero OR #ExpiresAt > :ExpiresAt"),
+					ConditionExpression: aws.String("attribute_not_exists(#ExpiresAt) OR #ExpiresAt > :ExpiresAt"),
 					ExpressionAttributeValues: map[string]types.AttributeValue{
 						":ExpiresAt":    &types.AttributeValueMemberS{Value: expiresAt.Format(time.RFC3339Nano)},
 						":ExpiryReason": &types.AttributeValueMemberS{Value: ExpiryReasonSuperseded.String()},
 						":UpdatedAt":    &types.AttributeValueMemberS{Value: now.Format(time.RFC3339Nano)},
-						":Zero":         &types.AttributeValueMemberS{Value: time.Time{}.Format(time.RFC3339Nano)},
 					},
 					ExpressionAttributeNames: map[string]string{
 						"#ExpiresAt":    "ExpiresAt",
@@ -174,7 +172,9 @@ func (s *PaperVerificationCodeStore) tryCreate(ctx context.Context, key Key) (Pa
 		UpdatedAt: time.Now(),
 	}
 
-	data, err := attributevalue.MarshalMap(item)
+	data, err := attributevalue.MarshalMapWithOptions(item, func(options *attributevalue.EncoderOptions) {
+		options.OmitEmptyTime = true
+	})
 	if err != nil {
 		return PaperVerificationCode{}, err
 	}
@@ -199,12 +199,11 @@ func (s *PaperVerificationCodeStore) SetExpiry(ctx context.Context, code string,
 			"PK": &types.AttributeValueMemberS{Value: "PAPER#" + code},
 		},
 		UpdateExpression:    aws.String("SET #ExpiresAt = :ExpiresAt, #ExpiryReason = :ExpiryReason, #UpdatedAt = :UpdatedAt"),
-		ConditionExpression: aws.String("attribute_exists(PK) AND (#ExpiresAt = :Zero OR #ExpiresAt > :ExpiresAt)"),
+		ConditionExpression: aws.String("attribute_exists(PK) AND (attribute_not_exists(#ExpiresAt) OR #ExpiresAt > :ExpiresAt)"),
 		ExpressionAttributeValues: map[string]types.AttributeValue{
 			":ExpiresAt":    &types.AttributeValueMemberS{Value: expiresAt.Format(time.RFC3339Nano)},
 			":ExpiryReason": &types.AttributeValueMemberS{Value: expiryReason.String()},
 			":UpdatedAt":    &types.AttributeValueMemberS{Value: time.Now().Format(time.RFC3339Nano)},
-			":Zero":         &types.AttributeValueMemberS{Value: time.Time{}.Format(time.RFC3339Nano)},
 		},
 		ExpressionAttributeNames: map[string]string{
 			"#ExpiresAt":    "ExpiresAt",

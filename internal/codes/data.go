@@ -11,8 +11,8 @@ type PaperVerificationCode struct {
 	PK           string
 	ActorLPA     string
 	UpdatedAt    time.Time
-	ExpiresAt    time.Time
-	ExpiryReason ExpiryReason
+	ExpiresAt    time.Time    `dynamodbav:",omitempty"` // omitzero not yet implemented
+	ExpiryReason ExpiryReason `dynamodbav:",omitempty"`
 }
 
 func (c PaperVerificationCode) Code() string {
