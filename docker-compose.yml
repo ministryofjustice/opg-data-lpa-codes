@@ -20,6 +20,7 @@ services:
       timeout: 2s
       start_period: 20s
       start_interval: 2s
+      interval: 600s # high as to not interrupt active debug sessions
 
   lpa-codes:
     build:
