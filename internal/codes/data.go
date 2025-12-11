@@ -11,7 +11,7 @@ type PaperVerificationCode struct {
 	PK           string
 	ActorLPA     string
 	UpdatedAt    time.Time
-	ExpiresAt    time.Time    `dynamodbav:",omitzero"` // omitzero not yet implemented
+	ExpiresAt    time.Time    `dynamodbav:",omitempty"` // omitzero not yet implemented
 	ExpiryReason ExpiryReason `dynamodbav:",omitempty"`
 }
 
