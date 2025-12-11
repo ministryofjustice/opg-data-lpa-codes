@@ -74,6 +74,12 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	encodedRespBody, _ := io.ReadAll(resp.Body)
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			log.Println("unable to close upstream response body:", err)
+		}
+	}(resp.Body)
 
 	var respBody events.APIGatewayProxyResponse
 	_ = json.Unmarshal(encodedRespBody, &respBody)
@@ -107,7 +113,7 @@ func handleFixtureRequests(w http.ResponseWriter, r *http.Request) bool {
 	switch r.URL.Path {
 	case "/_reset_database":
 		if err := resetDatabase(r.Context(), db); err != nil {
-			log.Printf("Error reseting database: %s", err.Error())
+			log.Printf("Error resetting database: %s", err.Error())
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		} else {
 			w.WriteHeader(200)
@@ -322,7 +328,9 @@ func setupDatabase(ctx context.Context) (*dynamodb.Client, error) {
 }
 
 func saveFixture(ctx context.Context, db *dynamodb.Client, table string, item interface{}) error {
-	data, err := attributevalue.MarshalMap(item)
+	data, err := attributevalue.MarshalMapWithOptions(item, func(options *attributevalue.EncoderOptions) {
+		options.OmitEmptyTime = true
+	})
 	if err != nil {
 		return err
 	}
