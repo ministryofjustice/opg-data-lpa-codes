@@ -7,6 +7,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"slices"
 	"strings"
 	"testing"
 	"time"
@@ -1061,6 +1062,9 @@ type Row struct {
 	StatusDetails   string `dynamodbav:"status_details"`
 }
 
+// match Row struct tags so we can ensure no unexpected keys are returned
+var rowKeys = []string{"active", "actor", "code", "dob", "expiry_date", "generated_date", "last_updated_date", "lpa", "status_details"}
+
 func resetDynamo() {
 	resp, err := http.Post("http://localhost:8080/_reset_database", "", nil)
 	if err != nil {
@@ -1083,6 +1087,12 @@ func getCode(code string) *Row {
 	})
 	if err != nil || output.Item == nil {
 		return nil
+	}
+
+	for key := range output.Item {
+		if !slices.Contains(rowKeys, key) {
+			return &Row{}
+		}
 	}
 
 	var v Row
@@ -1119,25 +1129,28 @@ type PaperRow struct {
 	ExpiryReason string
 }
 
+// match PaperRow fields so we can ensure no unexpected keys are returned
+var paperRowKeys = []string{"PK", "ActorLPA", "UpdatedAt", "ExpiresAt", "ExpiryReason"}
+
 func getPaperVerificationCode(pk string) (*PaperRow, error) {
-	output, err := db.Query(ctx, &dynamodb.QueryInput{
-		KeyConditionExpression:   aws.String("#PK = :PK"),
-		ExpressionAttributeNames: map[string]string{"#PK": "PK"},
-		ExpressionAttributeValues: map[string]types.AttributeValue{
-			":PK": &types.AttributeValueMemberS{Value: pk},
+	output, err := db.GetItem(ctx, &dynamodb.GetItemInput{
+		Key: map[string]types.AttributeValue{
+			"PK": &types.AttributeValueMemberS{Value: pk},
 		},
 		TableName: aws.String("data-lpa-codes-local"),
-		Limit:     aws.Int32(1),
 	})
 	if err != nil {
 		return nil, err
 	}
-	if len(output.Items) != 1 {
-		return nil, fmt.Errorf("expected 1 code but got %d", len(output.Items))
+
+	for key := range output.Item {
+		if !slices.Contains(paperRowKeys, key) {
+			return &PaperRow{}, nil
+		}
 	}
 
 	var v PaperRow
-	if err := attributevalue.UnmarshalMap(output.Items[0], &v); err != nil {
+	if err := attributevalue.UnmarshalMap(output.Item, &v); err != nil {
 		return nil, err
 	}
 

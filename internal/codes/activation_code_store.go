@@ -214,7 +214,7 @@ func (s *ActivationCodeStore) updateEntries(ctx context.Context, entries []Activ
 		expression      = []string{}
 	)
 
-	fields["last_update_date"] = time.Now().Format(time.DateOnly)
+	fields["last_updated_date"] = time.Now().Format(time.DateOnly)
 
 	for i, k := range slices.Sorted(maps.Keys(fields)) {
 		attributeNames[fmt.Sprintf("#Field%d", i)] = k
