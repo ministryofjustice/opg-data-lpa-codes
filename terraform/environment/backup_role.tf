@@ -1,9 +1,3 @@
-resource "aws_backup_vault" "data_lpa_codes" {
-  name = "data-lpa-codes-backup-vault-${local.environment}"
-
-  tags = local.default_tags
-}
-
 resource "aws_iam_role" "data_lpa_codes_backup_role" {
   name = "data-lpa-codes-backup-role-${local.environment}"
 
