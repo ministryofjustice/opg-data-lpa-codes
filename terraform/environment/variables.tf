@@ -22,6 +22,7 @@ variable "accounts" {
     object({
       account_id         = string
       account_mapping    = string
+      backups_enabled    = string
       is_production      = string
       vpc_id             = string
       opg_hosted_zone    = string

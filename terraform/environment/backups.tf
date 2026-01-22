@@ -5,7 +5,7 @@ resource "aws_backup_vault" "data_lpa_codes" {
 }
 
 resource "aws_backup_plan" "data_lpa_codes" {
-  count = local.account.is_production == "true" ? 1 : 0
+  count = local.account.backups_enabled ? 1 : 0
   name  = "data-lpa-codes-backup-plan-${local.environment}"
 
   rule {
@@ -37,7 +37,7 @@ resource "aws_backup_plan" "data_lpa_codes" {
 }
 
 resource "aws_backup_selection" "data_lpa_codes" {
-  count        = local.account.is_production == "true" ? 1 : 0
+  count        = local.account.backups_enabled ? 1 : 0
   name         = "data-lpa-codes-backup-selection-${local.environment}"
   iam_role_arn = aws_iam_role.data_lpa_codes_backup_role.arn
   plan_id      = aws_backup_plan.data_lpa_codes[0].id
