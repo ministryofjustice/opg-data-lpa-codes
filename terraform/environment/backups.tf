@@ -1,5 +1,6 @@
 resource "aws_backup_vault" "data_lpa_codes" {
-  name = "data-lpa-codes-backup-vault-${local.environment}"
+  count = local.account.backups_enabled ? 1 : 0
+  name  = "data-lpa-codes-backup-vault-${local.environment}"
 
   tags = local.default_tags
 }
@@ -13,11 +14,11 @@ resource "aws_backup_plan" "data_lpa_codes" {
     rule_name         = "DailyBackups"
     schedule          = "cron(0 5 ? * * *)"
     start_window      = 480
-    target_vault_name = aws_backup_vault.data_lpa_codes.name
+    target_vault_name = aws_backup_vault.data_lpa_codes[0].name
 
     lifecycle {
-      cold_storage_after = 0
-      delete_after       = 7
+      cold_storage_after = local.account.dynamodb_backups.daily_cold_storage_in_days
+      delete_after       = local.account.dynamodb_backups.daily_backup_deletion_in_days
     }
   }
 
@@ -27,11 +28,11 @@ resource "aws_backup_plan" "data_lpa_codes" {
     rule_name           = "Monthly"
     schedule            = "cron(0 5 1 * ? *)"
     start_window        = 480
-    target_vault_name   = aws_backup_vault.data_lpa_codes.name
+    target_vault_name   = aws_backup_vault.data_lpa_codes[0].name
 
     lifecycle {
-      cold_storage_after = 0
-      delete_after       = 30
+      cold_storage_after = local.account.dynamodb_backups.monthly_cold_storage_in_days
+      delete_after       = local.account.dynamodb_backups.monthly_backup_deletion_in_days
     }
   }
 }
@@ -39,7 +40,7 @@ resource "aws_backup_plan" "data_lpa_codes" {
 resource "aws_backup_selection" "data_lpa_codes" {
   count        = local.account.backups_enabled ? 1 : 0
   name         = "data-lpa-codes-backup-selection-${local.environment}"
-  iam_role_arn = aws_iam_role.data_lpa_codes_backup_role.arn
+  iam_role_arn = aws_iam_role.data_lpa_codes_backup_role[0].arn
   plan_id      = aws_backup_plan.data_lpa_codes[0].id
 
   resources = [

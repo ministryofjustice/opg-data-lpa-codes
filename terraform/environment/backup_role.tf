@@ -1,12 +1,14 @@
 resource "aws_iam_role" "data_lpa_codes_backup_role" {
-  name = "data-lpa-codes-backup-role-${local.environment}"
+  count = local.account.backups_enabled ? 1 : 0
+  name  = "data-lpa-codes-backup-role-${local.environment}"
 
   assume_role_policy = data.aws_iam_policy_document.aws_backup_assume_role_policy.json
 }
 
 resource "aws_iam_role_policy" "data_lpa_codes_backup_policy" {
-  name = "data-lpa-codes-backup-policy-${local.environment}"
-  role = aws_iam_role.data_lpa_codes_backup_role.id
+  count = local.account.backups_enabled ? 1 : 0
+  name  = "data-lpa-codes-backup-policy-${local.environment}"
+  role  = aws_iam_role.data_lpa_codes_backup_role[0].id
 
   policy = data.aws_iam_policy_document.data_lpa_codes_backup_policy.json
 }
