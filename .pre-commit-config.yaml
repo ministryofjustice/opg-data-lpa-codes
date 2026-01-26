@@ -1,5 +1,14 @@
 ---
 repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+        exclude: '^\.idea/'
+      - id: no-commit-to-branch
+        args:
+          - --branch=main
   - repo: https://github.com/python-openapi/openapi-spec-validator
     rev: 0.7.1
     hooks:

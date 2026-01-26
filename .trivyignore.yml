@@ -1,43 +1,4 @@
 vulnerabilities:
-  - id: CVE-2025-13601
+  - id: CVE-2025-8732
     statement: Waiting for lambda/provided image update
-    expired_at: 2026-01-20
-  - id: CVE-2024-11053
-    statement: Waiting for lambda/provided image update
-    expired_at: 2026-01-20
-  - id: CVE-2025-0167
-    statement: Waiting for lambda/provided image update
-    expired_at: 2026-01-20
-  - id: CVE-2025-10148
-    statement: Waiting for lambda/provided image update
-    expired_at: 2026-01-20
-  - id: CVE-2025-10966
-    statement: Waiting for lambda/provided image update
-    expired_at: 2026-01-20
-  - id: CVE-2025-9086
-    statement: Waiting for lambda/provided image update
-    expired_at: 2026-01-20
-  - id: CVE-2025-14087
-    statement: Waiting for lambda/provided image update
-    expired_at: 2026-01-20
-  - id: CVE-2025-61727
-    statement: Waiting for lambda/provided image update
-    expired_at: 2026-01-20
-  - id: CVE-2025-61729
-    statement: Waiting for lambda/provided image update
-    expired_at: 2026-01-20
-  - id: CVE-2024-11053
-    statement: Waiting for lambda/provided image update
-    expired_at: 2026-01-20
-  - id: CVE-2025-0167
-    statement: Waiting for lambda/provided image update
-    expired_at: 2026-01-20
-  - id: CVE-2025-10148
-    statement: Waiting for lambda/provided image update
-    expired_at: 2026-01-20
-  - id: CVE-2025-10966
-    statement: Waiting for lambda/provided image update
-    expired_at: 2026-01-20
-  - id: CVE-2025-9086
-    statement: Waiting for lambda/provided image update
-    expired_at: 2026-01-20
+    expired_at: 2026-02-20
