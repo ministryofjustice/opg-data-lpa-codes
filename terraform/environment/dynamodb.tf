@@ -1,9 +1,10 @@
 resource "aws_dynamodb_table" "lpa_codes" {
-  name             = "lpa-codes-${local.environment}"
-  billing_mode     = "PAY_PER_REQUEST"
-  hash_key         = "code"
-  stream_enabled   = true
-  stream_view_type = "NEW_AND_OLD_IMAGES"
+  name                        = "lpa-codes-${local.environment}"
+  billing_mode                = "PAY_PER_REQUEST"
+  hash_key                    = "code"
+  stream_enabled              = true
+  stream_view_type            = "NEW_AND_OLD_IMAGES"
+  deletion_protection_enabled = local.environment == "development" ? false : true
 
   attribute {
     name = "code"
@@ -36,16 +37,17 @@ resource "aws_dynamodb_table" "lpa_codes" {
     enabled = local.account.pit_recovery_flag
   }
 
+
   tags = local.default_tags
 }
 
 resource "aws_dynamodb_table" "data_lpa_codes" {
   name                        = "data-lpa-codes-${local.environment}"
   billing_mode                = "PAY_PER_REQUEST"
-  deletion_protection_enabled = local.account.is_production
   hash_key                    = "PK"
   stream_enabled              = true
   stream_view_type            = "NEW_AND_OLD_IMAGES"
+  deletion_protection_enabled = local.environment == "development" ? false : true
 
   attribute {
     name = "PK"

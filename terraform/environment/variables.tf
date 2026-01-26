@@ -20,8 +20,16 @@ variable "accounts" {
   description = "The accounts to deploy to"
   type = map(
     object({
-      account_id         = string
-      account_mapping    = string
+      account_id      = string
+      account_mapping = string
+      backups_enabled = string
+      dynamodb_backups = object({
+        backups_enabled                 = bool
+        daily_backup_deletion_in_days   = number
+        daily_cold_storage_in_days      = number
+        monthly_backup_deletion_in_days = number
+        monthly_cold_storage_in_days    = number
+      })
       is_production      = string
       vpc_id             = string
       opg_hosted_zone    = string
