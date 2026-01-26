@@ -12,7 +12,7 @@ resource "aws_backup_plan" "data_lpa_codes" {
   rule {
     completion_window = 10080
     rule_name         = "DailyBackups"
-    schedule          = "cron(0 * * * ? *)"
+    schedule          = "cron(0 5 ? * * *)"
     start_window      = 480
     target_vault_name = aws_backup_vault.data_lpa_codes[0].name
 
