@@ -37,7 +37,6 @@ data "aws_iam_policy_document" "data_lpa_codes_backup_policy" {
     effect = "Allow"
     actions = [
       "dynamodb:CreateBackup",
-      "dynamodb:DescribeBackup",
       "dynamodb:DescribeTable"
     ]
     resources = [
@@ -53,5 +52,18 @@ data "aws_iam_policy_document" "data_lpa_codes_backup_policy" {
       "dynamodb:ListTables"
     ]
     resources = ["*"]
+  }
+
+  statement {
+    sid    = "AllowBackupResourcePermissions"
+    effect = "Allow"
+    actions = [
+      "dynamodb:DescribeBackup",
+      "dynamodb:DeleteBackup"
+    ]
+    resources = [
+      "${aws_dynamodb_table.lpa_codes.arn}/backup/*",
+      "${aws_dynamodb_table.data_lpa_codes.arn}/backup/*",
+    ]
   }
 }
