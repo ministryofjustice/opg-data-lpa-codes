@@ -59,7 +59,6 @@ data "aws_iam_policy_document" "data_lpa_codes_backup_policy" {
     effect = "Allow"
     actions = [
       "dynamodb:DescribeBackup",
-      "dynamodb:DeleteBackup"
     ]
     resources = [
       "${aws_dynamodb_table.lpa_codes.arn}/backup/*",
