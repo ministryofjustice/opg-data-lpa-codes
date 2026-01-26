@@ -1,7 +1,6 @@
 resource "aws_iam_role" "data_lpa_codes_backup_role" {
-  count = local.account.backups_enabled ? 1 : 0
-  name  = "data-lpa-codes-backup-role-${local.environment}"
-
+  count              = local.account.backups_enabled ? 1 : 0
+  name               = "data-lpa-codes-backup-role-${local.environment}"
   assume_role_policy = data.aws_iam_policy_document.aws_backup_assume_role_policy.json
 }
 
