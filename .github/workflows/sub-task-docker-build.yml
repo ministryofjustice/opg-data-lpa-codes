@@ -34,7 +34,7 @@ jobs:
     steps:
       - name: Check out code
         id: checkout_code
-        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@61815dcd50bd041e203e49132bacad1fd04d2708 # v5.1.1
@@ -56,7 +56,28 @@ jobs:
         id: build_container
         run: docker build --tag lpa-codes:latest --target production .
 
-      - name: Trivy Image Vulnerability Scanner
+      - name: Generate Trivy vulnerability report
+        id: trivy_scan_sarif
+        uses: aquasecurity/trivy-action@b6643a29fecd7f34b3597bc6acb0a98b03d33ff8 # 0.33.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TRIVY_DB_REPOSITORY: ${{ steps.login_ecr.outputs.registry }}/trivy-db-public-ecr/aquasecurity/trivy-db:2
+          TRIVY_JAVA_DB_REPOSITORY: ${{ steps.login_ecr.outputs.registry }}/trivy-db-public-ecr/aquasecurity/trivy-java-db:1
+          TRIVY_IGNOREFILE: '.trivyignore.yml'
+        with:
+          image-ref: lpa-codes:latest
+          format: 'sarif'
+          ignore-unfixed: true
+          output: 'trivy-results.sarif'
+          exit-code: 0
+
+      - name: Upload Trivy scan results to GitHub Security tab
+        id: trivy_upload_sarif
+        uses: github/codeql-action/upload-sarif@6bc82e05fd0ea64601dd4b465378bbcf57de0314 # v4.32.1
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+      - name: Fail build on High/Critical vulnerabilities
         id: trivy_scan
         uses: aquasecurity/trivy-action@b6643a29fecd7f34b3597bc6acb0a98b03d33ff8 # 0.33.1
         env:
@@ -67,18 +88,11 @@ jobs:
         with:
           image-ref: lpa-codes:latest
           severity: 'HIGH,CRITICAL'
-          format: 'sarif'
+          format: 'table'
           ignore-unfixed: true
           exit-code: 1
-          output: 'trivy-results.sarif'
-        if: always()
-
-      - name: Upload Trivy scan results to GitHub Security tab
-        id: trivy_upload_sarif
-        uses: github/codeql-action/upload-sarif@6bc82e05fd0ea64601dd4b465378bbcf57de0314 # v4.32.1
-        if: always()
-        with:
-          sarif_file: 'trivy-results.sarif'
+          # On a subsequent call to the action we know trivy is already installed so can skip this
+          skip-setup-trivy: true
 
       - name: Install AWS Cli
         uses: unfor19/install-aws-cli-action@f5b46b7f32cf5e7ebd652656c5036bf83dd1e60c # 1.0.8
