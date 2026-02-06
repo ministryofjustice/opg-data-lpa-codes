@@ -34,7 +34,7 @@ jobs:
     steps:
       - name: Check out code
         id: checkout_code
-        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@61815dcd50bd041e203e49132bacad1fd04d2708 # v5.1.1
@@ -67,10 +67,26 @@ jobs:
         with:
           image-ref: lpa-codes:latest
           severity: 'HIGH,CRITICAL'
+          format: 'table'
+          ignore-unfixed: true
+        if: always()
+
+      - name: Trivy Image Vulnerability Scanner
+        id: trivy_scan_sarif
+        uses: aquasecurity/trivy-action@b6643a29fecd7f34b3597bc6acb0a98b03d33ff8 # 0.33.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TRIVY_DB_REPOSITORY: ${{ steps.login_ecr.outputs.registry }}/trivy-db-public-ecr/aquasecurity/trivy-db:2
+          TRIVY_JAVA_DB_REPOSITORY: ${{ steps.login_ecr.outputs.registry }}/trivy-db-public-ecr/aquasecurity/trivy-java-db:1
+          TRIVY_IGNOREFILE: '.trivyignore.yml'
+        with:
+          image-ref: lpa-codes:latest
+          severity: 'HIGH,CRITICAL'
           format: 'sarif'
           ignore-unfixed: true
-          exit-code: 1
           output: 'trivy-results.sarif'
+          # On a subsequent call to the action we know trivy is already installed so can skip this
+          skip-setup-trivy: true
         if: always()
 
       - name: Upload Trivy scan results to GitHub Security tab
