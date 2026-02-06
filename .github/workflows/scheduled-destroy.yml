@@ -21,13 +21,13 @@ jobs:
   terraform_environment_cleanup:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - uses: unfor19/install-aws-cli-action@f5b46b7f32cf5e7ebd652656c5036bf83dd1e60c # 1.0.8
 
       - name: "Set terraform version"
         id: set-terraform-version
-        uses: ministryofjustice/opg-github-actions/actions/terraform-version@82323da6c533ab565c1652a590230ff2f0acc942 # v4.3.8
+        uses: ministryofjustice/opg-github-actions/actions/terraform-version@b8868247a908f74fafe1905701391580575a6d35 # v4.3.10
         with:
           terraform_directory: ./terraform/environment
 

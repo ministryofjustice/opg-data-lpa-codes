@@ -26,7 +26,7 @@ jobs:
   terraform_workflow:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           fetch-depth: '0'
 
@@ -35,7 +35,7 @@ jobs:
 
       - name: "Set terraform version"
         id: set-terraform-version
-        uses: ministryofjustice/opg-github-actions/actions/terraform-version@82323da6c533ab565c1652a590230ff2f0acc942 # v4.3.8
+        uses: ministryofjustice/opg-github-actions/actions/terraform-version@b8868247a908f74fafe1905701391580575a6d35 # v4.3.10
         with:
           terraform_directory: ./${{ inputs.terraform_path }}
 
