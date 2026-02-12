@@ -61,18 +61,16 @@ jobs:
         uses: aquasecurity/trivy-action@b6643a29fecd7f34b3597bc6acb0a98b03d33ff8 # 0.33.1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#          TRIVY_DB_REPOSITORY: ${{ steps.login_ecr.outputs.registry }}/trivy-db-public-ecr/aquasecurity/trivy-db:2
-#          TRIVY_JAVA_DB_REPOSITORY: ${{ steps.login_ecr.outputs.registry }}/trivy-db-public-ecr/aquasecurity/trivy-java-db:1
-          TRIVY_DB_REPOSITORY: ghcr.io/aquasecurity/trivy-db
-          TRIVY_JAVA_DB_REPOSITORY: ghcr.io/aquasecurity/trivy-java-db
-          TRIVY_TIMEOUT: 10m
+          TRIVY_DB_REPOSITORY: ${{ steps.login_ecr.outputs.registry }}/trivy-db-public-ecr/aquasecurity/trivy-db:2
+          TRIVY_JAVA_DB_REPOSITORY: ${{ steps.login_ecr.outputs.registry }}/trivy-db-public-ecr/aquasecurity/trivy-java-db:1
           TRIVY_IGNOREFILE: '.trivyignore.yml'
         with:
           image-ref: lpa-codes:latest
           format: 'sarif'
           ignore-unfixed: true
           output: 'trivy-results.sarif'
-          exit-code: 0
+          severity: CRITICAL
+          exit-code: 1
 
       - name: Upload Trivy scan results to GitHub Security tab
         id: trivy_upload_sarif
@@ -85,11 +83,8 @@ jobs:
         uses: aquasecurity/trivy-action@b6643a29fecd7f34b3597bc6acb0a98b03d33ff8 # 0.33.1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#          TRIVY_DB_REPOSITORY: ${{ steps.login_ecr.outputs.registry }}/trivy-db-public-ecr/aquasecurity/trivy-db:2
-#          TRIVY_JAVA_DB_REPOSITORY: ${{ steps.login_ecr.outputs.registry }}/trivy-db-public-ecr/aquasecurity/trivy-java-db:1
-          TRIVY_DB_REPOSITORY: ghcr.io/aquasecurity/trivy-db
-          TRIVY_JAVA_DB_REPOSITORY: ghcr.io/aquasecurity/trivy-java-db
-          TRIVY_TIMEOUT: 10m
+          TRIVY_DB_REPOSITORY: ${{ steps.login_ecr.outputs.registry }}/trivy-db-public-ecr/aquasecurity/trivy-db:2
+          TRIVY_JAVA_DB_REPOSITORY: ${{ steps.login_ecr.outputs.registry }}/trivy-db-public-ecr/aquasecurity/trivy-java-db:1
           TRIVY_IGNOREFILE: '.trivyignore.yml'
         with:
           image-ref: lpa-codes:latest
