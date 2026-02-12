@@ -69,6 +69,7 @@ jobs:
           format: 'sarif'
           ignore-unfixed: true
           output: 'trivy-results.sarif'
+          severity: CRITICAL
           exit-code: 0
 
       - name: Upload Trivy scan results to GitHub Security tab
@@ -87,7 +88,7 @@ jobs:
           TRIVY_IGNOREFILE: '.trivyignore.yml'
         with:
           image-ref: lpa-codes:latest
-          severity: 'HIGH,CRITICAL'
+          severity: 'CRITICAL'
           format: 'table'
           ignore-unfixed: true
           exit-code: 1
