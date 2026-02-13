@@ -14,11 +14,11 @@ on:
   workflow_call:
     inputs:
       tag:
-        description: 'Tag for docker image'
+        description: "Tag for docker image"
         required: true
         type: string
       branch_name:
-        description: 'Branch we are on'
+        description: "Branch we are on"
         required: true
         type: string
     secrets:
@@ -54,7 +54,7 @@ jobs:
 
       - name: Build Container
         id: build_container
-        run: docker build --tag lpa-codes:latest --target production .
+        run: docker build --platform linux/amd64 --provenance=false --tag lpa-codes:latest --target production .
 
       - name: Generate Trivy vulnerability report
         id: trivy_scan_sarif
@@ -63,20 +63,19 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TRIVY_DB_REPOSITORY: ${{ steps.login_ecr.outputs.registry }}/trivy-db-public-ecr/aquasecurity/trivy-db:2
           TRIVY_JAVA_DB_REPOSITORY: ${{ steps.login_ecr.outputs.registry }}/trivy-db-public-ecr/aquasecurity/trivy-java-db:1
-          TRIVY_IGNOREFILE: '.trivyignore.yml'
+          TRIVY_IGNOREFILE: ".trivyignore.yml"
         with:
           image-ref: lpa-codes:latest
-          format: 'sarif'
+          format: "sarif"
           ignore-unfixed: true
-          output: 'trivy-results.sarif'
-          severity: CRITICAL
+          output: "trivy-results.sarif"
           exit-code: 0
 
       - name: Upload Trivy scan results to GitHub Security tab
         id: trivy_upload_sarif
         uses: github/codeql-action/upload-sarif@6bc82e05fd0ea64601dd4b465378bbcf57de0314 # v4.32.1
         with:
-          sarif_file: 'trivy-results.sarif'
+          sarif_file: "trivy-results.sarif"
 
       - name: Fail build on High/Critical vulnerabilities
         id: trivy_scan
@@ -85,11 +84,11 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TRIVY_DB_REPOSITORY: ${{ steps.login_ecr.outputs.registry }}/trivy-db-public-ecr/aquasecurity/trivy-db:2
           TRIVY_JAVA_DB_REPOSITORY: ${{ steps.login_ecr.outputs.registry }}/trivy-db-public-ecr/aquasecurity/trivy-java-db:1
-          TRIVY_IGNOREFILE: '.trivyignore.yml'
+          TRIVY_IGNOREFILE: ".trivyignore.yml"
         with:
           image-ref: lpa-codes:latest
-          severity: 'HIGH,CRITICAL'
-          format: 'table'
+          severity: "HIGH,CRITICAL"
+          format: "table"
           ignore-unfixed: true
           exit-code: 1
           # On a subsequent call to the action we know trivy is already installed so can skip this
