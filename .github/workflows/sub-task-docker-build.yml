@@ -58,7 +58,7 @@ jobs:
 
       - name: Generate Trivy vulnerability report
         id: trivy_scan_sarif
-        uses: aquasecurity/trivy-action@b6643a29fecd7f34b3597bc6acb0a98b03d33ff8 # 0.33.1
+        uses: aquasecurity/trivy-action@c1824fd6edce30d7ab345a9989de00bbd46ef284 # 0.34.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TRIVY_DB_REPOSITORY: ${{ steps.login_ecr.outputs.registry }}/trivy-db-public-ecr/aquasecurity/trivy-db:2
@@ -79,7 +79,7 @@ jobs:
 
       - name: Fail build on High/Critical vulnerabilities
         id: trivy_scan
-        uses: aquasecurity/trivy-action@b6643a29fecd7f34b3597bc6acb0a98b03d33ff8 # 0.33.1
+        uses: aquasecurity/trivy-action@c1824fd6edce30d7ab345a9989de00bbd46ef284 # 0.34.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TRIVY_DB_REPOSITORY: ${{ steps.login_ecr.outputs.registry }}/trivy-db-public-ecr/aquasecurity/trivy-db:2
