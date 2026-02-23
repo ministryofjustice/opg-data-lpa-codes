@@ -1,34 +1,31 @@
 vulnerabilities:
-  - id: CVE-2025-8732
+  - id: CVE-2026-24882
     statement: Waiting for lambda/provided image update
-    expired_at: 2026-02-20
-  - id: CVE-2025-68973
-    statement: Deferring for a week
-    expired_at: 2026-02-20
-  - id: CVE-2025-61726
-    statement: Deferring for a week
-    expired_at: 2026-02-20
-  - id: CVE-2025-61728
-    statement: Deferring for a week
-    expired_at: 2026-02-20
-  - id: CVE-2025-61730
-    statement: Deferring for a week
-    expired_at: 2026-02-20
-  - id: CVE-2025-61731
-    statement: Deferring for a week
-    expired_at: 2026-02-20
-  - id: CVE-2025-68119
-    statement: Deferring for a week
-    expired_at: 2026-02-20
-  - id: CVE-2025-68121
-    statement: Deferring for a week
-    expired_at: 2026-02-20
-  - id: CVE-2025-13151
-    statement: Deferring for a week
-    expired_at: 2026-02-20
-  - id: CVE-2025-15467
-    statement: Deferring for a week
-    expired_at: 2026-02-20
-  - id: CVE-2025-68121
-    statement: Deferring for a week
-    expired_at: 2026-02-20
+    expired_at: 2026-03-02
+  - id: CVE-2025-15468
+    statement: Waiting for lambda/provided image update
+    expired_at: 2026-03-02
+  - id: CVE-2025-66199
+    statement: Waiting for lambda/provided image update
+    expired_at: 2026-03-02
+  - id: CVE-2025-68160
+    statement: Waiting for lambda/provided image update
+    expired_at: 2026-03-02
+  - id: CVE-2025-69418
+    statement: Waiting for lambda/provided image update
+    expired_at: 2026-03-02
+  - id: CVE-2025-69419
+    statement: Waiting for lambda/provided image update
+    expired_at: 2026-03-02
+  - id: CVE-2025-69420
+    statement: Waiting for lambda/provided image update
+    expired_at: 2026-03-02
+  - id: CVE-2025-69421
+    statement: Waiting for lambda/provided image update
+    expired_at: 2026-03-02
+  - id: CVE-2026-22795
+    statement: Waiting for lambda/provided image update
+    expired_at: 2026-03-02
+  - id: CVE-2026-22796
+    statement: Waiting for lambda/provided image update
+    expired_at: 2026-03-02
