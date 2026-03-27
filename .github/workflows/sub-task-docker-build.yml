@@ -83,7 +83,6 @@ jobs:
         with:
           SNYK_TEST_IMAGE: lpa-codes:latest
           snyk_test_args: --severity-threshold=high
-          skip-setup: true
 
       - name: Install AWS Cli
         uses: unfor19/install-aws-cli-action@f5b46b7f32cf5e7ebd652656c5036bf83dd1e60c # 1.0.8
