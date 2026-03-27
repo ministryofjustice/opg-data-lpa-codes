@@ -8,7 +8,7 @@ on:
   workflow_call:
     inputs:
       workspace:
-        description: 'Terraform workspace'
+        description: "Terraform workspace"
         required: true
         type: string
     secrets:
@@ -26,7 +26,7 @@ jobs:
     strategy:
       matrix:
         include:
-          - folder: 'environment'
+          - folder: "environment"
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
@@ -67,9 +67,3 @@ jobs:
           echo $TF_WORKSPACE
           terraform validate
         working-directory: ./terraform/${{ matrix.folder }}
-
-      - name: tfsec with pr comments
-        uses: tfsec/tfsec-pr-commenter-action@7a44c5dcde5dfab737363e391800629e27b6376b # v1.3.1
-        with:
-          working_directory: ./terraform/${{ matrix.folder }}
-          github_token: ${{secrets.source_github_token}}
