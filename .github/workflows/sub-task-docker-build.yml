@@ -26,6 +26,8 @@ on:
         required: true
       aws_secret_access_key_actions:
         required: true
+      SNYK_OPG_ORG_TOKEN:
+        required: true
 
 jobs:
   docker_build_scan_push:
@@ -56,43 +58,32 @@ jobs:
         id: build_container
         run: docker build --platform linux/amd64 --provenance=false --tag lpa-codes:latest --target production .
 
-      - name: Generate Trivy vulnerability report
-        id: trivy_scan_sarif
-        uses: aquasecurity/trivy-action@c1824fd6edce30d7ab345a9989de00bbd46ef284 # 0.34.0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TRIVY_DB_REPOSITORY: ${{ steps.login_ecr.outputs.registry }}/trivy-db-public-ecr/aquasecurity/trivy-db:2
-          TRIVY_JAVA_DB_REPOSITORY: ${{ steps.login_ecr.outputs.registry }}/trivy-db-public-ecr/aquasecurity/trivy-java-db:1
-          TRIVY_IGNOREFILE: ".trivyignore.yml"
+      - name: Run SNYK vulnerability scan
+        id: snyk_scan
+        uses: ministryofjustice/opg-github-actions/actions/snyk-scan@8dea82fc8b8e7ffca431f0fb83848d523147ccd8 # v4.5.0
+        continue-on-error: true
         with:
-          image-ref: lpa-codes:latest
-          format: "sarif"
-          ignore-unfixed: true
-          output: "trivy-results.sarif"
-          exit-code: 0
+          SNYK_TEST_IMAGE: lpa-codes:latest
+          SNYK_TOKEN: ${{ secrets.SNYK_OPG_ORG_TOKEN }}
+          sarif_filename: snyk-results.sarif
+          snyk_test_args: --severity-threshold=high
 
-      - name: Upload Trivy scan results to GitHub Security tab
-        id: trivy_upload_sarif
+      - name: Upload SNYK scan results to GitHub Security tab
+        id: snyk_upload_sarif
+        if: steps.snyk_scan.outcome == 'success'
         uses: github/codeql-action/upload-sarif@9e907b5e64f6b83e7804b09294d44122997950d6 # v4.32.3
         with:
-          sarif_file: "trivy-results.sarif"
+          sarif_file: "snyk-results.sarif"
 
       - name: Fail build on High/Critical vulnerabilities
-        id: trivy_scan
-        uses: aquasecurity/trivy-action@c1824fd6edce30d7ab345a9989de00bbd46ef284 # 0.34.0
+        id: snyk_scan_critical
+        uses: ministryofjustice/opg-github-actions/actions/snyk-scan@8dea82fc8b8e7ffca431f0fb83848d523147ccd8 # v4.5.0
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TRIVY_DB_REPOSITORY: ${{ steps.login_ecr.outputs.registry }}/trivy-db-public-ecr/aquasecurity/trivy-db:2
-          TRIVY_JAVA_DB_REPOSITORY: ${{ steps.login_ecr.outputs.registry }}/trivy-db-public-ecr/aquasecurity/trivy-java-db:1
-          TRIVY_IGNOREFILE: ".trivyignore.yml"
+          SNYK_TOKEN: ${{ secrets.SNYK_OPG_ORG_TOKEN }}
         with:
-          image-ref: lpa-codes:latest
-          severity: "HIGH,CRITICAL"
-          format: "table"
-          ignore-unfixed: true
-          exit-code: 1
-          # On a subsequent call to the action we know trivy is already installed so can skip this
-          skip-setup-trivy: true
+          SNYK_TEST_IMAGE: lpa-codes:latest
+          snyk_test_args: --severity-threshold=high
+          skip-setup: true
 
       - name: Install AWS Cli
         uses: unfor19/install-aws-cli-action@f5b46b7f32cf5e7ebd652656c5036bf83dd1e60c # 1.0.8
