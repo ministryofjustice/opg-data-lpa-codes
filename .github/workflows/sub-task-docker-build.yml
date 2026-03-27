@@ -70,6 +70,7 @@ jobs:
 
       - name: Upload SNYK scan results to GitHub Security tab
         id: snyk_upload_sarif
+        if: steps.snyk_scan.outcome == 'success'
         uses: github/codeql-action/upload-sarif@9e907b5e64f6b83e7804b09294d44122997950d6 # v4.32.3
         with:
           sarif_file: "snyk-results.sarif"
