@@ -41,7 +41,7 @@ jobs:
 
   create_tags:
     name: Create Tags
-    needs: ['branch_name']
+    needs: ["branch_name"]
     uses: ./.github/workflows/sub-task-tags.yml
     with:
       branch_name: ${{ needs.branch_name.outputs.formatted_branch }}
@@ -50,7 +50,7 @@ jobs:
 
   docker_build_scan_push:
     name: Build, Scan and Push
-    needs: [ 'create_tags', 'branch_name' ]
+    needs: ["create_tags", "branch_name"]
     uses: ./.github/workflows/sub-task-docker-build.yml
     with:
       tag: main-${{ needs.create_tags.outputs.version_tag }}
@@ -58,16 +58,14 @@ jobs:
     secrets:
       aws_access_key_id_actions: ${{ secrets.AWS_ACCESS_KEY_ID_ACTIONS }}
       aws_secret_access_key_actions: ${{ secrets.AWS_SECRET_ACCESS_KEY_ACTIONS }}
+      SNYK_OPG_ORG_TOKEN: ${{ secrets.SNYK_OPG_ORG_TOKEN }}
 
   development_environment_apply:
     name: Development Environment Terraform Plan
-    needs: [
-      'create_tags',
-      'docker_build_scan_push'
-    ]
+    needs: ["create_tags", "docker_build_scan_push"]
     uses: ./.github/workflows/sub-task-terraform.yml
     with:
-      terraform_path: 'terraform/environment'
+      terraform_path: "terraform/environment"
       image_tag: main-${{ needs.create_tags.outputs.version_tag }}
       workspace: development
     secrets:
@@ -77,26 +75,25 @@ jobs:
 
   development_integration_tests:
     name: Integration tests against development
-    needs: [
-      'development_environment_apply'
-    ]
+    needs: ["development_environment_apply"]
     uses: ./.github/workflows/sub-task-integration-tests.yml
     with:
-      workspace: 'development'
+      workspace: "development"
     secrets:
       aws_access_key_id_actions: ${{ secrets.AWS_ACCESS_KEY_ID_ACTIONS }}
       aws_secret_access_key_actions: ${{ secrets.AWS_SECRET_ACCESS_KEY_ACTIONS }}
 
   preproduction_environment_apply:
     name: Preproduction Environment Terraform Plan and Apply
-    needs: [
-      'development_environment_apply',
-      'development_integration_tests',
-      'create_tags'
-    ]
+    needs:
+      [
+        "development_environment_apply",
+        "development_integration_tests",
+        "create_tags",
+      ]
     uses: ./.github/workflows/sub-task-terraform.yml
     with:
-      terraform_path: 'terraform/environment'
+      terraform_path: "terraform/environment"
       image_tag: main-${{ needs.create_tags.outputs.version_tag }}
       workspace: preproduction
     secrets:
@@ -106,13 +103,10 @@ jobs:
 
   production_environment_apply:
     name: Production Environment Terraform Plan and Apply
-    needs: [
-      'preproduction_environment_apply',
-      'create_tags'
-    ]
+    needs: ["preproduction_environment_apply", "create_tags"]
     uses: ./.github/workflows/sub-task-terraform.yml
     with:
-      terraform_path: 'terraform/environment'
+      terraform_path: "terraform/environment"
       image_tag: main-${{ needs.create_tags.outputs.version_tag }}
       workspace: production
     secrets:
@@ -122,13 +116,10 @@ jobs:
 
   integration_environment_apply:
     name: Integration Environment Terraform Plan and Apply
-    needs: [
-      'production_environment_apply',
-      'create_tags'
-    ]
+    needs: ["production_environment_apply", "create_tags"]
     uses: ./.github/workflows/sub-task-terraform.yml
     with:
-      terraform_path: 'terraform/environment'
+      terraform_path: "terraform/environment"
       image_tag: main-${{ needs.create_tags.outputs.version_tag }}
       workspace: integration
     secrets:
@@ -138,13 +129,10 @@ jobs:
 
   demo_environment_apply:
     name: Demo Environment Terraform Plan and Apply
-    needs: [
-      'production_environment_apply',
-      'create_tags'
-    ]
+    needs: ["production_environment_apply", "create_tags"]
     uses: ./.github/workflows/sub-task-terraform.yml
     with:
-      terraform_path: 'terraform/environment'
+      terraform_path: "terraform/environment"
       image_tag: main-${{ needs.create_tags.outputs.version_tag }}
       workspace: demo
     secrets:
@@ -154,10 +142,7 @@ jobs:
 
   workflow_complete:
     name: Workflow Complete
-    needs: [
-      'demo_environment_apply',
-      'integration_environment_apply'
-      ]
+    needs: ["demo_environment_apply", "integration_environment_apply"]
     runs-on: ubuntu-latest
     steps:
       - name: Completion message
