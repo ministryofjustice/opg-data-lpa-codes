@@ -70,22 +70,21 @@ jobs:
           output: "snyk-results.sarif"
           exit-code: 0
 
-      # - name: Upload SNYK scan results to GitHub Security tab
-      #   id: snyk_upload_sarif
-      #   uses: github/codeql-action/upload-sarif@9e907b5e64f6b83e7804b09294d44122997950d6 # v4.32.3
-      #   with:
-      #     sarif_file: "snyk-results.sarif"
+      - name: Upload SNYK scan results to GitHub Security tab
+        id: snyk_upload_sarif
+        uses: github/codeql-action/upload-sarif@9e907b5e64f6b83e7804b09294d44122997950d6 # v4.32.3
+        with:
+          sarif_file: "snyk-results.sarif"
 
-      # - name: Fail build on High/Critical vulnerabilities
-      #   id: snyk_scan_critical
-      #   uses: snyk/actions/docker@master
-      #   env:
-      #     SNYK_TOKEN: ${{ secrets.SNYK_OPG_ORG_TOKEN }}
-      #   with:
-      #     image: lpa-codes:latest
-      #     severity-threshold: high
-      #     # On a subsequent call to the action we know snyk is already installed so can skip this
-      #     skip-setup: true
+      - name: Fail build on High/Critical vulnerabilities
+        id: snyk_scan_critical
+        uses: snyk/actions/docker@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_OPG_ORG_TOKEN }}
+        with:
+          image: lpa-codes:latest
+          severity-threshold: high
+          skip-setup: true
 
       - name: Install AWS Cli
         uses: unfor19/install-aws-cli-action@f5b46b7f32cf5e7ebd652656c5036bf83dd1e60c # 1.0.8
