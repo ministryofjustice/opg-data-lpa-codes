@@ -66,7 +66,7 @@ jobs:
           SNYK_TEST_IMAGE: lpa-codes:latest
           SNYK_TOKEN: ${{ secrets.SNYK_OPG_ORG_TOKEN }}
           sarif_filename: snyk-results.sarif
-          snyk_test_args: "--exclude-base-image-vulns"
+          snyk_test_args: --severity-threshold=high
 
       - name: Upload SNYK scan results to GitHub Security tab
         id: snyk_upload_sarif
@@ -77,12 +77,12 @@ jobs:
 
       - name: Fail build on High/Critical vulnerabilities
         id: snyk_scan_critical
-        uses: snyk/actions/docker@master
+        uses: ministryofjustice/opg-github-actions/actions/snyk-scan@8dea82fc8b8e7ffca431f0fb83848d523147ccd8 # v4.5.0
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_OPG_ORG_TOKEN }}
         with:
-          image: lpa-codes:latest
-          args: --severity-threshold=high
+          SNYK_TEST_IMAGE: lpa-codes:latest
+          snyk_test_args: --severity-threshold=high
           skip-setup: true
 
       - name: Install AWS Cli
