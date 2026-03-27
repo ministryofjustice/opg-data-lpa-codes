@@ -4,6 +4,7 @@
 **/.infracosts
 .notes
 .vs
+.vscode
 
 # Mac
 .DS_Store
