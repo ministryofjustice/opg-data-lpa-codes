@@ -1,0 +1,104 @@
+# Snyk (https://snyk.io) policy file, patches or ignores known vulnerabilities.
+version: v1.25.1
+# ignores vulnerabilities until expiry date; change duration by modifying expiry date
+
+ignore:
+  SNYK-AMZN2023-OPENSSLSNAPSAFELIBS-15320362:
+    - "*":
+        reason: None Given
+        expires: 2026-04-26T12:25:53.206Z
+        created: 2026-03-27T12:25:53.208Z
+  SNYK-AMZN2023-OPENSSLSNAPSAFELIBS-15320371:
+    - "*":
+        reason: None Given
+        expires: 2026-04-26T12:25:54.758Z
+        created: 2026-03-27T12:25:54.762Z
+  SNYK-AMZN2023-OPENSSLSNAPSAFELIBS-15320423:
+    - "*":
+        reason: None Given
+        expires: 2026-04-26T12:25:56.348Z
+        created: 2026-03-27T12:25:56.353Z
+  SNYK-AMZN2023-OPENSSLSNAPSAFELIBS-15320460:
+    - "*":
+        reason: None Given
+        expires: 2026-04-26T12:25:58.108Z
+        created: 2026-03-27T12:25:58.113Z
+  SNYK-AMZN2023-OPENSSLSNAPSAFELIBS-15320473:
+    - "*":
+        reason: None Given
+        expires: 2026-04-26T12:25:59.527Z
+        created: 2026-03-27T12:25:59.531Z
+  SNYK-AMZN2023-OPENSSLSNAPSAFELIBS-15320655:
+    - "*":
+        reason: None Given
+        expires: 2026-04-26T12:26:01.019Z
+        created: 2026-03-27T12:26:01.023Z
+  SNYK-AMZN2023-OPENSSLSNAPSAFELIBS-15320673:
+    - "*":
+        reason: None Given
+        expires: 2026-04-26T12:26:02.360Z
+        created: 2026-03-27T12:26:02.365Z
+  SNYK-AMZN2023-OPENSSLSNAPSAFELIBS-15320811:
+    - "*":
+        reason: None Given
+        expires: 2026-04-26T12:26:03.782Z
+        created: 2026-03-27T12:26:03.787Z
+  SNYK-AMZN2023-OPENSSLSNAPSAFELIBS-15320816:
+    - "*":
+        reason: None Given
+        expires: 2026-04-26T12:26:05.276Z
+        created: 2026-03-27T12:26:05.288Z
+  SNYK-AMZN2023-OPENSSLFIPSPROVIDERLATEST-15320353:
+    - "*":
+        reason: None Given
+        expires: 2026-04-26T12:26:06.873Z
+        created: 2026-03-27T12:26:06.878Z
+  SNYK-AMZN2023-OPENSSLFIPSPROVIDERLATEST-15320384:
+    - "*":
+        reason: None Given
+        expires: 2026-04-26T12:26:08.384Z
+        created: 2026-03-27T12:26:08.387Z
+  SNYK-AMZN2023-OPENSSLFIPSPROVIDERLATEST-15320462:
+    - "*":
+        reason: None Given
+        expires: 2026-04-26T12:26:10.014Z
+        created: 2026-03-27T12:26:10.018Z
+  SNYK-AMZN2023-OPENSSLFIPSPROVIDERLATEST-15320514:
+    - "*":
+        reason: None Given
+        expires: 2026-04-26T12:26:11.520Z
+        created: 2026-03-27T12:26:11.524Z
+  SNYK-AMZN2023-OPENSSLFIPSPROVIDERLATEST-15320590:
+    - "*":
+        reason: None Given
+        expires: 2026-04-26T12:26:12.995Z
+        created: 2026-03-27T12:26:13.000Z
+  SNYK-AMZN2023-OPENSSLFIPSPROVIDERLATEST-15320689:
+    - "*":
+        reason: None Given
+        expires: 2026-04-26T12:26:14.412Z
+        created: 2026-03-27T12:26:14.417Z
+  SNYK-AMZN2023-OPENSSLFIPSPROVIDERLATEST-15320810:
+    - "*":
+        reason: None Given
+        expires: 2026-04-26T12:26:16.013Z
+        created: 2026-03-27T12:26:16.017Z
+  SNYK-AMZN2023-OPENSSLFIPSPROVIDERLATEST-15320835:
+    - "*":
+        reason: None Given
+        expires: 2026-04-26T12:26:17.460Z
+        created: 2026-03-27T12:26:17.465Z
+  SNYK-AMZN2023-OPENSSLFIPSPROVIDERLATEST-15320904:
+    - "*":
+        reason: None Given
+        expires: 2026-04-26T12:26:18.858Z
+        created: 2026-03-27T12:26:18.864Z
+  SNYK-AMZN2023-GNUPG2MINIMAL-15319477:
+    - "*":
+        reason: None Given
+        expires: 2026-04-26T12:26:20.298Z
+        created: 2026-03-27T12:26:20.303Z
+patch: {}
+
+# https://security.snyk.io/vuln/SNYK-AMZN2023-GNUPG2MINIMAL-15319477
+# all vulnerabilities above are in relation to upgrading amazon-Linux:2023
