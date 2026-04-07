@@ -3,6 +3,7 @@ permissions:
   checks: read
   contents: read
   deployments: none
+  id-token: write
   issues: none
   packages: none
   pull-requests: none
@@ -22,10 +23,6 @@ on:
         required: true
         type: string
     secrets:
-      aws_access_key_id_actions:
-        required: true
-      aws_secret_access_key_actions:
-        required: true
       SNYK_OPG_ORG_TOKEN:
         required: true
 
@@ -41,12 +38,10 @@ jobs:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@61815dcd50bd041e203e49132bacad1fd04d2708 # v5.1.1
         with:
-          aws-access-key-id: ${{ secrets.aws_access_key_id_actions }}
-          aws-secret-access-key: ${{ secrets.aws_secret_access_key_actions }}
           aws-region: eu-west-1
-          role-to-assume: arn:aws:iam::311462405659:role/integrations-ci
+          role-to-assume: ${{ vars.OIDC_MANAGEMENT_ECR_ROLE }}
           role-duration-seconds: 900
-          role-session-name: OPGLPACodesGithubAction
+          role-session-name: OPGLPACodesDockerBuildGithubAction
 
       - name: Login to ECR
         id: login_ecr
@@ -74,9 +69,6 @@ jobs:
         uses: github/codeql-action/upload-sarif@9e907b5e64f6b83e7804b09294d44122997950d6 # v4.32.3
         with:
           sarif_file: "snyk-results.sarif"
-
-      - name: Install AWS Cli
-        uses: unfor19/install-aws-cli-action@f5b46b7f32cf5e7ebd652656c5036bf83dd1e60c # 1.0.8
 
       - name: Push to ECR
         env:

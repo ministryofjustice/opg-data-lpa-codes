@@ -23,8 +23,6 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - uses: unfor19/install-aws-cli-action@f5b46b7f32cf5e7ebd652656c5036bf83dd1e60c # 1.0.8
-
       - name: "Set terraform version"
         id: set-terraform-version
         uses: ministryofjustice/opg-github-actions/actions/terraform-version@b8868247a908f74fafe1905701391580575a6d35 # v4.3.10
@@ -39,9 +37,8 @@ jobs:
       - name: Configure AWS Credentials For Terraform
         uses: aws-actions/configure-aws-credentials@61815dcd50bd041e203e49132bacad1fd04d2708 # v5.1.1
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_ACTIONS }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_ACTIONS }}
           aws-region: eu-west-1
+          role-to-assume: ${{ vars.OIDC_PULL_REQUEST_ROLE }}
           role-duration-seconds: 3600
           role-session-name: OPGLPACodesClearupEnvs
 
@@ -51,10 +48,10 @@ jobs:
           sudo tar -xvf $HOME/terraform-workspace-manager.tar.gz -C /usr/local/bin
           sudo chmod +x /usr/local/bin/terraform-workspace-manager
 
-      - name: Setup SSH private key
-        uses: webfactory/ssh-agent@a6f90b1f127823b31d4d4a8d96047790581349bd # v0.9.1
+      - id: deploy-key
+        uses: ministryofjustice/opg-github-actions/actions/github-deploy-key@a2907c7c7be94301c965ace76a2cfa407ad6fc88 # v4.6.0
         with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY_ALLOW_LIST_REPOSITORY }}
+          deploy_key: ${{ secrets.ssh_private_key_allow_list_repository }}
 
       - name: Terraform Init
         working-directory: terraform/environment
