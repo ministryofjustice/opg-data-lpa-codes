@@ -57,7 +57,7 @@ jobs:
   terraform_workflow:
     runs-on: ubuntu-latest
     env:
-      TF_WORKSPACE: ${{ inputs.workspace_name }}
+      TF_WORKSPACE: ${{ inputs.workspace }}
       TF_VAR_image_tag: ${{ inputs.image_tag }}
       TF_VAR_default_role: ${{ inputs.default_role }}
       TF_VAR_management_role: ${{ inputs.management_role }}
