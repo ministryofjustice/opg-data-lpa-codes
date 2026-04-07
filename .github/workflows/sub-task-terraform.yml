@@ -94,19 +94,18 @@ jobs:
           deploy_key: ${{ secrets.ssh_private_key_allow_list_repository }}
 
       - name: Terraform Init
+        working-directory: ./${{ inputs.terraform_path }}
         env:
           TF_WORKSPACE: default
-
         run: terraform init -input=false -upgrade
-        working-directory: ./${{ inputs.terraform_path }}
 
       - name: Terraform Plan
+        working-directory: ./${{ inputs.terraform_path }}
         run: |
           terraform workspace show
           terraform plan -input=false -parallelism=30 -out=${{ env.TF_WORKSPACE }}.plan
-        working-directory: ./${{ inputs.terraform_path }}
 
       - name: Terraform Apply
+        working-directory: ./${{ inputs.terraform_path }}
         if: inputs.apply == true
         run: terraform apply -lock-timeout=300s -input=false -auto-approve -parallelism=30 ${{ env.TF_WORKSPACE }}.plan
-        working-directory: ./${{ inputs.terraform_path }}
