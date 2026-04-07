@@ -1,0 +1,97 @@
+name: "Destroy Environment"
+
+on:
+  workflow_call:
+    inputs:
+      workspace_name:
+        description: "The terraform workspace to target for environment actions"
+        required: true
+        type: string
+      terraform_path:
+        description: 'The name of the terraform paths'
+        required: true
+        type: string
+      oidc_role:
+        description: 'The OIDC role to assume for AWS access'
+        required: true
+        type: string
+      default_role:
+        description: 'The default CI role to assume'
+        required: true
+        type: string
+      management_role:
+        description: 'The management CI role to assume'
+        required: true
+        type: string
+    secrets:
+      allowlist_deploy_key:
+        description: "SSH Deploy Key"
+        required: true
+
+jobs:
+  check:
+    name: Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Error if protected
+        if: ${{ contains(fromJSON('["development", "preproduction", "production", "demo", "integration"]'), inputs.workspace_name) }}
+        run: |
+          echo "Cannot destroy protected Environment"
+          exit 1
+
+  terraform_environment_workflow:
+    permissions:
+      id-token: write
+    runs-on: ubuntu-latest
+    needs: check
+    env:
+      TF_VAR_default_role: ${{ inputs.default_role }}
+      TF_VAR_management_role: ${{ inputs.management_role }}
+      TF_VAR_image_tag: "latest"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: '0'
+
+      - name: 'Set terraform version'
+        id: set-terraform-version
+        uses: ministryofjustice/opg-github-actions/actions/terraform-version@b8868247a908f74fafe1905701391580575a6d35 # v4.3.10
+        with:
+          terraform_directory: ./${{ inputs.terraform_path }}
+
+      - uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3.1.2
+        with:
+          terraform_version: ${{ steps.set-terraform-version.outputs.version }}
+
+      - name: Configure AWS Credentials For Terraform
+        uses: aws-actions/configure-aws-credentials@61815dcd50bd041e203e49132bacad1fd04d2708 # v5.1.1
+        with:
+          aws-region: eu-west-1
+          role-to-assume: ${{ inputs.oidc_role }}
+          role-duration-seconds: 3600
+          role-session-name: OPGLPACodesDestroyEnvGithubAction
+
+      - name: Compile OpenAPI file
+        run: make build-apigw-openapi-spec
+
+      - id: deploy-key
+        uses: ministryofjustice/opg-github-actions/actions/github-deploy-key@a2907c7c7be94301c965ace76a2cfa407ad6fc88 # v4.6.0
+        with:
+          deploy_key: ${{ secrets.ssh_private_key_allow_list_repository }}
+
+      - name: Terraform Init
+        working-directory: ./${{ inputs.terraform_path }}
+        env:
+          TF_WORKSPACE: default
+
+        run: terraform init -input=false -upgrade
+
+      - name: Terraform Destroy
+        working-directory: ./${{ inputs.terraform_path }}
+        env:
+          WORKSPACE_NAME: ${{ inputs.workspace_name }}
+        run: |
+          terraform workspace select $WORKSPACE_NAME
+          terraform destroy -auto-approve
+          terraform workspace select default
+          terraform workspace delete $WORKSPACE_NAME
