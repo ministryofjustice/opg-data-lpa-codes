@@ -1,26 +1,12 @@
-name: 'Plan & Apply Terraform'
-
-permissions:
-  actions: read
-  checks: read
-  contents: read
-  deployments: none
-  id-token: write
-  issues: none
-  packages: none
-  pull-requests: none
-  repository-projects: none
-  security-events: write
-  statuses: none
+name: "Destroy Environment"
 
 on:
   workflow_call:
     inputs:
-      apply:
-        description: 'Whether to apply the terraform or just plan'
-        default: false
+      workspace_name:
+        description: "The terraform workspace to target for environment actions"
         required: true
-        type: boolean
+        type: string
       terraform_path:
         description: 'The name of the terraform paths'
         required: true
@@ -37,31 +23,31 @@ on:
         description: 'The management CI role to assume'
         required: true
         type: string
-      workspace:
-        description: 'Terraform workspace'
-        required: true
-        type: string
-      image_tag:
-        description: 'Image tag to use'
-        required: false
-        type: string
     secrets:
-      github_access_token:
-        description: 'Github Token'
+      allowlist_deploy_key:
+        description: "SSH Deploy Key"
         required: true
-      ssh_private_key_allow_list_repository:
-        required: true
-
 
 jobs:
-  terraform_workflow:
+  check:
+    name: Check
     runs-on: ubuntu-latest
+    steps:
+      - name: Error if protected
+        if: ${{ contains(fromJSON('["development", "preproduction", "production", "demo", "integration"]'), inputs.workspace_name) }}
+        run: |
+          echo "Cannot destroy protected Environment"
+          exit 1
+
+  terraform_environment_workflow:
+    permissions:
+      id-token: write
+    runs-on: ubuntu-latest
+    needs: check
     env:
-      TF_WORKSPACE: ${{ inputs.workspace }}
-      TF_VAR_image_tag: ${{ inputs.image_tag }}
       TF_VAR_default_role: ${{ inputs.default_role }}
       TF_VAR_management_role: ${{ inputs.management_role }}
-      TF_VAR_shared_role: ${{ inputs.shared_role }}
+      TF_VAR_image_tag: "latest"
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
@@ -83,7 +69,7 @@ jobs:
           aws-region: eu-west-1
           role-to-assume: ${{ inputs.oidc_role }}
           role-duration-seconds: 3600
-          role-session-name: OPGLPACodesGithubAction
+          role-session-name: OPGLPACodesDestroyEnvGithubAction
 
       - name: Compile OpenAPI file
         run: make build-apigw-openapi-spec
@@ -97,15 +83,15 @@ jobs:
         working-directory: ./${{ inputs.terraform_path }}
         env:
           TF_WORKSPACE: default
+
         run: terraform init -input=false -upgrade
 
-      - name: Terraform Plan
+      - name: Terraform Destroy
         working-directory: ./${{ inputs.terraform_path }}
+        env:
+          WORKSPACE_NAME: ${{ inputs.workspace_name }}
         run: |
-          terraform workspace show
-          terraform plan -input=false -parallelism=30 -out=${{ env.TF_WORKSPACE }}.plan
-
-      - name: Terraform Apply
-        working-directory: ./${{ inputs.terraform_path }}
-        if: inputs.apply == true
-        run: terraform apply -lock-timeout=300s -input=false -auto-approve -parallelism=30 ${{ env.TF_WORKSPACE }}.plan
+          terraform workspace select $WORKSPACE_NAME
+          terraform destroy -auto-approve
+          terraform workspace select default
+          terraform workspace delete $WORKSPACE_NAME

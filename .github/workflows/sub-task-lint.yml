@@ -1,24 +1,38 @@
-name: "[Terraform] Validate terraform"
+name: '[Terraform] Validate terraform'
 
 defaults:
   run:
     shell: bash
 
+permissions:
+  actions: read
+  checks: read
+  contents: read
+  deployments: none
+  id-token: write
+  issues: none
+  packages: none
+  pull-requests: none
+  repository-projects: none
+  security-events: write
+  statuses: none
+
 on:
   workflow_call:
     inputs:
+      oidc_role:
+        description: 'The OIDC role to assume for AWS access'
+        required: true
+        type: string
       workspace:
-        description: "Terraform workspace"
+        description: 'Terraform workspace'
         required: true
         type: string
     secrets:
-      aws_access_key_id_actions:
-        required: true
-      aws_secret_access_key_actions:
+      github_access_token:
+        description: 'Github Token'
         required: true
       ssh_private_key_allow_list_repository:
-        required: true
-      source_github_token:
         required: true
 jobs:
   lint-terraform:
@@ -26,11 +40,11 @@ jobs:
     strategy:
       matrix:
         include:
-          - folder: "environment"
+          - folder: 'environment'
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - name: "Set terraform version"
+      - name: 'Set terraform version'
         id: set-terraform-version
         uses: ministryofjustice/opg-github-actions/actions/terraform-version@b8868247a908f74fafe1905701391580575a6d35 # v4.3.10
         with:
@@ -40,23 +54,22 @@ jobs:
         with:
           terraform_version: ${{ steps.set-terraform-version.outputs.version }}
 
-      - name: configure AWS credentials for terraform
+      - name: Configure AWS Credentials For Terraform
         uses: aws-actions/configure-aws-credentials@61815dcd50bd041e203e49132bacad1fd04d2708 # v5.1.1
         with:
-          aws-access-key-id: ${{ secrets.aws_access_key_id_actions }}
-          aws-secret-access-key: ${{ secrets.aws_secret_access_key_actions }}
           aws-region: eu-west-1
-          role-duration-seconds: 1800
-          role-session-name: OPGLPACodesECRGithubAction
+          role-to-assume: ${{ inputs.oidc_role }}
+          role-duration-seconds: 3600
+          role-session-name: OPGLPACodesGithubAction
 
       - name: terraform fmt ${{ matrix.folder }} check
         run: terraform fmt -check -recursive
         working-directory: ./terraform/${{ matrix.folder }}
 
-      - name: Setup SSH private key
-        uses: webfactory/ssh-agent@a6f90b1f127823b31d4d4a8d96047790581349bd # v0.9.1
+      - id: deploy-key
+        uses: ministryofjustice/opg-github-actions/actions/github-deploy-key@a2907c7c7be94301c965ace76a2cfa407ad6fc88 # v4.6.0
         with:
-          ssh-private-key: ${{ secrets.ssh_private_key_allow_list_repository }}
+          deploy_key: ${{ secrets.ssh_private_key_allow_list_repository }}
 
       - name: terraform validate ${{ inputs.workspace }}
         env:
