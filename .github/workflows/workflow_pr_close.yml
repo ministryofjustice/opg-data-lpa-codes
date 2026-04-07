@@ -1,0 +1,37 @@
+name: PR Closed Workflow
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+  # pull_request:
+  #   types:
+  #     - closed
+  #   branches:
+  #     - main
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  generate-environment-workspace-name:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate workspace name
+        id: name_workspace
+        run: |
+          echo "name=$(echo ${GITHUB_HEAD_REF:-${GITHUB_REF##*/}} | tr -cd '[:alnum:]' | tr '[:upper:]' '[:lower:]' | cut -c1-10)" >> $GITHUB_OUTPUT
+          echo ${workspace}
+    outputs:
+      environment_workspace_name: ${{ steps.name_workspace.outputs.name }}
+     
+  # destroy-pr-env:
+  #   name: Destroy PR Environment
+  #   needs: [generate-environment-workspace-name]
+  #   uses: ./.github/workflows/_destroy_environment.yml
+  #   with:
+  #     workspace_name: ${{ needs.generate-environment-workspace-name.outputs.environment_workspace_name }}
+  #   secrets:
+  #     allowlist_deploy_key: ${{ secrets.SSH_PRIVATE_KEY_ALLOW_LIST_REPOSITORY }}
