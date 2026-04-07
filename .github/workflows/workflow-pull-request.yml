@@ -81,8 +81,8 @@ jobs:
     secrets:
       SNYK_OPG_ORG_TOKEN: ${{ secrets.SNYK_OPG_ORG_TOKEN }}
 
-  terraform_apply:
-    name: Terraform Plan and Apply Environment
+  build_pr_environment:
+    name: Build PR Environment
     needs:
       [
         "docker_build_scan_push",
@@ -106,17 +106,55 @@ jobs:
 
   integration_tests:
     name: Integration tests against branch environment
-    needs: ["terraform_apply", "create_tags", "branch_name"]
+    needs: ["build_pr_environment", "create_tags", "branch_name"]
     uses: ./.github/workflows/sub-task-integration-tests.yml
     with:
       workspace: ${{ needs.branch_name.outputs.formatted_branch }}
     secrets:
       github_access_token: ${{ secrets.GITHUB_TOKEN }}
+  
+  plan-environments:
+    strategy:
+      matrix:
+        include:
+          - workspace: development
+            oidc_role: ${{ vars.OIDC_PULL_REQUEST_ROLE }}
+            default_role: ${{ vars.DEVELOPMENT_ROLE }}
+            management_role: ${{ vars.MANAGEMENT_ROLE }}
+          - workspace: preproduction
+            oidc_role: ${{ vars.OIDC_PULL_REQUEST_ROLE }}
+            default_role: ${{ vars.PREPRODUCTION_PULL_REQUEST_ROLE }}
+            management_role: ${{ vars.MANAGEMENT_ROLE }}
+          - workspace: production
+            oidc_role: ${{ vars.OIDC_PULL_REQUEST_ROLE }}
+            default_role: ${{ vars.PRODUCTION_PULL_REQUEST_ROLE }}
+            management_role: ${{ vars.MANAGEMENT_ROLE }}
+    name: "TF Plan Environment: ${{ matrix.workspace }}"
+    needs: 
+      [
+        "docker_build_scan_push",
+        "terraform_lint",
+        "create_tags",
+        "branch_name",
+        "functional_tests",
+      ]
+    uses: ./.github/workflows/sub-task-terraform.yml
+    with:
+      apply: false
+      terraform_path: "terraform/environment"
+      workspace: ${{ matrix.workspace_name }}
+      oidc_role: ${{ matrix.oidc_role }}
+      default_role: ${{ matrix.default_role }}
+      management_role: ${{ matrix.management_role }}
+      image_tag: ${{ needs.create_tags.outputs.version_tag }}
+    secrets:
+      ssh_private_key_allow_list_repository: ${{ secrets.SSH_PRIVATE_KEY_ALLOW_LIST_REPOSITORY }}
+      github_access_token: ${{ secrets.GITHUB_TOKEN }}
 
   workflow_complete:
     name: Workflow Complete
     runs-on: ubuntu-latest
-    needs: ["integration_tests"]
+    needs: ["integration_tests", "plan-environments"]
     steps:
       - name: Completion message
         run: echo "Workflow Complete"
