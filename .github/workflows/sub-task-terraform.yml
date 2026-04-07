@@ -94,6 +94,9 @@ jobs:
           deploy_key: ${{ secrets.ssh_private_key_allow_list_repository }}
 
       - name: Terraform Init
+        env:
+          TF_WORKSPACE: default
+
         run: terraform init -input=false -upgrade
         working-directory: ./${{ inputs.terraform_path }}
 
