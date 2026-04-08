@@ -4,7 +4,7 @@ resource "aws_dynamodb_table" "lpa_codes" {
   hash_key                    = "code"
   stream_enabled              = true
   stream_view_type            = "NEW_AND_OLD_IMAGES"
-  deletion_protection_enabled = local.environment == "development" ? false : true
+  deletion_protection_enabled = local.ephemeral ? false : true
 
   attribute {
     name = "code"
@@ -47,7 +47,7 @@ resource "aws_dynamodb_table" "data_lpa_codes" {
   hash_key                    = "PK"
   stream_enabled              = true
   stream_view_type            = "NEW_AND_OLD_IMAGES"
-  deletion_protection_enabled = local.environment == "development" ? false : true
+  deletion_protection_enabled = local.ephemeral ? false : true
 
   attribute {
     name = "PK"
