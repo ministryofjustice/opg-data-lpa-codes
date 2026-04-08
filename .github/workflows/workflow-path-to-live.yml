@@ -17,6 +17,7 @@ permissions:
   checks: read
   contents: write
   deployments: none
+  id-token: write
   issues: none
   packages: none
   pull-requests: write
@@ -65,12 +66,14 @@ jobs:
     needs: ["create_tags", "docker_build_scan_push"]
     uses: ./.github/workflows/sub-task-terraform.yml
     with:
-      terraform_path: "terraform/environment"
-      image_tag: main-${{ needs.create_tags.outputs.version_tag }}
       workspace: development
+      apply: true
+      default_role: ${{ vars.DEVELOPMENT_ROLE }}
+      image_tag: main-${{ needs.create_tags.outputs.version_tag }}
+      management_role: ${{ vars.MANAGEMENT_ROLE }}
+      oidc_role: ${{ vars.OIDC_MAIN_ROLE }}
+      terraform_path: "terraform/environment"
     secrets:
-      aws_access_key_id_actions: ${{ secrets.AWS_ACCESS_KEY_ID_ACTIONS }}
-      aws_secret_access_key_actions: ${{ secrets.AWS_SECRET_ACCESS_KEY_ACTIONS }}
       ssh_private_key_allow_list_repository: ${{ secrets.SSH_PRIVATE_KEY_ALLOW_LIST_REPOSITORY }}
 
   development_integration_tests:
@@ -79,9 +82,6 @@ jobs:
     uses: ./.github/workflows/sub-task-integration-tests.yml
     with:
       workspace: "development"
-    secrets:
-      aws_access_key_id_actions: ${{ secrets.AWS_ACCESS_KEY_ID_ACTIONS }}
-      aws_secret_access_key_actions: ${{ secrets.AWS_SECRET_ACCESS_KEY_ACTIONS }}
 
   preproduction_environment_apply:
     name: Preproduction Environment Terraform Plan and Apply
@@ -93,12 +93,14 @@ jobs:
       ]
     uses: ./.github/workflows/sub-task-terraform.yml
     with:
-      terraform_path: "terraform/environment"
-      image_tag: main-${{ needs.create_tags.outputs.version_tag }}
       workspace: preproduction
+      apply: true
+      default_role: ${{ vars.PREPRODUCTION_MAIN_ROLE }}
+      image_tag: main-${{ needs.create_tags.outputs.version_tag }}
+      management_role: ${{ vars.MANAGEMENT_ROLE }}
+      oidc_role: ${{ vars.OIDC_MAIN_ROLE }}
+      terraform_path: "terraform/environment"
     secrets:
-      aws_access_key_id_actions: ${{ secrets.AWS_ACCESS_KEY_ID_ACTIONS }}
-      aws_secret_access_key_actions: ${{ secrets.AWS_SECRET_ACCESS_KEY_ACTIONS }}
       ssh_private_key_allow_list_repository: ${{ secrets.SSH_PRIVATE_KEY_ALLOW_LIST_REPOSITORY }}
 
   production_environment_apply:
@@ -106,12 +108,14 @@ jobs:
     needs: ["preproduction_environment_apply", "create_tags"]
     uses: ./.github/workflows/sub-task-terraform.yml
     with:
-      terraform_path: "terraform/environment"
-      image_tag: main-${{ needs.create_tags.outputs.version_tag }}
       workspace: production
+      apply: true
+      default_role: ${{ vars.PRODUCTION_MAIN_ROLE }}
+      image_tag: main-${{ needs.create_tags.outputs.version_tag }}
+      management_role: ${{ vars.MANAGEMENT_ROLE }}
+      oidc_role: ${{ vars.OIDC_MAIN_ROLE }}
+      terraform_path: "terraform/environment"
     secrets:
-      aws_access_key_id_actions: ${{ secrets.AWS_ACCESS_KEY_ID_ACTIONS }}
-      aws_secret_access_key_actions: ${{ secrets.AWS_SECRET_ACCESS_KEY_ACTIONS }}
       ssh_private_key_allow_list_repository: ${{ secrets.SSH_PRIVATE_KEY_ALLOW_LIST_REPOSITORY }}
 
   integration_environment_apply:
@@ -119,12 +123,14 @@ jobs:
     needs: ["production_environment_apply", "create_tags"]
     uses: ./.github/workflows/sub-task-terraform.yml
     with:
-      terraform_path: "terraform/environment"
-      image_tag: main-${{ needs.create_tags.outputs.version_tag }}
       workspace: integration
+      apply: true
+      default_role: ${{ vars.DEVELOPMENT_ROLE }}
+      image_tag: main-${{ needs.create_tags.outputs.version_tag }}
+      management_role: ${{ vars.MANAGEMENT_ROLE }}
+      oidc_role: ${{ vars.OIDC_MAIN_ROLE }}
+      terraform_path: "terraform/environment"
     secrets:
-      aws_access_key_id_actions: ${{ secrets.AWS_ACCESS_KEY_ID_ACTIONS }}
-      aws_secret_access_key_actions: ${{ secrets.AWS_SECRET_ACCESS_KEY_ACTIONS }}
       ssh_private_key_allow_list_repository: ${{ secrets.SSH_PRIVATE_KEY_ALLOW_LIST_REPOSITORY }}
 
   demo_environment_apply:
@@ -132,12 +138,14 @@ jobs:
     needs: ["production_environment_apply", "create_tags"]
     uses: ./.github/workflows/sub-task-terraform.yml
     with:
-      terraform_path: "terraform/environment"
-      image_tag: main-${{ needs.create_tags.outputs.version_tag }}
       workspace: demo
+      apply: true
+      default_role: ${{ vars.DEVELOPMENT_ROLE }}
+      image_tag: main-${{ needs.create_tags.outputs.version_tag }}
+      management_role: ${{ vars.MANAGEMENT_ROLE }}
+      oidc_role: ${{ vars.OIDC_MAIN_ROLE }}
+      terraform_path: "terraform/environment"
     secrets:
-      aws_access_key_id_actions: ${{ secrets.AWS_ACCESS_KEY_ID_ACTIONS }}
-      aws_secret_access_key_actions: ${{ secrets.AWS_SECRET_ACCESS_KEY_ACTIONS }}
       ssh_private_key_allow_list_repository: ${{ secrets.SSH_PRIVATE_KEY_ALLOW_LIST_REPOSITORY }}
 
   workflow_complete:

@@ -1,3 +1,16 @@
+permissions:
+  actions: read
+  checks: read
+  contents: read
+  deployments: none
+  id-token: write
+  issues: none
+  packages: none
+  pull-requests: none
+  repository-projects: none
+  security-events: write
+  statuses: none
+  
 on:
   workflow_call:
     inputs:
@@ -5,11 +18,7 @@ on:
         description: 'Workspace to use'
         required: true
         type: string
-    secrets:
-      aws_access_key_id_actions:
-        required: true
-      aws_secret_access_key_actions:
-        required: true
+
 
 jobs:
   terraform_workflow:
@@ -22,15 +31,13 @@ jobs:
       - name: Configure AWS Credentials For Terraform
         uses: aws-actions/configure-aws-credentials@61815dcd50bd041e203e49132bacad1fd04d2708 # v5.1.1
         with:
-          aws-access-key-id: ${{ secrets.aws_access_key_id_actions }}
-          aws-secret-access-key: ${{ secrets.aws_secret_access_key_actions }}
           aws-region: eu-west-1
+          role-to-assume: ${{ vars.OIDC_DEVELOPMENT_TEST_RUNNER_ROLE }}
           role-duration-seconds: 3600
           role-session-name: OPGLPACodesIntegrationTests
 
       - name: Install dependencies
         env:
-          ROLE: integrations-ci
           TF_WORKSPACE: ${{ inputs.workspace }}
         working-directory: scripts/ci_pipeline/load_testing
         run: |
@@ -38,10 +45,8 @@ jobs:
             then
               echo "Running against development"
               export BRANCH="dev"
-              export ACCOUNT="288342028542"
             else
               echo "Running against branch environment"
               export BRANCH="${TF_WORKSPACE}.dev"
-              export ACCOUNT="288342028542"
             fi
             go run load_testing.go
