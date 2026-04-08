@@ -5,13 +5,12 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 	"time"
-	"os"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/credentials/stscreds"
 	"github.com/aws/aws-sdk-go/aws/session"
 	v4 "github.com/aws/aws-sdk-go/aws/signer/v4"
 )
@@ -114,17 +113,12 @@ func getEnv(key, fallback string) string {
 }
 
 func main() {
-	role := getEnv("ROLE", "operator")
 	branch := getEnv("BRANCH", "dev")
-	account := getEnv("ACCOUNT", "288342028542")
-	roleToAssume := fmt.Sprintf("arn:aws:iam::%s:role/%s", account, role)
 	baseUrl := fmt.Sprintf("https://%s.lpa-codes.api.opg.service.justice.gov.uk/v1", branch)
 
     fmt.Print(baseUrl)
 
-	mySession := session.Must(session.NewSession())
-	creds := stscreds.NewCredentials(mySession, roleToAssume)
-	cfg := aws.Config{Credentials: creds,Region: aws.String("eu-west-1")}
+	cfg := aws.Config{Region: aws.String("eu-west-1")}
 	sess := session.Must(session.NewSession(&cfg))
 	signer := v4.NewSigner(sess.Config.Credentials)
 
