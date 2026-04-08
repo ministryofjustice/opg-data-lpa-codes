@@ -1,5 +1,5 @@
 locals {
-  certificate_arn = local.branch_build_flag ? data.aws_acm_certificate.environment_cert[0].arn : aws_acm_certificate.environment_cert[0].arn
+  certificate_arn = local.ephemeral ? data.aws_acm_certificate.environment_cert[0].arn : aws_acm_certificate.environment_cert[0].arn
 }
 
 resource "aws_api_gateway_method_settings" "global_gateway_settings" {
