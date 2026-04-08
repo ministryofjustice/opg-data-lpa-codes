@@ -74,7 +74,6 @@ jobs:
       oidc_role: ${{ vars.OIDC_MAIN_ROLE }}
       terraform_path: "terraform/environment"
     secrets:
-      github_access_token: ${{ secrets.GITHUB_TOKEN }}
       ssh_private_key_allow_list_repository: ${{ secrets.SSH_PRIVATE_KEY_ALLOW_LIST_REPOSITORY }}
 
   development_integration_tests:
@@ -83,8 +82,6 @@ jobs:
     uses: ./.github/workflows/sub-task-integration-tests.yml
     with:
       workspace: "development"
-    secrets:
-      github_access_token: ${{ secrets.GITHUB_TOKEN }}
 
   preproduction_environment_apply:
     name: Preproduction Environment Terraform Plan and Apply
@@ -104,7 +101,6 @@ jobs:
       oidc_role: ${{ vars.OIDC_MAIN_ROLE }}
       terraform_path: "terraform/environment"
     secrets:
-      github_access_token: ${{ secrets.GITHUB_TOKEN }}
       ssh_private_key_allow_list_repository: ${{ secrets.SSH_PRIVATE_KEY_ALLOW_LIST_REPOSITORY }}
 
   production_environment_apply:
@@ -120,7 +116,6 @@ jobs:
       oidc_role: ${{ vars.OIDC_MAIN_ROLE }}
       terraform_path: "terraform/environment"
     secrets:
-      github_access_token: ${{ secrets.GITHUB_TOKEN }}
       ssh_private_key_allow_list_repository: ${{ secrets.SSH_PRIVATE_KEY_ALLOW_LIST_REPOSITORY }}
 
   integration_environment_apply:
@@ -136,7 +131,6 @@ jobs:
       oidc_role: ${{ vars.OIDC_MAIN_ROLE }}
       terraform_path: "terraform/environment"
     secrets:
-      github_access_token: ${{ secrets.GITHUB_TOKEN }}
       ssh_private_key_allow_list_repository: ${{ secrets.SSH_PRIVATE_KEY_ALLOW_LIST_REPOSITORY }}
 
   demo_environment_apply:
@@ -152,7 +146,6 @@ jobs:
       oidc_role: ${{ vars.OIDC_MAIN_ROLE }}
       terraform_path: "terraform/environment"
     secrets:
-      github_access_token: ${{ secrets.GITHUB_TOKEN }}
       ssh_private_key_allow_list_repository: ${{ secrets.SSH_PRIVATE_KEY_ALLOW_LIST_REPOSITORY }}
 
   workflow_complete:

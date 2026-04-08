@@ -29,9 +29,6 @@ on:
         required: true
         type: string
     secrets:
-      github_access_token:
-        description: 'Github Token'
-        required: true
       ssh_private_key_allow_list_repository:
         required: true
 jobs:

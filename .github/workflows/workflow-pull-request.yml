@@ -63,7 +63,6 @@ jobs:
       oidc_role: ${{ vars.OIDC_PULL_REQUEST_ROLE }}
       workspace: ${{ needs.branch_name.outputs.formatted_branch }}
     secrets:
-      github_access_token: ${{ secrets.GITHUB_TOKEN }}
       ssh_private_key_allow_list_repository: ${{ secrets.SSH_PRIVATE_KEY_ALLOW_LIST_REPOSITORY }}
 
   functional_tests:
@@ -101,7 +100,6 @@ jobs:
       image_tag: ${{ needs.create_tags.outputs.version_tag }}
       workspace: ${{ needs.branch_name.outputs.formatted_branch }}
     secrets:
-      github_access_token: ${{ secrets.GITHUB_TOKEN }}
       ssh_private_key_allow_list_repository: ${{ secrets.SSH_PRIVATE_KEY_ALLOW_LIST_REPOSITORY }}
 
   integration_tests:
@@ -110,8 +108,6 @@ jobs:
     uses: ./.github/workflows/sub-task-integration-tests.yml
     with:
       workspace: ${{ needs.branch_name.outputs.formatted_branch }}
-    secrets:
-      github_access_token: ${{ secrets.GITHUB_TOKEN }}
   
   plan-environments:
     strategy:
@@ -149,7 +145,6 @@ jobs:
       image_tag: ${{ needs.create_tags.outputs.version_tag }}
     secrets:
       ssh_private_key_allow_list_repository: ${{ secrets.SSH_PRIVATE_KEY_ALLOW_LIST_REPOSITORY }}
-      github_access_token: ${{ secrets.GITHUB_TOKEN }}
 
   workflow_complete:
     name: Workflow Complete
