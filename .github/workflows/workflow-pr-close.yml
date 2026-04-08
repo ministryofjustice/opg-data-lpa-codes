@@ -36,4 +36,4 @@ jobs:
       oidc_role: ${{ vars.OIDC_PULL_REQUEST_ROLE }}
       management_role: ${{ vars.MANAGEMENT_ROLE }}
     secrets:
-      allowlist_deploy_key: ${{ secrets.SSH_PRIVATE_KEY_ALLOW_LIST_REPOSITORY }}
+      ssh_private_key_allow_list_repository: ${{ secrets.SSH_PRIVATE_KEY_ALLOW_LIST_REPOSITORY }}

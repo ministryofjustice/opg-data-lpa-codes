@@ -57,8 +57,6 @@ jobs:
       tag: main-${{ needs.create_tags.outputs.version_tag }}
       branch_name: ${{ needs.branch_name.outputs.formatted_branch }}
     secrets:
-      aws_access_key_id_actions: ${{ secrets.AWS_ACCESS_KEY_ID_ACTIONS }}
-      aws_secret_access_key_actions: ${{ secrets.AWS_SECRET_ACCESS_KEY_ACTIONS }}
       SNYK_OPG_ORG_TOKEN: ${{ secrets.SNYK_OPG_ORG_TOKEN }}
 
   development_environment_apply:
