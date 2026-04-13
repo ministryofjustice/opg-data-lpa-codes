@@ -1,7 +1,7 @@
 ---
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.6.0
+    rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c  # frozen: v6.0.0
     hooks:
       - id: trailing-whitespace
       - id: end-of-file-fixer
@@ -10,7 +10,7 @@ repos:
         args:
           - --branch=main
   - repo: https://github.com/python-openapi/openapi-spec-validator
-    rev: 0.7.1
+    rev: cca400fbe29ebaea5c3b3e7db04548db260690ea # frozen: 0.8.4
     hooks:
       - id: openapi-spec-validator
         name: openapi-spec-validator
@@ -18,31 +18,19 @@ repos:
         description: Hook to validate Open API specs.
         language: python
         files: .*lpa-codes-openapi-aws.compiled.*\.(json|yaml|yml)
-  - repo: https://github.com/adrienverge/yamllint.git
-    rev: v1.17.0
-    hooks:
-      - id: yamllint
-        args: [-c=./.yamllint]
   - repo: https://github.com/antonbabenko/pre-commit-terraform
-    rev: v1.88.4
+    rev: d0e12caebb2ab0ee8bf98181c8bfe9702bca103d  # frozen: v1.105.0
     hooks:
       - id: terraform_fmt
       - id: terraform_tflint
-  - repo: https://github.com/dnephin/pre-commit-golang
-    rev: v0.5.1
+  - repo: https://github.com/TekWizely/pre-commit-golang
+    rev: f298c082154b2cb239fac06a4f452368e66e66dd # frozen: v1.0.0-rc.4
     hooks:
       - id: go-fmt
       - id: go-imports
       - id: go-mod-tidy
-  - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v2.4.0
-    hooks:
-      - id: trailing-whitespace
-      - id: detect-private-key
-      - id: trailing-whitespace
-        args: [--markdown-linebreak-ext=md]
   - repo: https://github.com/Yelp/detect-secrets
-    rev: v1.5.0
+    rev: 68e8b45440415753fff70a312ece8da92ba85b4a  # frozen: v1.5.0
     hooks:
       - id: detect-secrets
         args: ['--baseline', '.secrets.baseline']
