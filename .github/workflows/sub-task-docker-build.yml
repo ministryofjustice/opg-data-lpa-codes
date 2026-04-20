@@ -59,7 +59,6 @@ jobs:
         with:
           SNYK_TEST_IMAGE: lpa-codes:latest
           SNYK_TOKEN: ${{ secrets.SNYK_OPG_ORG_TOKEN }}
-          sarif_filename: snyk-results.sarif
           snyk_test_args: --severity-threshold=high
 
       - name: Upload SNYK scan results to GitHub Security tab
@@ -67,7 +66,7 @@ jobs:
         if: always()
         uses: github/codeql-action/upload-sarif@9e907b5e64f6b83e7804b09294d44122997950d6 # v4.32.3
         with:
-          sarif_file: "snyk-results.sarif"
+          sarif_file: "test-results/snyk.sarif"
 
       - name: Push to ECR
         env:
