@@ -16,7 +16,7 @@ RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -gcflags "all=-N -l
 RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -a -installsuffix cgo -o /go/bin/main .
 
 # Base image
-FROM public.ecr.aws/lambda/provided:al2023@sha256:28500361cd9906d26fa78b1b2724ab342bf542753db88f77b764afd7f377019e AS base
+FROM public.ecr.aws/lambda/provided:al2023@sha256:d63556c539c19962998483a3191f1048f62ed6aec968b9fc1cc44fb2be43f972 AS base
 
 COPY --from=build-env /go/bin/main ./main
 
