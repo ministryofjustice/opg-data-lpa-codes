@@ -7,7 +7,7 @@ terraform {
     }
     local = {
       source  = "hashicorp/local"
-      version = "~> 2.7.0"
+      version = "~> 2.8.0"
     }
     archive = {
       source  = "hashicorp/archive"
