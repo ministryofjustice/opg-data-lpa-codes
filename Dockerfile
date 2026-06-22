@@ -1,37 +1,20 @@
 FROM golang:1.26.2@sha256:b54cbf583d390341599d7bcbc062425c081105cc5ef6d170ced98ef9d047c716 AS build-env
 
-ARG TARGETOS
-ARG TARGETARCH
-
 WORKDIR /app
 
 COPY --link go.mod go.sum ./
 RUN go mod download
-RUN go install github.com/go-delve/delve/cmd/dlv@latest
 
 COPY --link main.go main.go
 COPY --link internal internal
 
-RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -gcflags "all=-N -l" -a -installsuffix cgo -o /go/bin/main-dbg .
-RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -a -installsuffix cgo -o /go/bin/main .
+RUN GOOS=${TARGETOS} GOARCH=${TARGETARCH} CGO_ENABLED=0 go build -a -installsuffix cgo -o main .
 
-# Base image
-FROM public.ecr.aws/lambda/provided:al2023@sha256:26136a72871f0d0f9948a98a4568010b3aa210cd7bcb7dd6b51b606fe743b79a AS base
+FROM scratch AS production
 
-COPY --from=build-env /go/bin/main ./main
+WORKDIR /app
 
-ENTRYPOINT [ "./main" ]
+COPY --from=build-env /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+COPY --from=build-env /app/main ./main
 
-# Local development with debugging
-FROM base AS debug
-
-COPY --from=build-env /go/bin/dlv ./dlv
-COPY --from=build-env /go/bin/main-dbg ./main
-
-ENTRYPOINT [ "/usr/local/bin/aws-lambda-rie", "./dlv", "exec", "--headless", "--continue", "--listen", ":4040", "--api-version=2", "--accept-multiclient", "./main" ]
-
-# Default production image
-FROM base AS production
-
-# not necessary in a production image
-RUN rm /usr/local/bin/aws-lambda-rie
+ENTRYPOINT ["./main"]
