@@ -12,23 +12,10 @@
     "Dependencies",
     "Renovate"
   ],
+  "ignoreDeps": [
+    "github.com/ministryofjustice/opg-terraform-aws-moj-ip-allow-list"
+  ],
   "packageRules": [
-    {
-      "description": "Terraform: bundle all updates together",
-      "labels": [
-        "devDependencies",
-        "Renovate",
-        "Terraform"
-      ],
-      "groupName": "Terraform",
-      "matchUpdateTypes": [
-        "minor",
-        "patch"
-      ],
-      "matchManagers": [
-        "terraform"
-      ]
-    },
     {
       "groupName": "Patch & Minor Updates",
       "groupSlug": "all-minor-patch-updates",
@@ -41,27 +28,8 @@
         "patch"
       ],
       "prCreation": "immediate",
-      "prPriority": 0,
       "matchPackageNames": [
         "*"
-      ]
-    },
-    {
-      "groupName": "GitHub Actions",
-      "automerge": true,
-      "dependencyDashboardApproval": true,
-      "labels": [
-        "Dependencies",
-        "Renovate"
-      ],
-      "prTitle": "chore(deps): update GitHub Actions",
-      "prBody": "Updates the following GitHub Actions dependencies:\n\n{{#each dependencies}}- {{this.name}}\n{{/each}}",
-      "prCreation": "immediate",
-      "schedule": [
-        "after 6am and before 9am on Monday"
-      ],
-      "matchPackageNames": [
-        "/actions/*/"
       ]
     }
   ],
@@ -71,25 +39,15 @@
       "Renovate"
     ],
     "prCreation": "immediate",
-    "rangeStrategy": "pin",
-    "prPriority": 1
+    "rangeStrategy": "pin"
   },
-  "branchConcurrentLimit": 5,
   "minimumReleaseAge": "7 days",
-  "prConcurrentLimit": 3,
-  "prHourlyLimit": 1,
   "vulnerabilityAlerts": {
     "groupName": "Security Alerts",
     "labels": [
       "Dependencies",
       "Renovate"
     ],
-    "dependencyDashboardApproval": false,
-    "minimumReleaseAge": null,
-    "rangeStrategy": "pin",
-    "commitMessagePrefix": "[SECURITY]",
-    "branchTopic": "{{{datasource}}}-{{{depName}}}-vulnerability",
-    "prCreation": "immediate",
-    "prPriority": 5
+    "rangeStrategy": "pin"
   }
 }
