@@ -26,7 +26,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      target: debug
     ports:
       - "8081:8080"
       - "4040:4040"
