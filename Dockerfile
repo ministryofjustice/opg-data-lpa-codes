@@ -16,7 +16,10 @@ RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -gcflags "all=-N -l
 RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -a -installsuffix cgo -o /go/bin/main .
 
 # Base image
-FROM public.ecr.aws/lambda/provided:al2023@sha256:402646ef92caed6a6d9411f992d5e07b86c2bdae7008c31d94691e00eb6ce316 AS base
+FROM public.ecr.aws/lambda/provided:al2023@sha256:26136a72871f0d0f9948a98a4568010b3aa210cd7bcb7dd6b51b606fe743b79a AS base
+
+RUN dnf upgrade -y --releasever=latest && \
+    dnf clean all
 
 COPY --from=build-env /go/bin/main ./main
 
