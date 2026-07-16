@@ -4,7 +4,6 @@ resource "aws_iam_role" "lambda_role" {
   lifecycle {
     create_before_destroy = true
   }
-  tags = var.tags
 }
 
 data "aws_iam_policy_document" "lambda_assume" {

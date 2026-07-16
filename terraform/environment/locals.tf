@@ -5,12 +5,13 @@ locals {
   a_record    = local.ephemeral ? "${local.environment}.${data.aws_route53_zone.environment_cert.name}" : data.aws_route53_zone.environment_cert.name
 
   default_tags = {
-    business-unit          = "OPG"
     application            = "LPA-Codes"
+    business-unit          = "OPG"
     environment-name       = local.environment
-    owner                  = "OPG Supervision"
     infrastructure-support = "OPG WebOps: opgteam@digital.justice.gov.uk"
     is-production          = local.account.is_production
+    owner                  = "OPG POAS"
+    service-area           = "POAS"
     source-code            = "https://github.com/ministryofjustice/opg-data-lpa-codes"
   }
 

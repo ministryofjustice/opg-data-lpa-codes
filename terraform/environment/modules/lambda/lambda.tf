@@ -5,12 +5,10 @@ locals {
 
 resource "aws_cloudwatch_log_group" "lambda" {
   name = "/aws/lambda/${local.lambda}"
-  tags = var.tags
 }
 
 resource "aws_cloudwatch_log_group" "lambda_dbstream" {
   name = "/aws/lambda/${local.lambda_dbstream}"
-  tags = var.tags
 }
 
 resource "aws_lambda_function" "lambda_function" {
@@ -41,8 +39,6 @@ resource "aws_lambda_function" "lambda_function" {
   tracing_config {
     mode = "Active"
   }
-
-  tags = var.tags
 }
 
 resource "aws_lambda_permission" "lambda_permission" {
