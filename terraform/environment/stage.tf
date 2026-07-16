@@ -23,8 +23,6 @@ resource "aws_api_gateway_domain_name" "lpa_codes" {
   endpoint_configuration {
     types = ["REGIONAL"]
   }
-
-  tags = local.default_tags
 }
 
 module "deploy_v1" {
@@ -34,9 +32,8 @@ module "deploy_v1" {
   lpa_codes_lambda               = module.lamdba_lpa_codes_v1.lambda
   image_tag                      = var.image_tag
   openapi_version                = "v1"
-  region_name                    = data.aws_region.region.name
+  region_name                    = data.aws_region.region.region
   rest_api                       = aws_api_gateway_rest_api.lpa_codes
-  tags                           = local.default_tags
   content_api_sha                = local.open_api_sha
   content_api_gateway_policy_sha = local.rest_api_policy_sha
 }
