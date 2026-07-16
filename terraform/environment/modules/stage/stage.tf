@@ -4,7 +4,6 @@ resource "aws_api_gateway_stage" "currentstage" {
   rest_api_id          = var.rest_api.id
   deployment_id        = aws_api_gateway_deployment.deploy.id
   xray_tracing_enabled = true
-  tags                 = var.tags
   variables = {
     lpa_codes_function_name : var.lpa_codes_lambda.function_name
   }
@@ -29,7 +28,6 @@ resource "aws_api_gateway_stage" "currentstage" {
 resource "aws_cloudwatch_log_group" "lpa_codes" {
   name              = "API-Gateway-Execution-Logs-${var.rest_api.name}-${var.openapi_version}"
   retention_in_days = 30
-  tags              = var.tags
 }
 
 data "aws_wafv2_web_acl" "integrations" {

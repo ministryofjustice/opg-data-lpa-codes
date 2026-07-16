@@ -27,18 +27,21 @@ resource "aws_dynamodb_table" "lpa_codes" {
   }
 
   global_secondary_index {
-    name            = "key_index"
-    hash_key        = "actor"
-    range_key       = "lpa"
+    name = "key_index"
+    key_schema {
+      attribute_name = "actor"
+      key_type       = "HASH"
+    }
+    key_schema {
+      attribute_name = "lpa"
+      key_type       = "RANGE"
+    }
     projection_type = "ALL"
   }
 
   point_in_time_recovery {
     enabled = local.account.pit_recovery_flag
   }
-
-
-  tags = local.default_tags
 }
 
 resource "aws_dynamodb_table" "data_lpa_codes" {
@@ -65,15 +68,19 @@ resource "aws_dynamodb_table" "data_lpa_codes" {
   }
 
   global_secondary_index {
-    name            = "ActorLPAIndex"
-    hash_key        = "ActorLPA"
-    range_key       = "PK"
+    name = "ActorLPAIndex"
+    key_schema {
+      attribute_name = "ActorLPA"
+      key_type       = "HASH"
+    }
+    key_schema {
+      attribute_name = "PK"
+      key_type       = "RANGE"
+    }
     projection_type = "ALL"
   }
 
   point_in_time_recovery {
     enabled = local.account.pit_recovery_flag
   }
-
-  tags = local.default_tags
 }

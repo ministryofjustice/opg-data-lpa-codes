@@ -19,12 +19,6 @@ variable "lambda_prefix" {
   type        = string
 }
 
-variable "tags" {
-  description = "A map of tags to use."
-  type        = map(string)
-  default     = {}
-}
-
 variable "openapi_version" {
   description = "openapi version to use"
   type        = string

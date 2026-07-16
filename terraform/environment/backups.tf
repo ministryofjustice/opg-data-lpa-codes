@@ -1,8 +1,6 @@
 resource "aws_backup_vault" "data_lpa_codes" {
   count = local.account.backups_enabled ? 1 : 0
   name  = "data-lpa-codes-backup-vault-${local.environment}"
-
-  tags = local.default_tags
 }
 
 resource "aws_backup_plan" "data_lpa_codes" {

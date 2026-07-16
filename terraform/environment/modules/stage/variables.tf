@@ -34,12 +34,6 @@ variable "rest_api" {
   })
 }
 
-variable "tags" {
-  description = "Tags to use"
-  type        = map(string)
-  default     = {}
-}
-
 variable "content_api_sha" {
   description = "SHA for the content of the openapi spec"
   type        = string
