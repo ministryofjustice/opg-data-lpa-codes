@@ -1,6 +1,7 @@
 resource "aws_backup_vault" "data_lpa_codes" {
-  count = local.account.backups_enabled ? 1 : 0
-  name  = "data-lpa-codes-backup-vault-${local.environment}"
+  count         = local.account.backups_enabled ? 1 : 0
+  name          = "data-lpa-codes-backup-vault-${local.environment}"
+  force_destroy = local.ephemeral
 }
 
 resource "aws_backup_plan" "data_lpa_codes" {
