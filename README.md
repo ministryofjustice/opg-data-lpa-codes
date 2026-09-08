@@ -2,7 +2,7 @@
 LPA Integration with microservice for the generation of registration codes: Managed by opg-org-infra &amp; Terraform
 
 ## Development
-To start the service locally use `make up`. Then you can call the Lambda:
+To start the service locally use `make up`. Then you can call the Lambda: 
 
 ```
 curl -XPOST "http://localhost:8081/2015-03-31/functions/function/invocations" -d '@./docs/support_files/lambda_request.json' | jq
