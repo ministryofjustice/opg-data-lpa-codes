@@ -98,6 +98,17 @@ data "aws_iam_policy_document" "lambda" {
       var.codes_dynamodb_table.stream_arn,
     ]
   }
+
+  statement {
+    sid    = "EventBridgeAccess"
+    effect = "Allow"
+
+    actions = ["events:PutEvents"]
+
+    resources = [
+      "arn:aws:events:eu-west-1:${var.account.account_id}:event-bus/${var.outbound_event_bus}"
+    ]
+  }
 }
 
 resource "aws_iam_role_policy_attachment" "vpc_access_execution_role" {
