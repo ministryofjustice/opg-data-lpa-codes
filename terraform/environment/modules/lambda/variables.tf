@@ -14,6 +14,11 @@ variable "logger_level" {
   default     = "INFO"
 }
 
+variable "outbound_event_bus" {
+  description = "Name of the outbound Sirius POAS event bus"
+  type        = string
+}
+
 variable "lambda_prefix" {
   description = "The name of the lambda. Unique identifier"
   type        = string
@@ -34,6 +39,7 @@ variable "rest_api" {
 variable "account" {
   description = "The account object"
   type = object({
+    account_id         = string
     account_mapping    = string
     target_environment = string
   })

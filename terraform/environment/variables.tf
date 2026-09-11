@@ -20,9 +20,10 @@ variable "accounts" {
   description = "The accounts to deploy to"
   type = map(
     object({
-      account_id      = string
-      account_mapping = string
-      backups_enabled = string
+      account_id         = string
+      account_mapping    = string
+      backups_enabled    = string
+      outbound_event_bus = string
       dynamodb_backups = object({
         backups_enabled                 = bool
         daily_backup_deletion_in_days   = number
