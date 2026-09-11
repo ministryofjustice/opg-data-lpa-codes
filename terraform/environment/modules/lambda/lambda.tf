@@ -27,8 +27,9 @@ resource "aws_lambda_function" "lambda_function" {
 
   environment {
     variables = {
-      LOGGER_LEVEL = var.logger_level
-      ENVIRONMENT  = var.environment
+      LOGGER_LEVEL       = var.logger_level
+      ENVIRONMENT        = var.environment
+      OUTBOUND_EVENT_BUS = var.outbound_event_bus
     }
   }
 

@@ -11,6 +11,7 @@ module "lamdba_lpa_codes_v1" {
   codes_dynamodb_table = aws_dynamodb_table.data_lpa_codes
   image_uri            = "${data.aws_ecr_repository.lpa_codes.repository_url}:${var.image_tag}"
   ecr_arn              = data.aws_ecr_repository.lpa_codes.arn
+  outbound_event_bus   = local.account.outbound_event_bus
 }
 
 data "aws_ecr_repository" "lpa_codes" {
