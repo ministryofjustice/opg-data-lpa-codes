@@ -12,6 +12,9 @@
     "Dependencies",
     "Renovate"
   ],
+  "postUpdateOptions": [
+    "gomodTidy"
+  ],
   "packageRules": [
     {
       "description": "Terraform: bundle all updates together",
