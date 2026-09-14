@@ -542,7 +542,7 @@ func TestValidate(t *testing.T) {
 	runTest(t, "validate when has expired paper verification code", func(t *testing.T) {
 		code := createCode(createCodeModernise)
 		paperCode := createPaperCode()
-		_ = setPaperVerificationCodeExpiry(paperCode, time.Now(), "cancelled")
+		_ = setPaperVerificationCodeExpiry(paperCode, time.Now().Add(-time.Second), "cancelled")
 
 		resp, err := callLambda(http.MethodPost, "/v1/validate", `{"code":"`+code+`","lpa":"M-1234-1234-1234","dob":"1960-06-05"}`)
 		if assert.Nil(t, err) {
