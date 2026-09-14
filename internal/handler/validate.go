@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"strings"
 
@@ -61,6 +62,10 @@ func Validate(ctx context.Context, codesStore *codes.ActivationCodeStore, paperS
 		if len(pvcCodes) > 0 {
 			response.HasPaperVerificationCode = true
 		}
+	}
+
+	if err := publishActivationKeyUsed(ctx, item); err != nil {
+		slog.ErrorContext(ctx, "failed to write activation key used event", slog.String("lpa", item.LPA), slog.String("actor", item.Actor), slog.Any("err", err))
 	}
 
 	return respondOK(response)
