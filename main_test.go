@@ -542,7 +542,12 @@ func TestValidate(t *testing.T) {
 	runTest(t, "validate when has expired paper verification code", func(t *testing.T) {
 		code := createCode(createCodeModernise)
 		paperCode := createPaperCode()
-		_ = setPaperVerificationCodeExpiry(paperCode, time.Now(), "cancelled")
+		if assert.NoError(t, expirePaperVerificationCodesForActorLPA("12ad81a9-f89d-4804-99f5-7c0c8669ac9b", "M-1234-1234-1234", time.Now().Add(-time.Second), "cancelled")) {
+			if paperCode != "" {
+				assert.NoError(t, setPaperVerificationCodeExpiry(paperCode, time.Now().Add(-time.Second), "cancelled"))
+			}
+		}
+		assertNoActivePaperVerificationCodesForActorLPA(t, "12ad81a9-f89d-4804-99f5-7c0c8669ac9b", "M-1234-1234-1234")
 
 		resp, err := callLambda(http.MethodPost, "/v1/validate", `{"code":"`+code+`","lpa":"M-1234-1234-1234","dob":"1960-06-05"}`)
 		if assert.Nil(t, err) {
@@ -1171,6 +1176,55 @@ func setPaperVerificationCodeExpiry(code string, at time.Time, reason string) er
 	})
 
 	return err
+}
+
+func expirePaperVerificationCodesForActorLPA(actor, lpa string, at time.Time, reason string) error {
+	out, err := db.Query(ctx, &dynamodb.QueryInput{
+		TableName:              aws.String("data-lpa-codes-local"),
+		IndexName:              aws.String("ActorLPAIndex"),
+		KeyConditionExpression: aws.String("#ActorLPA = :ActorLPA"),
+		ExpressionAttributeNames: map[string]string{
+			"#ActorLPA": "ActorLPA",
+		},
+		ExpressionAttributeValues: map[string]types.AttributeValue{
+			":ActorLPA": &types.AttributeValueMemberS{Value: actor + "#" + lpa},
+		},
+	})
+	if err != nil {
+		return err
+	}
+
+	for _, item := range out.Items {
+		pk, ok := item["PK"].(*types.AttributeValueMemberS)
+		if !ok || pk == nil {
+			continue
+		}
+		if err := setPaperVerificationCodeExpiry(strings.TrimPrefix(pk.Value, "PAPER#"), at, reason); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func assertNoActivePaperVerificationCodesForActorLPA(t *testing.T, actor, lpa string) {
+	assert.Eventually(t, func() bool {
+		out, err := db.Query(ctx, &dynamodb.QueryInput{
+			TableName:              aws.String("data-lpa-codes-local"),
+			IndexName:              aws.String("ActorLPAIndex"),
+			KeyConditionExpression: aws.String("#ActorLPA = :ActorLPA"),
+			FilterExpression:       aws.String("attribute_not_exists(#ExpiresAt) or #ExpiresAt > :Now"),
+			ExpressionAttributeNames: map[string]string{
+				"#ActorLPA":  "ActorLPA",
+				"#ExpiresAt": "ExpiresAt",
+			},
+			ExpressionAttributeValues: map[string]types.AttributeValue{
+				":ActorLPA": &types.AttributeValueMemberS{Value: actor + "#" + lpa},
+				":Now":      &types.AttributeValueMemberS{Value: time.Now().Format(time.RFC3339Nano)},
+			},
+		})
+		return err == nil && len(out.Items) == 0
+	}, 5*time.Second, 100*time.Millisecond)
 }
 
 func assertPaperVerificationCode(t *testing.T, expected PaperRow) bool {
