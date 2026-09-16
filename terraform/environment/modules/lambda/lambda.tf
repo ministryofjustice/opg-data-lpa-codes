@@ -16,38 +16,27 @@ resource "aws_cloudwatch_log_group" "outbound_event_bus" {
   retention_in_days = 30
 }
 
-resource "aws_iam_role" "eventbridge_logs" {
-  name = "${var.lambda_prefix}-${var.environment}-eventbridge-logs"
-
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [{
-      Effect = "Allow"
-      Principal = {
-        Service = "events.amazonaws.com"
-      }
-      Action = "sts:AssumeRole"
-    }]
-  })
-}
-
-resource "aws_iam_role_policy" "eventbridge_logs" {
-  name = "${var.lambda_prefix}-${var.environment}-eventbridge-logs"
-  role = aws_iam_role.eventbridge_logs.id
+resource "aws_cloudwatch_log_resource_policy" "eventbridge_to_logs" {
+  policy_name = "${var.lambda_prefix}-${var.environment}-eventbridge-to-logs"
 
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [{
+      Sid    = "AllowEventBridgeToWriteToLogs"
       Effect = "Allow"
+      Principal = {
+        Service = "events.amazonaws.com"
+      }
       Action = [
         "logs:CreateLogStream",
         "logs:PutLogEvents",
-        "logs:DescribeLogStreams",
       ]
-      Resource = [
-        aws_cloudwatch_log_group.outbound_event_bus.arn,
-        "${aws_cloudwatch_log_group.outbound_event_bus.arn}:*",
-      ]
+      Resource = aws_cloudwatch_log_group.outbound_event_bus.arn
+      Condition = {
+        ArnEquals = {
+          "AWS:SourceArn" = aws_cloudwatch_event_rule.activation_key_used.arn
+        }
+      }
     }]
   })
 }
@@ -68,7 +57,6 @@ resource "aws_cloudwatch_event_target" "activation_key_used_logs" {
   event_bus_name = aws_cloudwatch_event_rule.activation_key_used.event_bus_name
   target_id      = "activation-key-used-cloudwatch-logs"
   arn            = aws_cloudwatch_log_group.outbound_event_bus.arn
-  role_arn       = aws_iam_role.eventbridge_logs.arn
 }
 
 resource "aws_lambda_function" "lambda_function" {
