@@ -13,6 +13,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	v4 "github.com/aws/aws-sdk-go/aws/signer/v4"
+	"github.com/aws/aws-sdk-go/service/cloudwatchlogs"
 )
 
 //Struct for creating codes
@@ -112,6 +113,37 @@ func getEnv(key, fallback string) string {
     return fallback
 }
 
+func assertActivationKeyUsedEventWritten(sess *session.Session, lpa, actor string) {
+    logGroupName := getEnv("EVENT_LOG_GROUP", "")
+    if logGroupName == "" {
+        fmt.Println("Skipping event bus assertion: EVENT_LOG_GROUP not set")
+        return
+    }
+
+    client := cloudwatchlogs.New(sess)
+    expectedUID := lpa
+    expectedActor := actor
+    expectedPattern := fmt.Sprintf(`"uid":"%s"`, expectedUID)
+
+    for attempt := 0; attempt < 12; attempt++ {
+        out, err := client.FilterLogEvents(&cloudwatchlogs.FilterLogEventsInput{
+            LogGroupName:  aws.String(logGroupName),
+            FilterPattern: aws.String(expectedPattern),
+            Limit:         aws.Int64(50),
+        })
+        if err == nil {
+            for _, event := range out.Events {
+                if event != nil && event.Message != nil && strings.Contains(*event.Message, fmt.Sprintf(`"uid":"%s"`, expectedUID)) && strings.Contains(*event.Message, fmt.Sprintf(`"actor":"%s"`, expectedActor)) {
+                    return
+                }
+            }
+        }
+        time.Sleep(5 * time.Second)
+    }
+
+    panic(fmt.Sprintf("ASSERTION FAILED: activation-key-used event for uid=%s actor=%s was not observed in %s", expectedUID, expectedActor, logGroupName))
+}
+
 func main() {
 	branch := getEnv("BRANCH", "dev")
 	baseUrl := fmt.Sprintf("https://%s.lpa-codes.api.opg.service.justice.gov.uk/v1", branch)
@@ -195,6 +227,17 @@ func main() {
 	}
 
 	makeRequests (baseUrl, "validate", codesToValidate, ch, chCode, chStatus, signer, cfg)
+
+	for _,jsonCode := range listOfCodes {
+		err := js.Unmarshal([]byte(jsonCode), &code)
+		if err != nil {
+			fmt.Print(err)
+		}
+		if len(code.Codes) == 0 {
+			continue
+		}
+		assertActivationKeyUsedEventWritten(sess, code.Codes[0].Lpa, code.Codes[0].Actor)
+	}
 
 	//Codes to revoke section
 	var codesToRevoke []*strings.Reader
