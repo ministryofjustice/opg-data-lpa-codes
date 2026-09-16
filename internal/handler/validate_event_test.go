@@ -1,10 +1,12 @@
 package handler
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"testing"
 
@@ -54,7 +56,21 @@ func TestValidatePublishesActivationKeyUsedEvent(t *testing.T) {
 	assert.JSONEq(t, `{"actor":"700000000002"}`, resp.Body)
 }
 
-func TestPublishActivationKeyUsedEventFailureIsReturned(t *testing.T) {
+func TestValidateLogsAndContinuesWhenActivationKeyUsedEventFails(t *testing.T) {
+	ctx := context.Background()
+	cfg, err := config.LoadDefaultConfig(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	cfg.BaseEndpoint = aws.String("http://localhost:8000")
+
+	store := codes.NewActivationCodeStore(dynamodb.NewFromConfig(cfg), "lpa-codes-local")
+	code := "EFGH1234ABCD"
+	_, err = store.InsertNewCode(ctx, codes.Key{LPA: "700000000001", Actor: "700000000002"}, "1960-06-05", code)
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	originalPublisher := ActivationKeyUsedPublisher()
 	defer SetActivationKeyUsedPublisher(originalPublisher)
 
@@ -62,9 +78,25 @@ func TestPublishActivationKeyUsedEventFailureIsReturned(t *testing.T) {
 		return errors.New("event bridge unavailable")
 	})
 
-	err := publishActivationKeyUsed(context.Background(), codes.ActivationCode{LPA: "700000000001", Actor: "700000000002"})
-	assert.Error(t, err)
-	assert.EqualError(t, err, "event bridge unavailable")
+	var logs bytes.Buffer
+	originalLogger := slog.Default()
+	slog.SetDefault(slog.New(slog.NewJSONHandler(&logs, nil)))
+	t.Cleanup(func() {
+		slog.SetDefault(originalLogger)
+	})
+
+	resp, err := Validate(ctx, store, nil, events.APIGatewayProxyRequest{
+		HTTPMethod: http.MethodPost,
+		Body:       fmt.Sprintf(`{"code":"%s","lpa":"700000000001","dob":"1960-06-05"}`, code),
+	})
+	if !assert.NoError(t, err) {
+		return
+	}
+
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
+	assert.JSONEq(t, `{"actor":"700000000002"}`, resp.Body)
+	assert.Contains(t, logs.String(), "failed to write activation key used event")
+	assert.Contains(t, logs.String(), "event bridge unavailable")
 }
 
 func TestMarshalActivationKeyUsedEvent(t *testing.T) {
