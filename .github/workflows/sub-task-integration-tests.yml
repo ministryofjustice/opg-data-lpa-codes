@@ -50,6 +50,8 @@ jobs:
               export BRANCH="${TF_WORKSPACE}.dev"
             fi
 
-          export EVENT_LOG_GROUP="/aws/lambda/lpa-codes-${BRANCH}-v1"
+          export OUTBOUND_EVENT_BUS="dev-poas"
+          export EVENT_LOG_GROUP="/aws/events/${OUTBOUND_EVENT_BUS}"
+          echo "Using OUTBOUND_EVENT_BUS=${OUTBOUND_EVENT_BUS}"
           echo "Using EVENT_LOG_GROUP=${EVENT_LOG_GROUP}"
           go run load_testing.go

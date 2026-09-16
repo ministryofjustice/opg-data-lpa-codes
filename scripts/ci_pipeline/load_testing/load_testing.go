@@ -116,8 +116,7 @@ func getEnv(key, fallback string) string {
 func assertActivationKeyUsedEventWritten(sess *session.Session, lpa, actor string) {
     logGroupName := getEnv("EVENT_LOG_GROUP", "")
     if logGroupName == "" {
-        fmt.Println("Skipping event bus assertion: EVENT_LOG_GROUP not set")
-        return
+        panic("EVENT_LOG_GROUP is required and must point to the CloudWatch Logs log group that receives the EventBridge activation-key-used rule; it is not the Lambda log group.")
     }
 
     client := cloudwatchlogs.New(sess)
