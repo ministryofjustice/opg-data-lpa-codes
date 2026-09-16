@@ -3,6 +3,7 @@ package main
 import (
 	"cmp"
 	"context"
+	"fmt"
 	"log/slog"
 	"os"
 
@@ -11,6 +12,8 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
+	"github.com/aws/aws-sdk-go-v2/service/eventbridge"
+	"github.com/aws/aws-sdk-go-v2/service/eventbridge/types"
 	"github.com/ministryofjustice/opg-data-lpa-codes/internal/codes"
 	"github.com/ministryofjustice/opg-data-lpa-codes/internal/handler"
 )
@@ -81,6 +84,39 @@ func main() {
 
 	activationCodeStore = codes.NewActivationCodeStore(dynamodb.NewFromConfig(cfg), "lpa-codes-"+environment)
 	paperVerificationCodeStore = codes.NewPaperVerificationCodeStore(dynamodb.NewFromConfig(cfg), "data-lpa-codes-"+environment)
+
+	handler.SetActivationKeyUsedPublisher(func(ctx context.Context, item codes.ActivationCode) error {
+		busName := os.Getenv("OUTBOUND_EVENT_BUS")
+		if busName == "" {
+			slog.WarnContext(ctx, "OUTBOUND_EVENT_BUS is not set; skipping activation key used event")
+			return nil
+		}
+
+		detail, err := handler.MarshalActivationKeyUsedEvent(item)
+		if err != nil {
+			return fmt.Errorf("marshal activation key used event: %w", err)
+		}
+
+		response, err := eventbridge.NewFromConfig(cfg).PutEvents(ctx, &eventbridge.PutEventsInput{
+			Entries: []types.PutEventsRequestEntry{{
+				Source:       aws.String("opg.poas.use"),
+				DetailType:   aws.String("activation-key-used"),
+				Detail:       aws.String(string(detail)),
+				EventBusName: aws.String(busName),
+			}},
+		})
+		if err != nil {
+			return fmt.Errorf("put activation key used event: %w", err)
+		}
+		if response.FailedEntryCount > 0 {
+			for _, entry := range response.Entries {
+				if entry.ErrorCode != nil || entry.ErrorMessage != nil {
+					return handler.EventBridgeError(entry.ErrorCode, entry.ErrorMessage)
+				}
+			}
+		}
+		return nil
+	})
 
 	lambda.Start(run)
 }
