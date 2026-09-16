@@ -11,6 +11,66 @@ resource "aws_cloudwatch_log_group" "lambda_dbstream" {
   name = "/aws/lambda/${local.lambda_dbstream}"
 }
 
+resource "aws_cloudwatch_log_group" "outbound_event_bus" {
+  name              = "/aws/events/${var.outbound_event_bus}"
+  retention_in_days = 30
+}
+
+resource "aws_iam_role" "eventbridge_logs" {
+  name = "${var.lambda_prefix}-${var.environment}-eventbridge-logs"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Principal = {
+        Service = "events.amazonaws.com"
+      }
+      Action = "sts:AssumeRole"
+    }]
+  })
+}
+
+resource "aws_iam_role_policy" "eventbridge_logs" {
+  name = "${var.lambda_prefix}-${var.environment}-eventbridge-logs"
+  role = aws_iam_role.eventbridge_logs.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Action = [
+        "logs:CreateLogStream",
+        "logs:PutLogEvents",
+        "logs:DescribeLogStreams",
+      ]
+      Resource = [
+        aws_cloudwatch_log_group.outbound_event_bus.arn,
+        "${aws_cloudwatch_log_group.outbound_event_bus.arn}:*",
+      ]
+    }]
+  })
+}
+
+resource "aws_cloudwatch_event_rule" "activation_key_used" {
+  name           = "${var.lambda_prefix}-${var.environment}-activation-key-used"
+  description    = "Capture activation-key-used events and send them to CloudWatch Logs"
+  event_bus_name = var.outbound_event_bus
+
+  event_pattern = jsonencode({
+    source        = ["opg.poas.use"]
+    "detail-type" = ["activation-key-used"]
+  })
+}
+
+resource "aws_cloudwatch_event_target" "activation_key_used_logs" {
+  rule           = aws_cloudwatch_event_rule.activation_key_used.name
+  event_bus_name = aws_cloudwatch_event_rule.activation_key_used.event_bus_name
+  target_id      = "activation-key-used-cloudwatch-logs"
+  arn            = aws_cloudwatch_log_group.outbound_event_bus.arn
+  role_arn       = aws_iam_role.eventbridge_logs.arn
+}
+
 resource "aws_lambda_function" "lambda_function" {
   function_name = local.lambda
   package_type  = "Image"
