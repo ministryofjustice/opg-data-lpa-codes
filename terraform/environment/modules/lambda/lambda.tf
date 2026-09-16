@@ -16,29 +16,37 @@ resource "aws_cloudwatch_log_group" "outbound_event_bus" {
   retention_in_days = 30
 }
 
-resource "aws_cloudwatch_log_resource_policy" "eventbridge_to_logs" {
-  policy_name = "${var.lambda_prefix}-${var.environment}-eventbridge-to-logs"
+data "aws_iam_policy_document" "eventbridge_to_logs" {
+  statement {
+    sid    = "AllowEventBridgeToWriteToLogs"
+    effect = "Allow"
 
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [{
-      Sid    = "AllowEventBridgeToWriteToLogs"
-      Effect = "Allow"
-      Principal = {
-        Service = "events.amazonaws.com"
-      }
-      Action = [
-        "logs:CreateLogStream",
-        "logs:PutLogEvents",
-      ]
-      Resource = aws_cloudwatch_log_group.outbound_event_bus.arn
-      Condition = {
-        ArnEquals = {
-          "AWS:SourceArn" = aws_cloudwatch_event_rule.activation_key_used.arn
-        }
-      }
-    }]
-  })
+    principals {
+      type        = "Service"
+      identifiers = ["events.amazonaws.com"]
+    }
+
+    actions = [
+      "logs:CreateLogStream",
+      "logs:PutLogEvents",
+    ]
+
+    resources = [
+      aws_cloudwatch_log_group.outbound_event_bus.arn,
+      "${aws_cloudwatch_log_group.outbound_event_bus.arn}:*",
+    ]
+
+    condition {
+      test     = "ArnEquals"
+      variable = "AWS:SourceArn"
+      values   = [aws_cloudwatch_event_rule.activation_key_used.arn]
+    }
+  }
+}
+
+resource "aws_cloudwatch_log_resource_policy" "eventbridge_to_logs" {
+  policy_name     = "${var.lambda_prefix}-${var.environment}-eventbridge-to-logs"
+  policy_document = data.aws_iam_policy_document.eventbridge_to_logs.json
 }
 
 resource "aws_cloudwatch_event_rule" "activation_key_used" {
