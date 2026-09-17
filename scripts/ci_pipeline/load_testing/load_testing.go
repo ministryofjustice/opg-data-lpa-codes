@@ -13,6 +13,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	v4 "github.com/aws/aws-sdk-go/aws/signer/v4"
+	"github.com/aws/aws-sdk-go/service/cloudwatchlogs"
 )
 
 //Struct for creating codes
@@ -106,17 +107,40 @@ func makeRequests (baseUrl string, endpoint string, codesToAction []*strings.Rea
 }
 
 func getEnv(key, fallback string) string {
-    if value, ok := os.LookupEnv(key); ok {
-        return value
-    }
-    return fallback
+	if value, ok := os.LookupEnv(key); ok {
+		return value
+	}
+	return fallback
+}
+
+func assertNoActivationKeyUsedPublishFailures(sess *session.Session, logGroupName string, since time.Time) {
+	client := cloudwatchlogs.New(sess)
+	startTime := since.Add(-5 * time.Second).UnixMilli()
+
+	for attempt := 0; attempt < 12; attempt++ {
+		out, err := client.FilterLogEvents(&cloudwatchlogs.FilterLogEventsInput{
+			LogGroupName:  aws.String(logGroupName),
+			FilterPattern: aws.String(`"failed to write activation key used event"`),
+			StartTime:     aws.Int64(startTime),
+			Limit:         aws.Int64(50),
+		})
+		if err == nil {
+			for _, event := range out.Events {
+				if event != nil && event.Message != nil && strings.Contains(*event.Message, "failed to write activation key used event") {
+					panic(fmt.Sprintf("ASSERTION FAILED: activation-key-used event publish failed; Lambda log entry: %s", *event.Message))
+				}
+			}
+		}
+		time.Sleep(5 * time.Second)
+	}
 }
 
 func main() {
 	branch := getEnv("BRANCH", "dev")
 	baseUrl := fmt.Sprintf("https://%s.lpa-codes.api.opg.service.justice.gov.uk/v1", branch)
+	logGroupName := getEnv("LAMBDA_LOG_GROUP", "")
 
-    fmt.Print(baseUrl)
+	fmt.Print(baseUrl)
 
 	cfg := aws.Config{Region: aws.String("eu-west-1")}
 	sess := session.Must(session.NewSession(&cfg))
@@ -194,7 +218,13 @@ func main() {
 	
 	}
 
-	makeRequests (baseUrl, "validate", codesToValidate, ch, chCode, chStatus, signer, cfg)
+	validateStartedAt := time.Now().UTC()
+	makeRequests(baseUrl, "validate", codesToValidate, ch, chCode, chStatus, signer, cfg)
+
+	if logGroupName == "" {
+		panic("LAMBDA_LOG_GROUP is required for checking activation-key-used publish failures")
+	}
+	assertNoActivationKeyUsedPublishFailures(sess, logGroupName, validateStartedAt)
 
 	//Codes to revoke section
 	var codesToRevoke []*strings.Reader

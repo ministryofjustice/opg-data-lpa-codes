@@ -49,4 +49,7 @@ jobs:
               echo "Running against branch environment"
               export BRANCH="${TF_WORKSPACE}.dev"
             fi
-            go run load_testing.go
+
+          export LAMBDA_LOG_GROUP="/aws/lambda/lpa-codes-${BRANCH}-v1"
+          echo "Using LAMBDA_LOG_GROUP=${LAMBDA_LOG_GROUP}"
+          go run load_testing.go
