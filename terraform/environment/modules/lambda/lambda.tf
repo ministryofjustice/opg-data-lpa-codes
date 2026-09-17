@@ -11,6 +11,62 @@ resource "aws_cloudwatch_log_group" "lambda_dbstream" {
   name = "/aws/lambda/${local.lambda_dbstream}"
 }
 
+resource "aws_cloudwatch_log_group" "outbound_event_bus" {
+  name              = "/aws/events/${var.outbound_event_bus}"
+  retention_in_days = 30
+}
+
+data "aws_iam_policy_document" "eventbridge_to_logs" {
+  statement {
+    sid    = "AllowEventBridgeToWriteToLogs"
+    effect = "Allow"
+
+    principals {
+      type        = "Service"
+      identifiers = ["events.amazonaws.com"]
+    }
+
+    actions = [
+      "logs:CreateLogStream",
+      "logs:PutLogEvents",
+    ]
+
+    resources = [
+      aws_cloudwatch_log_group.outbound_event_bus.arn,
+      "${aws_cloudwatch_log_group.outbound_event_bus.arn}:*",
+    ]
+
+    condition {
+      test     = "ArnEquals"
+      variable = "AWS:SourceArn"
+      values   = [aws_cloudwatch_event_rule.activation_key_used.arn]
+    }
+  }
+}
+
+resource "aws_cloudwatch_log_resource_policy" "eventbridge_to_logs" {
+  policy_name     = "${var.lambda_prefix}-${var.environment}-eventbridge-to-logs"
+  policy_document = data.aws_iam_policy_document.eventbridge_to_logs.json
+}
+
+resource "aws_cloudwatch_event_rule" "activation_key_used" {
+  name           = "${var.lambda_prefix}-${var.environment}-activation-key-used"
+  description    = "Capture activation-key-used events and send them to CloudWatch Logs"
+  event_bus_name = var.outbound_event_bus
+
+  event_pattern = jsonencode({
+    source        = ["opg.poas.use"]
+    "detail-type" = ["activation-key-used"]
+  })
+}
+
+resource "aws_cloudwatch_event_target" "activation_key_used_logs" {
+  rule           = aws_cloudwatch_event_rule.activation_key_used.name
+  event_bus_name = aws_cloudwatch_event_rule.activation_key_used.event_bus_name
+  target_id      = "activation-key-used-cloudwatch-logs"
+  arn            = aws_cloudwatch_log_group.outbound_event_bus.arn
+}
+
 resource "aws_lambda_function" "lambda_function" {
   function_name = local.lambda
   package_type  = "Image"
