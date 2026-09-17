@@ -50,4 +50,6 @@ jobs:
               export BRANCH="${TF_WORKSPACE}.dev"
             fi
 
+          export LAMBDA_LOG_GROUP="/aws/lambda/lpa-codes-${BRANCH}-v1"
+          echo "Using LAMBDA_LOG_GROUP=${LAMBDA_LOG_GROUP}"
           go run load_testing.go
