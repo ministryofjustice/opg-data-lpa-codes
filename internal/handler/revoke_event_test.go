@@ -18,7 +18,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestValidatePublishesActivationKeyUsedEvent(t *testing.T) {
+func TestRevokePublishesActivationKeyUsedEvent(t *testing.T) {
 	ctx := context.Background()
 	cfg, err := config.LoadDefaultConfig(ctx)
 	if err != nil {
@@ -44,19 +44,19 @@ func TestValidatePublishesActivationKeyUsedEvent(t *testing.T) {
 		return nil
 	})
 
-	resp, err := Validate(ctx, store, nil, events.APIGatewayProxyRequest{
+	resp, err := Revoke(ctx, store, events.APIGatewayProxyRequest{
 		HTTPMethod: http.MethodPost,
-		Body:       fmt.Sprintf(`{"code":"%s","lpa":"700000000001","dob":"1960-06-05"}`, code),
+		Body:       fmt.Sprintf(`{"code":"%s"}`, code),
 	})
 	if !assert.NoError(t, err) {
 		return
 	}
 	assert.Equal(t, http.StatusOK, resp.StatusCode)
 	assert.True(t, called)
-	assert.JSONEq(t, `{"actor":"700000000002"}`, resp.Body)
+	assert.JSONEq(t, `{"codes revoked":1}`, resp.Body)
 }
 
-func TestValidateLogsAndContinuesWhenActivationKeyUsedEventFails(t *testing.T) {
+func TestRevokeLogsAndContinuesWhenActivationKeyUsedEventFails(t *testing.T) {
 	ctx := context.Background()
 	cfg, err := config.LoadDefaultConfig(ctx)
 	if err != nil {
@@ -85,16 +85,16 @@ func TestValidateLogsAndContinuesWhenActivationKeyUsedEventFails(t *testing.T) {
 		slog.SetDefault(originalLogger)
 	})
 
-	resp, err := Validate(ctx, store, nil, events.APIGatewayProxyRequest{
+	resp, err := Revoke(ctx, store, events.APIGatewayProxyRequest{
 		HTTPMethod: http.MethodPost,
-		Body:       fmt.Sprintf(`{"code":"%s","lpa":"700000000001","dob":"1960-06-05"}`, code),
+		Body:       fmt.Sprintf(`{"code":"%s"}`, code),
 	})
 	if !assert.NoError(t, err) {
 		return
 	}
 
 	assert.Equal(t, http.StatusOK, resp.StatusCode)
-	assert.JSONEq(t, `{"actor":"700000000002"}`, resp.Body)
+	assert.JSONEq(t, `{"codes revoked":1}`, resp.Body)
 	assert.Contains(t, logs.String(), "failed to write activation key used event")
 	assert.Contains(t, logs.String(), "event bridge unavailable")
 }
