@@ -36,7 +36,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@cbe3b392738ccf3f987d68400dafcf4b0624a56c # v6.2.4
+        uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
         with:
           aws-region: eu-west-1
           role-to-assume: ${{ vars.OIDC_MANAGEMENT_ECR_ROLE }}
@@ -55,7 +55,7 @@ jobs:
 
       - name: Run SNYK vulnerability scan
         id: snyk_scan
-        uses: ministryofjustice/opg-github-actions/actions/snyk-scan@722a5f955424aaba01e9ca43d68390cd4048d6e1 # v4.10.2
+        uses: ministryofjustice/opg-github-actions/actions/snyk-scan@ae37b9b322286123971417e82b665e56e9d6aa3f # v4.10.3
         with:
           SNYK_TEST_IMAGE: lpa-codes:latest
           SNYK_TOKEN: ${{ secrets.SNYK_OPG_ORG_TOKEN }}
