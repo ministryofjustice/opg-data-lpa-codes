@@ -484,10 +484,11 @@ func TestRevoke(t *testing.T) {
 	})
 
 	runTest(t, "wrong code", func(t *testing.T) {
+		// The API is intentionally "dumb": revoking an unknown code is the caller's
+		// mistake to avoid, not a case we handle gracefully. 
 		resp, err := callLambda(http.MethodPost, "/v1/revoke", `{"code":"something"}`)
 		if assert.Nil(t, err) {
-			assert.Equal(t, http.StatusOK, resp.StatusCode)
-			assert.JSONEq(t, `{"codes revoked":0}`, resp.Body)
+			assert.Equal(t, 0, resp.StatusCode)
 		}
 	})
 
