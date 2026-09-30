@@ -28,6 +28,9 @@ func Revoke(ctx context.Context, codesStore *codes.ActivationCodeStore, event ev
 	}
 
 	item, err := codesStore.Code(ctx, v.Code)
+	if err != nil {
+		return respondInternalServerError(fmt.Errorf("get code: %w", err))
+	}
 
 	updated, err := codesStore.RevokeCode(ctx, v.Code)
 	if err != nil {
