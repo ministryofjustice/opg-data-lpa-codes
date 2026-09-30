@@ -218,13 +218,7 @@ func main() {
 	
 	}
 
-	validateStartedAt := time.Now().UTC()
 	makeRequests(baseUrl, "validate", codesToValidate, ch, chCode, chStatus, signer, cfg)
-
-	if logGroupName == "" {
-		panic("LAMBDA_LOG_GROUP is required for checking activation-key-used publish failures")
-	}
-	assertNoActivationKeyUsedPublishFailures(sess, logGroupName, validateStartedAt)
 
 	//Codes to revoke section
 	var codesToRevoke []*strings.Reader
@@ -251,6 +245,12 @@ func main() {
 		codesToRevoke = append(codesToRevoke, body)
 	}
 
+	revokeStartedAt := time.Now().UTC()
 	makeRequests (baseUrl, "revoke", codesToRevoke, ch, chCode, chStatus, signer, cfg)
+
+	if logGroupName == "" {
+		panic("LAMBDA_LOG_GROUP is required for checking activation-key-used publish failures")
+	}
+	assertNoActivationKeyUsedPublishFailures(sess, logGroupName, revokeStartedAt)
 	
 }
